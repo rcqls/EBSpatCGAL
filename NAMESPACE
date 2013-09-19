@@ -1,4 +1,4 @@
-useDynLib(Rfirst)
+useDynLib(EBSpatCGAL)
 exportPattern("^[[:alpha:]]+")
 export(
   "%<<%","%<<%.Scene",
