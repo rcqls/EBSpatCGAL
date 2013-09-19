@@ -1,5 +1,5 @@
 require(rgl)
-require(Rfirst)
+require(EBSpatCGAL)
 rt3 <- new(Regular3)
 rt3$insert(runif(100),runif(100),runif(100),runif(100))
 v3 <-rt3$vertices( )

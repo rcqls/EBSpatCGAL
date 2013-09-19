@@ -1,5 +1,5 @@
 
-require(Rfirst)
+require(EBSpatCGAL)
 rt2 <- new(Regular2)
 rt2$insert(runif(100),runif(100),runif(100))
 v2 <-rt2$vertices( )

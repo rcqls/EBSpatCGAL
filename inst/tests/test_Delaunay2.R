@@ -1,4 +1,4 @@
-require(Rfirst)
+require(EBSpatCGAL)
 
 del2 <- Delaunay()
 

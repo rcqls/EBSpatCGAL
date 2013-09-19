@@ -1,4 +1,4 @@
-require(Rfirst)
+require(EBSpatCGAL)
 
 del3 <- Delaunay(3)
 

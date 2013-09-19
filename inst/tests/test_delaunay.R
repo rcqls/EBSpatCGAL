@@ -1,5 +1,5 @@
 
-require(Rfirst)
+require(EBSpatCGAL)
 dt2 <- new(Delaunay2)
 dt2$insert(runif(100),runif(100))
 v2 <-dt2$vertices( )
