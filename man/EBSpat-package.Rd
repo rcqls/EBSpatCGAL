@@ -1,6 +1,6 @@
-\name{Rfirst-package}
-\alias{Rfirst-package}
-\alias{Rfirst}
+\name{EBSpatCGAL-package}
+\alias{EBSpatCGAL-package}
+\alias{EBSpatCGAL}
 \docType{package}
 \title{
 What the package does (short line)
@@ -11,7 +11,7 @@ More about what it does (maybe more than one line)
 }
 \details{
 \tabular{ll}{
-Package: \tab Rfirst\cr
+Package: \tab EBSpatCGAL\cr
 Type: \tab Package\cr
 Version: \tab 1.0\cr
 Date: \tab 2012-05-14\cr
