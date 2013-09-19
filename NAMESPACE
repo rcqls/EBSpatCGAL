@@ -1,0 +1,17 @@
+useDynLib(Rfirst)
+exportPattern("^[[:alpha:]]+")
+export(
+  "%<<%","%<<%.Scene",
+  "[[","[[.Scene",
+  "[[<-","[[<-.Scene",
+  "[","[.Scene",
+  "[<-","[<-.Scene"
+)
+S3method("%<<%",Scene)
+S3method("[[",Scene)
+S3method("[[<-",Scene)
+S3method("[",Scene)
+S3method("[<-",Scene)
+S3method("facets",Delaunay)
+
+import( Rcpp )

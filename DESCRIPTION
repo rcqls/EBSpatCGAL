@@ -1,0 +1,12 @@
+Package: EBSpatCGAL
+Type: Package
+Title: EBSpat using CGAL
+Version: 0.1
+Date: 2012-05-14
+Author: R Cqls
+Maintainer: Who to complain to <rdrouilh@gmail.com>
+Description: More about what it does (maybe more than one line)
+License: What Licence is it under ?
+Depends: Rcpp (>= 0.9.10), CqlsRObj (>= 0.1.0)
+LinkingTo: Rcpp
+RcppModules: cgal_module

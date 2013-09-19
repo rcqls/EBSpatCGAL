@@ -1,0 +1,7 @@
+src-*
+*~
+*.o
+*.so
+*.dylib
+*DEBUG
+*SAVE
