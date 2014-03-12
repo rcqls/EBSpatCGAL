@@ -40,7 +40,7 @@ typedef Gt3::Weighted_point_3 										Weighted_point_3;
 using namespace Rcpp;
 
 // helpers
-void Delaunay2_insert( Delaunay2* obj, NumericVector ptsX, NumericVector ptsY ) {
+IntegerVector Delaunay2_insert( Delaunay2* obj, NumericVector ptsX, NumericVector ptsY ) {
 	std::vector<Point_2> points;
 	int nbPts=ptsX.size();
 
@@ -51,6 +51,8 @@ void Delaunay2_insert( Delaunay2* obj, NumericVector ptsX, NumericVector ptsY ) 
   	}
 	obj->insert( points.begin(), points.end() );
 	std::cout << "Number of inserted vertices is " << obj->number_of_vertices() << std::endl;
+	
+	return IntegerVector::create(obj->number_of_vertices());
 }
 
 void Delaunay3_insert( Delaunay3* obj, NumericVector ptsX, NumericVector ptsY, NumericVector ptsZ ) {
@@ -382,6 +384,376 @@ NumericMatrix Triangulation3_dual_edges(TRIANGULATION3* obj) {
 NumericMatrix Delaunay2_conflicted_faces(Delaunay2* obj, NumericVector xy) {
 	std::list<Delaunay2::Face_handle> faces;
  	Point_2 p(xy[0],xy[1]);
+ 	obj->get_conflicts (p, std::back_inserter(faces));
+
+ 	int i=0,nb=iterator_distance(faces.begin(),faces.end()); 
+
+ 	NumericMatrix fc(nb,6);
+
+	for(std::list<Delaunay2::Face_handle>::iterator fit = faces.begin();
+      fit != faces.end();
+      ++fit,++i){
+      	if(obj->is_infinite(*fit)) {
+      		std::cout << i << " infinite face" << std::endl;
+      	}
+		Delaunay2::Vertex_handle v0=static_cast<Delaunay2::Face_handle>(*fit)->vertex(0),v1=static_cast<Delaunay2::Face_handle>(*fit)->vertex(1),v2=static_cast<Delaunay2::Face_handle>(*fit)->vertex(2);
+		Point_2 p0=v0->point(),p1=v1->point(),p2=v2->point();
+		if(obj->is_infinite(v0)) {
+			fc(i,0)=NA_REAL;
+     		fc(i,1)=NA_REAL;
+		} else {
+    		fc(i,0)=p0.x();
+     		fc(i,1)=p0.y();
+     	}
+     	if(obj->is_infinite(v1)) {
+			fc(i,2)=NA_REAL;
+     		fc(i,3)=NA_REAL;
+		} else {
+    		fc(i,2)=p1.x();
+     		fc(i,3)=p1.y();
+     	}
+     	if(obj->is_infinite(v2)) {
+			fc(i,4)=NA_REAL;
+     		fc(i,5)=NA_REAL;
+		} else {
+    		fc(i,4)=p2.x();
+     		fc(i,5)=p2.y();
+     	}
+	}
+	return fc;
+}
+
+NumericMatrix Delaunay3_conflicted_cells(Delaunay3* obj, NumericVector xy) {
+ 	Point_3 p(xy[0],xy[1],xy[2]);
+
+ 	// Locate the point
+    Delaunay3::Locate_type lt;
+    int li, lj;
+    Delaunay3::Cell_handle c = obj->locate(p, lt, li, lj);
+    if (lt == Delaunay3::VERTEX) return NA_REAL;
+       
+
+    // Get the cells that conflict with p in a vector V,
+    // and a facet on the boundary of this hole in f.
+    std::vector<Delaunay3::Cell_handle> V;
+    std::vector<Delaunay3::Facet> f;
+
+
+	obj->find_conflicts(p, c,
+                     std::back_inserter(f), // Get one boundary facet
+                     std::back_inserter(V));          // Conflict cells in V
+
+	int i=0; //,nb=iterator_distance(V.begin(),V.end()); 
+
+ 	NumericMatrix fc(V.size(),12);
+
+    // if ((V.size() & 1) == 0)  // Even number of conflict cells ?
+    //   T.insert_in_hole(p, V.begin(), V.end(), f.first, f.second);
+
+	for(std::vector<Delaunay3::Cell_handle>::iterator cit = V.begin();
+       cit != V.end();
+       ++cit,++i){
+ //      	if(obj->is_infinite(*fit)) {
+ //      		std::cout << i << " infinite face" << std::endl;
+ //      	}
+	Delaunay3::Vertex_handle v0=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(0),v1=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(1),v2=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(2),v3=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(3);
+	Point_3 p0=v0->point(),p1=v1->point(),p2=v2->point(),p3=v3->point();
+		if(obj->is_infinite(v0)) {
+			fc(i,0)=NA_REAL;
+     		fc(i,1)=NA_REAL;
+     		fc(i,2)=NA_REAL;
+		} else {
+    		fc(i,0)=p0.x();
+     		fc(i,1)=p0.y();
+     		fc(i,2)=p0.z();
+     	}
+     	if(obj->is_infinite(v1)) {
+			fc(i,3)=NA_REAL;
+     		fc(i,4)=NA_REAL;
+     		fc(i,5)=NA_REAL;
+		} else {
+    		fc(i,3)=p1.x();
+     		fc(i,4)=p1.y();
+     		fc(i,5)=p1.z();
+     	}
+     	if(obj->is_infinite(v2)) {
+			fc(i,6)=NA_REAL;
+     		fc(i,7)=NA_REAL;
+     		fc(i,8)=NA_REAL;
+		} else {
+    		fc(i,6)=p2.x();
+     		fc(i,7)=p2.y();
+     		fc(i,8)=p2.z();
+     	}
+     	if(obj->is_infinite(v3)) {
+			fc(i,9)=NA_REAL;
+     		fc(i,10)=NA_REAL;
+     		fc(i,11)=NA_REAL;
+		} else {
+    		fc(i,9)=p3.x();
+     		fc(i,10)=p3.y();
+     		fc(i,11)=p3.z();
+     	}
+     	 
+	}
+	return fc;
+}
+
+List Delaunay3_conflicted_cells_and_boundary_facets(Delaunay3* obj, NumericVector xy) {
+ 	Point_3 p(xy[0],xy[1],xy[2]);
+
+ 	// Locate the point
+    Delaunay3::Locate_type lt;
+    int li, lj;
+    Delaunay3::Cell_handle c = obj->locate(p, lt, li, lj);
+    if (lt == Delaunay3::VERTEX) return NA_REAL;
+       
+
+    // Get the cells that conflict with p in a vector V,
+    // and a facet on the boundary of this hole in f.
+    std::vector<Delaunay3::Cell_handle> V;
+    std::vector<Delaunay3::Facet> f;
+
+
+	obj->find_conflicts(p, c,
+                     std::back_inserter(f), // Get one boundary facet
+                     std::back_inserter(V));          // Conflict cells in V
+
+	int i=0; //,nb=iterator_distance(V.begin(),V.end()); 
+
+ 	NumericMatrix cc(V.size(),12);
+
+    // if ((V.size() & 1) == 0)  // Even number of conflict cells ?
+    //   T.insert_in_hole(p, V.begin(), V.end(), f.first, f.second);
+
+	for(std::vector<Delaunay3::Cell_handle>::iterator cit = V.begin();
+       cit != V.end();
+       ++cit,++i){
+ //      	if(obj->is_infinite(*fit)) {
+ //      		std::cout << i << " infinite face" << std::endl;
+ //      	}
+	Delaunay3::Vertex_handle v0=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(0),v1=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(1),v2=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(2),v3=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(3);
+	Point_3 p0=v0->point(),p1=v1->point(),p2=v2->point(),p3=v3->point();
+		if(obj->is_infinite(v0)) {
+			cc(i,0)=NA_REAL;
+     		cc(i,1)=NA_REAL;
+     		cc(i,2)=NA_REAL;
+		} else {
+    		cc(i,0)=p0.x();
+     		cc(i,1)=p0.y();
+     		cc(i,2)=p0.z();
+     	}
+     	if(obj->is_infinite(v1)) {
+			cc(i,3)=NA_REAL;
+     		cc(i,4)=NA_REAL;
+     		cc(i,5)=NA_REAL;
+		} else {
+    		cc(i,3)=p1.x();
+     		cc(i,4)=p1.y();
+     		cc(i,5)=p1.z();
+     	}
+     	if(obj->is_infinite(v2)) {
+			cc(i,6)=NA_REAL;
+     		cc(i,7)=NA_REAL;
+     		cc(i,8)=NA_REAL;
+		} else {
+    		cc(i,6)=p2.x();
+     		cc(i,7)=p2.y();
+     		cc(i,8)=p2.z();
+     	}
+     	if(obj->is_infinite(v3)) {
+			cc(i,9)=NA_REAL;
+     		cc(i,10)=NA_REAL;
+     		cc(i,11)=NA_REAL;
+		} else {
+    		cc(i,9)=p3.x();
+     		cc(i,10)=p3.y();
+     		cc(i,11)=p3.z();
+     	}
+	}
+
+	NumericMatrix fc(f.size(),9);
+
+    // if ((V.size() & 1) == 0)  // Even number of conflict cells ?
+    //   T.insert_in_hole(p, V.begin(), V.end(), f.first, f.second);
+
+	i=0;
+	for(std::vector<Delaunay3::Facet>::iterator fit = f.begin();
+       fit != f.end();
+       ++fit,++i){
+ //      	if(obj->is_infinite(*fit)) {
+ //      		std::cout << i << " infinite face" << std::endl;
+ //      	}
+
+		Delaunay3::Vertex_handle v0=((*fit).first->vertex(((*fit).second+1)&3)),v1=((*fit).first->vertex(((*fit).second+2)&3)),v2=((*fit).first->vertex(((*fit).second+3)&3));
+		Point_3 p0=v0->point(),p1=v1->point(),p2=v2->point();
+		fc(i,0)=p0.x();
+ 		fc(i,1)=p0.y();
+ 		fc(i,2)=p0.z();
+
+		fc(i,3)=p1.x();
+ 		fc(i,4)=p1.y();
+ 		fc(i,5)=p1.z();
+ 	
+		fc(i,6)=p2.x();
+ 		fc(i,7)=p2.y();
+ 		fc(i,8)=p2.z();
+	}
+
+	List ret; ret["cells"] = cc; ret["boundaryFacets"] = fc;
+	return ret;
+}
+
+List Delaunay3_conflicted_edges_and_boundary_edges(Delaunay3* obj, NumericVector xy) {
+ 	Point_3 p(xy[0],xy[1],xy[2]);
+
+ 	// Locate the point
+    Delaunay3::Locate_type lt;
+    int li, lj;
+    Delaunay3::Cell_handle c = obj->locate(p, lt, li, lj);
+    if (lt == Delaunay3::VERTEX) return NA_REAL;
+    typedef std::set<Point_3> Point_3_Set;
+
+    // Get the cells that conflict with p in a vector V,
+    // and a facet on the boundary of this hole in f.
+    std::vector<Delaunay3::Cell_handle> V;
+    std::vector<Delaunay3::Facet> f;
+
+
+	obj->find_conflicts(p, c,
+                     std::back_inserter(f), // Get one boundary facet
+                     std::back_inserter(V));          // Conflict cells in V
+
+	int i=0;  
+
+	std::set<Point_3_Set> boundaryEdges;
+
+	for(std::vector<Delaunay3::Facet>::iterator fit = f.begin();
+       fit != f.end();
+       ++fit,++i){
+
+		Delaunay3::Vertex_handle v0=((*fit).first->vertex(((*fit).second+1)&3)),v1=((*fit).first->vertex(((*fit).second+2)&3)),v2=((*fit).first->vertex(((*fit).second+3)&3));
+		Point_3 p0=v0->point(),p1=v1->point(),p2=v2->point();
+		std::set<Point_3> e0;
+		e0.insert(p0);e0.insert(p1);boundaryEdges.insert(e0);
+		std::set<Point_3> e1;
+		e1.insert(p0);e1.insert(p2);boundaryEdges.insert(e1);
+		std::set<Point_3> e2;
+		e2.insert(p1);e2.insert(p2);boundaryEdges.insert(e2);
+	}
+
+	std::set<Point_3_Set> conflictedEdges;
+
+	i=0;
+	for(std::vector<Delaunay3::Cell_handle>::iterator cit = V.begin();
+       cit != V.end();
+       ++cit,++i){
+		Delaunay3::Vertex_handle v0=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(0),v1=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(1),v2=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(2),v3=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(3);
+		Point_3 p0=v0->point(),p1=v1->point(),p2=v2->point(),p3=v3->point();
+		std::set<Point_3> e0;
+		e0.insert(p0);e0.insert(p1);
+		//if(conflictedEdges.find(e0) != conflictedEdges.end()) 
+		conflictedEdges.insert(e0);
+		std::set<Point_3> e1;
+		e1.insert(p0);e1.insert(p2);
+		//if(conflictedEdges.find(e1) != conflictedEdges.end()) 
+		conflictedEdges.insert(e1);
+		std::set<Point_3> e2;
+		e2.insert(p0);e2.insert(p3);
+		//if(conflictedEdges.find(e2) != conflictedEdges.end()) 
+		conflictedEdges.insert(e2);
+		std::set<Point_3> e3;
+		e3.insert(p1);e3.insert(p2);
+		//if(conflictedEdges.find(e3) != conflictedEdges.end()) 
+		conflictedEdges.insert(e3);
+		std::set<Point_3> e4;
+		e4.insert(p1);e4.insert(p3);
+		//if(conflictedEdges.find(e4) != conflictedEdges.end()) 
+		conflictedEdges.insert(e4);
+		std::set<Point_3> e5;
+		e5.insert(p2);e5.insert(p3);
+		//if(conflictedEdges.find(e5) != conflictedEdges.end()) 
+		conflictedEdges.insert(e5);
+
+		// if(obj->is_infinite(v0)) {
+		// 	cc(i,0)=NA_REAL;
+  //    		cc(i,1)=NA_REAL;
+  //    		cc(i,2)=NA_REAL;
+		// } else {
+  //   		cc(i,0)=p0.x();
+  //    		cc(i,1)=p0.y();
+  //    		cc(i,2)=p0.z();
+  //    	}
+  //    	if(obj->is_infinite(v1)) {
+		// 	cc(i,3)=NA_REAL;
+  //    		cc(i,4)=NA_REAL;
+  //    		cc(i,5)=NA_REAL;
+		// } else {
+  //   		cc(i,3)=p1.x();
+  //    		cc(i,4)=p1.y();
+  //    		cc(i,5)=p1.z();
+  //    	}
+  //    	if(obj->is_infinite(v2)) {
+		// 	cc(i,6)=NA_REAL;
+  //    		cc(i,7)=NA_REAL;
+  //    		cc(i,8)=NA_REAL;
+		// } else {
+  //   		cc(i,6)=p2.x();
+  //    		cc(i,7)=p2.y();
+  //    		cc(i,8)=p2.z();
+  //    	}
+  //    	if(obj->is_infinite(v3)) {
+		// 	cc(i,9)=NA_REAL;
+  //    		cc(i,10)=NA_REAL;
+  //    		cc(i,11)=NA_REAL;
+		// } else {
+  //   		cc(i,9)=p3.x();
+  //    		cc(i,10)=p3.y();
+  //    		cc(i,11)=p3.z();
+  //    	}
+	}
+
+    // if ((V.size() & 1) == 0)  // Even number of conflict cells ?
+    //   T.insert_in_hole(p, V.begin(), V.end(), f.first, f.second);
+
+	
+
+	NumericMatrix be(boundaryEdges.size(),6);
+	NumericMatrix ce(conflictedEdges.size(),6);
+
+	i=0;
+	for(std::set<Point_3_Set>::iterator eit = boundaryEdges.begin();
+       eit != boundaryEdges.end();
+       ++eit,++i) {
+		be(i,0)=(*((*eit).begin())).x();
+ 		be(i,1)=(*((*eit).begin())).y();
+ 		be(i,2)=(*((*eit).begin())).z();
+ 		be(i,3)=(*((*eit).rbegin())).x();
+ 		be(i,4)=(*((*eit).rbegin())).y();
+ 		be(i,5)=(*((*eit).rbegin())).z();
+
+ 	}
+
+ 	i=0;
+ 	for(std::set<Point_3_Set>::iterator eit = conflictedEdges.begin();
+       eit != conflictedEdges.end();
+       ++eit,++i){
+		ce(i,0)=(*((*eit).begin())).x();
+ 		ce(i,1)=(*((*eit).begin())).y();
+ 		ce(i,2)=(*((*eit).begin())).z();
+ 		ce(i,3)=(*((*eit).rbegin())).x();
+ 		ce(i,4)=(*((*eit).rbegin())).y();
+ 		ce(i,5)=(*((*eit).rbegin())).z();
+ 	}
+
+	List ret; ret["conflicted_edges"] = ce; ret["boundary_edges"] = be;
+	return ret;
+}
+
+//same as above with circles (center + radius)
+NumericMatrix Delaunay2_conflicted_faces_with_circles(Delaunay2* obj, NumericVector xy) {
+	std::list<Delaunay2::Face_handle> faces;
+ 	Point_2 p(xy[0],xy[1]);
  	obj->find_conflicts (p, faces);
 
  	int i=0,nb=iterator_distance(faces.begin(),faces.end()); 
@@ -434,6 +806,35 @@ NumericMatrix Delaunay2_conflicted_faces(Delaunay2* obj, NumericVector xy) {
 	    }
 	}
 	return fc;
+}
+
+
+
+template <typename TRIANGULATION2>
+NumericMatrix Triangulation2_incident_vertices(TRIANGULATION2* obj, IntegerVector rank) {
+	int n=rank[0]-1;
+
+	//std::cout << "pos of point to remove: " << n << std::endl;
+
+
+	if(n >=0 && n < obj->number_of_vertices()) {
+		typename TRIANGULATION2::Finite_vertices_iterator vit=obj->finite_vertices_begin();
+		for(int i=0;i<n;++i) ++vit;
+		typename TRIANGULATION2::Vertex_circulator vc=obj->incident_vertices(vit),done(vc);
+  		if (vc != 0) {
+  			int i=0,nb=circulator_size(vc); 
+ 			NumericMatrix vi(nb,2);
+	    	do {
+		      	vi(i,0)=vc->point().x();
+		      	vi(i,1)=vc->point().y();
+				++i;
+	    	} while(++vc != done);
+	    	return vi;
+  		}
+	}
+	NumericMatrix vi(0,0);
+	return vi;
+
 }
 
 
@@ -528,6 +929,8 @@ RCPP_MODULE(cgal_module) {
 	.method("dual_vertices",&Triangulation2_dual_vertices<Delaunay2>,"dual vertices coordinates")
 	.method("dual_edges",&Triangulation2_dual_edges<Delaunay2>,"dual edges coordinates")
 	.method("conflicted_faces",&Delaunay2_conflicted_faces,"conflicted faces")
+	.method("conflicted_faces_with_circles",&Delaunay2_conflicted_faces_with_circles,"conflicted faces with circles")
+	.method("incident_vertices",&Triangulation2_incident_vertices<Delaunay2>,"incident edges")
 	.method("incident_edges",&Triangulation2_incident_edges<Delaunay2>,"incident edges")
 	.method("incident_faces",&Triangulation2_incident_faces<Delaunay2>,"incident faces")
 	//.method("show_vertices",&Delaunay_show_vertices,"vertices coordinates")
@@ -552,6 +955,9 @@ RCPP_MODULE(cgal_module) {
 	.method("cells",&Triangulation3_cells<Delaunay3>,"cells coordinates")
 	.method("dual_vertices",&Triangulation3_dual_vertices<Delaunay3>,"dual vertices coordinates")
 	.method("dual_edges",&Triangulation3_dual_edges<Delaunay3>,"dual edges coordinates")
+	.method("conflicted_cells",&Delaunay3_conflicted_cells,"conflicted cells")
+	.method("conflicted_cells_and_boundary_facets",&Delaunay3_conflicted_cells_and_boundary_facets,"conflicted cells and boundary facets")
+	.method("conflicted_edges_and_boundary_edges",&Delaunay3_conflicted_edges_and_boundary_edges,"conflicted and boundary edges")
 	//.method("show_vertices",&Delaunay_show_vertices,"vertices coordinates")
 	;
 	class_<Regular3>( "Regular3" )

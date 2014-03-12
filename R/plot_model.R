@@ -1,21 +1,23 @@
-points.Delaunay <- function(obj,type=c("delaunay","voronoi"),...) {
+points.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
 	type <- match.arg(type)
 	update(obj) #to avoid NULL xptr
 	if(obj$dim==2) res <- CqlsObj(Vertex2d,type=type) 
 	else if(obj$dim==3) res <- CqlsObj(Vertex3d,type=type)
  	res$obj <- obj
+ 	res$pt <- pt
 	res$attr <- list(...)
 	## default color
 	if(is.null(res$attr$col)) res$attr$col <- switch(res$type,delaunay="blue",voronoi="red")
 	res
 }
 
-lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),...) {
+lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
 	type <- match.arg(type)
 	update(obj) #to avoid NULL xptr
-	res <-  if(obj$dim==2) res <- CqlsObj(Segment2d,type=type) 
+	if(obj$dim==2) res <- CqlsObj(Segment2d,type=type) 
 	else if(obj$dim==3) res <- CqlsObj(Segment3d,type=type)
 	res$obj <- obj
+	res$pt <- pt
 	res$attr <- list(...)
 	## default color
 	if(is.null(res$attr$col)) res$attr$col <- switch(type,delaunay="blue",voronoi="red")
@@ -36,18 +38,36 @@ facets.Delaunay <- function(obj,...) {
 
 plot.Vertex2d <- function(obj) {
 	update(obj$obj) #to avoid NULL xptr
-	if(obj$type=="delaunay") pts <- obj$obj$graph$vertices()
-	else if(obj$type=="voronoi") pts <- obj$obj$graph$dual_vertices()[,1:2]
-	else return()
+	switch(obj$type,
+		delaunay= {
+			if(is.null(obj$pt)) pts <- obj$obj$graph$vertices()
+			else pts <- obj$obj$graph$incident_vertices(obj$pt)
+		},
+		voronoi= pts <- obj$obj$graph$dual_vertices()[,1:2],
+		return()
+	)
 	#print(pts);print(c(list(pts),obj$attr))
 	do.call("points",c(list(pts),obj$attr))
 }
 
 plot.Segment2d <- function(obj) {
 	update(obj$obj) #to avoid NULL xptr
-	if(obj$type=="delaunay") edges <- obj$obj$graph$edges()
-	else if(obj$type=="voronoi") edges <- obj$obj$graph$dual_edges()
-	else return()
+	switch(obj$type,
+		delaunay= {
+			if(is.null(obj$pt)) edges <- obj$obj$graph$edges()
+			else if(length(obj$pt)==1) edges <- obj$obj$graph$incident_edges(as.integer(obj$pt))
+			else if(length(obj$pt)==2) {
+				edges <- rbind(
+					obj$obj$graph$conflicted_faces(obj$pt)[,1:4],
+					obj$obj$graph$conflicted_faces(obj$pt)[,3:6],
+					obj$obj$graph$conflicted_faces(obj$pt)[,c(1:2,5:6)]
+
+				)
+			}
+		},
+		voronoi= edges <- obj$obj$graph$dual_edges(),
+		return()
+	)
 	#print(pts);print(c(list(pts),obj$attr))
 	do.call("segments",c(list(edges[,1],edges[,2],edges[,3],edges[,4]),obj$attr))
 }
