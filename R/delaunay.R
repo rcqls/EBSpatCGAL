@@ -23,7 +23,7 @@ insert.Delaunay <- function(obj,pts,...) {
 	if(!is.matrix(pts)) pts <- matrix(pts,nrow=obj$dim)
 	if(NCOL(pts)!=obj$dim && NROW(pts)==obj$dim) pts <- t(pts)
 	if(obj$dim==2) obj$point.index <- obj$graph$insert(pts[,1],pts[,2])
-	else if(obj$dim==3) obj$graph$insert(pts[,1],pts[,2],pts[,3])
+	else if(obj$dim==3) obj$point.index <- obj$graph$insert(pts[,1],pts[,2],pts[,3])
 	obj$points <- pts
 	return(invisible())
 }
