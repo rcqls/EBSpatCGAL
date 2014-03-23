@@ -389,48 +389,51 @@ NumericMatrix Delaunay2_conflicted_faces(Delaunay2* obj, NumericVector xy) {
 	return fc;
 }
 
-List Delaunay2_conflicted_and_boundary_edges(Delaunay2* obj, NumericVector xy) {
-	std::list<Delaunay2::Face_handle> faces;
-	std::list<Delaunay2::Edge> edges;
-	typedef std::set<Delaunay2::Vertex_handle> Vertex_2_Set;
- 	Point_2 p(xy[0],xy[1]);
- 	obj->get_conflicts_and_boundary (p, std::back_inserter(faces),std::back_inserter(edges));
+//OBSOLETE SOON -> replaced by Delaunay2_conflicted_and_boundary_edges
+List Delaunay2_conflicted_edges_and_boundary_edges(Delaunay2* obj, NumericVector xy) {
+  std::list<Delaunay2::Face_handle> faces;
+  std::list<Delaunay2::Edge> edges;
+  typedef std::set<Delaunay2::Vertex_handle> Vertex_2_Set;
+  Point_2 p(xy[0],xy[1]);
+  obj->get_conflicts_and_boundary (p, std::back_inserter(faces),std::back_inserter(edges));
 
- 	int i=0; 
+  int i=0; 
 
-	std::set<Vertex_2_Set> boundaryEdges;
+  std::set<Vertex_2_Set> boundaryEdges;
 
-	for(std::list<Delaunay2::Edge>::iterator eit = edges.begin();
-       eit != edges.end();
-       ++eit,++i){
-		//Delaunay2::Vertex_handle v0=((*eit).first->vertex((*eit).first->cw((*eit).second))),v1=((*eit).first->vertex((*eit).first->ccw((*eit).second)));
-		Delaunay2::Vertex_handle v0=((*eit).first->vertex(((*eit).second+1)%3)),v1=((*eit).first->vertex(((*eit).second+2)%3));
-		
-		Vertex_2_Set e0;
-		e0.insert(v0);e0.insert(v1);boundaryEdges.insert(e0);
-	}
+  for(std::list<Delaunay2::Edge>::iterator eit = edges.begin();
+    eit != edges.end();
+    ++eit,++i)
+  {
+    //Delaunay2::Vertex_handle v0=((*eit).first->vertex((*eit).first->cw((*eit).second))),v1=((*eit).first->vertex((*eit).first->ccw((*eit).second)));
+    Delaunay2::Vertex_handle v0=((*eit).first->vertex(((*eit).second+1)%3)),v1=((*eit).first->vertex(((*eit).second+2)%3));
+   
+    Vertex_2_Set e0;
+    e0.insert(v0);e0.insert(v1);boundaryEdges.insert(e0);
+  }
 
-	std::cout << "Number of boundary edges=" << i << std::endl;
+  std::cout << "Number of boundary edges=" << i << std::endl;
 
-	std::set<Vertex_2_Set> conflictedEdges;
+  std::set<Vertex_2_Set> conflictedEdges;
 
-	i=0;
-	for(std::list<Delaunay2::Face_handle>::iterator fit = faces.begin();
-       fit != faces.end();
-       ++fit,++i){
-		Delaunay2::Vertex_handle v0=static_cast<Delaunay2::Face_handle>(*fit)->vertex(0),v1=static_cast<Delaunay2::Face_handle>(*fit)->vertex(1),v2=static_cast<Delaunay2::Face_handle>(*fit)->vertex(2);
-		Vertex_2_Set e0;
-		e0.insert(v0);e0.insert(v1);
-		if(boundaryEdges.find(e0) == boundaryEdges.end()) conflictedEdges.insert(e0);
-		Vertex_2_Set e1;
-		e1.insert(v0);e1.insert(v2);
-		if(boundaryEdges.find(e1) == boundaryEdges.end()) conflictedEdges.insert(e1);
-		Vertex_2_Set e2;
-		e2.insert(v1);e2.insert(v2);
-		if(boundaryEdges.find(e2) == boundaryEdges.end()) conflictedEdges.insert(e2);
-	}
+  i=0;
+  for(std::list<Delaunay2::Face_handle>::iterator fit = faces.begin();
+        fit != faces.end();
+        ++fit,++i)
+  {
+    Delaunay2::Vertex_handle v0=static_cast<Delaunay2::Face_handle>(*fit)->vertex(0),v1=static_cast<Delaunay2::Face_handle>(*fit)->vertex(1),v2=static_cast<Delaunay2::Face_handle>(*fit)->vertex(2);
+    Vertex_2_Set e0;
+    e0.insert(v0);e0.insert(v1);
+    if(boundaryEdges.find(e0) == boundaryEdges.end()) conflictedEdges.insert(e0);
+    Vertex_2_Set e1;
+    e1.insert(v0);e1.insert(v2);
+    if(boundaryEdges.find(e1) == boundaryEdges.end()) conflictedEdges.insert(e1);
+    Vertex_2_Set e2;
+    e2.insert(v1);e2.insert(v2);
+    if(boundaryEdges.find(e2) == boundaryEdges.end()) conflictedEdges.insert(e2);
+  }
 
-	std::cout << "Number of conflicted edges=" << 3*i << std::endl;
+  std::cout << "Number of conflicted edges=" << 3*i << std::endl;
 
 	// This is the R export!
 	NumericMatrix be(boundaryEdges.size(),4);
@@ -564,6 +567,7 @@ NumericMatrix Delaunay3_conflicted_cells(Delaunay3* obj, NumericVector xy) {
 	return fc;
 }
 
+//OBSOLETE SOON
 List Delaunay3_conflicted_cells_and_boundary_facets(Delaunay3* obj, NumericVector xy) {
  	Point_3 p(xy[0],xy[1],xy[2]);
 
@@ -666,74 +670,6 @@ List Delaunay3_conflicted_cells_and_boundary_facets(Delaunay3* obj, NumericVecto
 	}
 
 	List ret; ret["cells"] = cc; ret["boundaryFacets"] = fc;
-	return ret;
-}
-
-List Delaunay3_conflicted_and_boundary_edges(Delaunay3* obj, NumericVector xy) {
- 	Point_3 p(xy[0],xy[1],xy[2]);
-
-  std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> vertexSets;
-  vertexSets=CGAL_Delaunay3_conflicted_and_boundary_edges(obj,p);
-
-  Delaunay3_VertexSet_Set boundaryEdges=vertexSets.first,conflictedEdges=vertexSets.second;
-	// This is the R export!
-	NumericMatrix be(boundaryEdges.size(),6);
-	NumericMatrix ce(conflictedEdges.size(),6);
-
-	int i=0;
-	for(Delaunay3_VertexSet_Set::iterator eit = boundaryEdges.begin();
-       eit != boundaryEdges.end();
-       ++eit,++i) {
-       	Delaunay3::Vertex_handle v0=*((*eit).begin()),v1=*((*eit).rbegin());
-       	Point_3 p0=v0->point(),p1=v1->point();
-       	if(obj->is_infinite(v0)) {
-			be(i,0)=NA_REAL;
-     		be(i,1)=NA_REAL;
-     		be(i,2)=NA_REAL;
-		} else {
-    		be(i,0)=p0.x();
-     		be(i,1)=p0.y();
-     		be(i,2)=p0.z();
-     	}
-     	if(obj->is_infinite(v1)) {
-			be(i,3)=NA_REAL;
-     		be(i,4)=NA_REAL;
-     		be(i,5)=NA_REAL;
-		} else {
-    		be(i,3)=p1.x();
-     		be(i,4)=p1.y();
-     		be(i,5)=p1.z();
-     	}
-		 
- 	}
-
- 	i=0;
- 	for(Delaunay3_VertexSet_Set::iterator eit = conflictedEdges.begin();
-       eit != conflictedEdges.end();
-       ++eit,++i){
-		Delaunay3::Vertex_handle v0=*((*eit).begin()),v1=*((*eit).rbegin());
-       	Point_3 p0=v0->point(),p1=v1->point();
-       	if(obj->is_infinite(v0)) {
-			ce(i,0)=NA_REAL;
-     		ce(i,1)=NA_REAL;
-     		ce(i,2)=NA_REAL;
-		} else {
-    		ce(i,0)=p0.x();
-     		ce(i,1)=p0.y();
-     		ce(i,2)=p0.z();
-     	}
-     	if(obj->is_infinite(v1)) {
-			ce(i,3)=NA_REAL;
-     		ce(i,4)=NA_REAL;
-     		ce(i,5)=NA_REAL;
-		} else {
-    		ce(i,3)=p1.x();
-     		ce(i,4)=p1.y();
-     		ce(i,5)=p1.z();
-     	}
- 	}
-
-	List ret; ret["conflicted_edges"] = ce; ret["boundary_edges"] = be;
 	return ret;
 }
 
@@ -891,55 +827,148 @@ NumericMatrix Triangulation2_incident_faces(TRIANGULATION2* obj, IntegerVector r
 	return fi;
 
 }
+//**************************************************************************************//
+//New try!!! Above is old code, below is new code (using cgal_spatstat_triangulation.h) //
+//**************************************************************************************//
+//2D Delaunay
+NumericMatrix Delaunay2_VertexSet_Set_To_R(Delaunay2_VertexSet_Set eSet,Delaunay2* del2) {
+
+  NumericMatrix es(eSet.size(),4);
+
+  int i=0;
+  for(
+    Delaunay2_VertexSet_Set::iterator eit = eSet.begin();
+    eit != eSet.end();
+    ++eit,++i
+  ) {
+    Delaunay2::Vertex_handle v0=*((*eit).begin()),v1=*((*eit).rbegin());
+    Point_2 p0=v0->point(),p1=v1->point();
+    if(del2->is_infinite(v0)) {
+      es(i,0)=NA_REAL;
+      es(i,1)=NA_REAL;
+    } else {
+      es(i,0)=p0.x();
+      es(i,1)=p0.y();
+    }
+    if(del2->is_infinite(v1)) {
+      es(i,2)=NA_REAL;
+      es(i,3)=NA_REAL;
+    } else {
+      es(i,2)=p1.x();
+      es(i,3)=p1.y();
+    }
+     
+  }
+  return es;
+}
+
+List Delaunay2_conflicted_and_boundary_edges(Delaunay2* obj, NumericVector xy) {
+  Point_2 p(xy[0],xy[1]);
+
+  std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> vertexSets;
+  vertexSets=CGAL_Delaunay2_conflicted_and_boundary_edges(obj,p);
+
+  std::cout << "ICI" << std::endl;
+
+  Delaunay2_VertexSet_Set boundaryEdges=vertexSets.first,conflictedEdges=vertexSets.second;
+  // This is the R export!
+  NumericMatrix be(boundaryEdges.size(),4);
+  NumericMatrix ce(conflictedEdges.size(),4);
+
+  List ret; 
+  ret["conflicted_edges"] = Delaunay2_VertexSet_Set_To_R(conflictedEdges,obj); 
+  ret["boundary_edges"] = Delaunay2_VertexSet_Set_To_R(boundaryEdges,obj);
+  return ret;
+}
+
+NumericMatrix Delaunay2_incident_edges(Delaunay2* obj, IntegerVector rank) {
+  int n=rank[0]-1;
+
+  if(n >=0 && n < obj->number_of_vertices()) {
+    Delaunay2::Finite_vertices_iterator vit=obj->finite_vertices_begin();
+    for(int i=0;i<n;++i) ++vit;
+
+    Delaunay2_VertexSet_Set incidentEdges=CGAL_Delaunay2_incident_edges(obj,vit);
+    NumericMatrix ie=Delaunay2_VertexSet_Set_To_R(incidentEdges,obj); 
+    return ie;
+  }
+  NumericMatrix ie(0,0);
+  return ie;
+}
+
+//3D Delaunay
+
+NumericMatrix Delaunay3_VertexSet_Set_To_R(Delaunay3_VertexSet_Set eSet,Delaunay3* del3) {
+
+  NumericMatrix es(eSet.size(),6);
+
+  int i=0;
+  for(
+    Delaunay3_VertexSet_Set::iterator eit = eSet.begin();
+    eit != eSet.end();
+    ++eit,++i
+  ) {
+    Delaunay3::Vertex_handle v0=*((*eit).begin()),v1=*((*eit).rbegin());
+    Point_3 p0=v0->point(),p1=v1->point();
+    if(del3->is_infinite(v0)) {
+      es(i,0)=NA_REAL;
+      es(i,1)=NA_REAL;
+      es(i,2)=NA_REAL;
+    } else {
+      es(i,0)=p0.x();
+      es(i,1)=p0.y();
+      es(i,2)=p0.z();
+    }
+    if(del3->is_infinite(v1)) {
+      es(i,3)=NA_REAL;
+      es(i,4)=NA_REAL;
+      es(i,5)=NA_REAL;
+    } else {
+      es(i,3)=p1.x();
+      es(i,4)=p1.y();
+      es(i,5)=p1.z();
+    }
+     
+  }
+  return es;
+}
+
+
+
+List Delaunay3_conflicted_and_boundary_edges(Delaunay3* obj, NumericVector xy) {
+  Point_3 p(xy[0],xy[1],xy[2]);
+
+  std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> vertexSets;
+  vertexSets=CGAL_Delaunay3_conflicted_and_boundary_edges(obj,p);
+
+  Delaunay3_VertexSet_Set boundaryEdges=vertexSets.first,conflictedEdges=vertexSets.second;
+  // This is the R export!
+  NumericMatrix be(boundaryEdges.size(),6);
+  NumericMatrix ce(conflictedEdges.size(),6);
+
+  List ret; 
+  ret["conflicted_edges"] = Delaunay3_VertexSet_Set_To_R(conflictedEdges,obj); 
+  ret["boundary_edges"] = Delaunay3_VertexSet_Set_To_R(boundaryEdges,obj);
+  return ret;
+}
 
 NumericMatrix Delaunay3_incident_edges(Delaunay3* obj, IntegerVector rank) {
 	int n=rank[0]-1;
-	std::vector<Delaunay3::Vertex_handle> V;
-	//std::cout << "pos of point to remove: " << n << std::endl;
-
 
 	if(n >=0 && n < obj->number_of_vertices()) {
 		Delaunay3::Finite_vertices_iterator vit=obj->finite_vertices_begin();
 		for(int i=0;i<n;++i) ++vit;
-		Point_3 p0=(*vit).point();
-		obj->adjacent_vertices(vit,std::back_inserter(V));
-		NumericMatrix ie(V.size(),6);
-		int i=0;
-  		for(std::vector<Delaunay3::Vertex_handle>::iterator vit=V.begin();
-  			vit != V.end();
-      		++vit,++i) {
-      		Point_3 p1=(*vit)->point();
-	      	ie(i,0)=p0.x();
-	      	ie(i,1)=p0.y();
-	      	ie(i,2)=p0.z();
-	      	ie(i,3)=p1.x();
-	      	ie(i,4)=p1.y();
-	      	ie(i,5)=p1.z();
-  		}
-  		return ie;
+
+    Delaunay3_VertexSet_Set incidentEdges=CGAL_Delaunay3_incident_edges(obj,vit);
+		NumericMatrix ie=Delaunay3_VertexSet_Set_To_R(incidentEdges,obj); 
+  	return ie;
 	}
 	NumericMatrix ie(0,0);
 	return ie;
-
-}
-
-
-//TO detect if an external pointer is nil
-SEXP is_xptr_null(SEXP objR) {
-	void *objPtr;
-	bool ans;
-	objPtr=R_ExternalPtrAddr(objR);
-  	if(objPtr==NULL) {
-  		ans=1;
-	} else {
-		ans=0;
-	}
-	return Rcpp::wrap(ans);
 }
 
 
 RCPP_MODULE(cgal_module) {
-	function( "is_xptr_null", &is_xptr_null );
 	class_<Delaunay2>( "Delaunay2" )
 	.constructor()
 	.method("insert",&Delaunay2_insert,"insert points")
@@ -951,6 +980,8 @@ RCPP_MODULE(cgal_module) {
 	.method("dual_edges",&Triangulation2_dual_edges<Delaunay2>,"dual edges coordinates")
 	.method("conflicted_faces",&Delaunay2_conflicted_faces,"conflicted faces")
 	.method("conflicted_faces_with_circles",&Delaunay2_conflicted_faces_with_circles,"conflicted faces with circles")
+  //OBSOLETE SOON
+  .method("conflicted_edges_and_boundary_edges",&Delaunay2_conflicted_edges_and_boundary_edges,"conflicted and boundary edges")
 	.method("conflicted_and_boundary_edges",&Delaunay2_conflicted_and_boundary_edges,"conflicted and boundary edges")
 	.method("incident_vertices",&Triangulation2_incident_vertices<Delaunay2>,"incident edges")
 	.method("incident_edges",&Triangulation2_incident_edges<Delaunay2>,"incident edges")
@@ -978,6 +1009,7 @@ RCPP_MODULE(cgal_module) {
 	.method("dual_vertices",&Triangulation3_dual_vertices<Delaunay3>,"dual vertices coordinates")
 	.method("dual_edges",&Triangulation3_dual_edges<Delaunay3>,"dual edges coordinates")
 	.method("conflicted_cells",&Delaunay3_conflicted_cells,"conflicted cells")
+  //OBSOLETE SOON
 	.method("conflicted_cells_and_boundary_facets",&Delaunay3_conflicted_cells_and_boundary_facets,"conflicted cells and boundary facets")
 	.method("conflicted_and_boundary_edges",&Delaunay3_conflicted_and_boundary_edges,"conflicted and boundary edges")
 	.method("incident_edges",&Delaunay3_incident_edges,"incident edges")
