@@ -1,8 +1,7 @@
 #ifndef RCPP_TERM_EXPRESSION_H
 #define RCPP_TERM_EXPRESSION_H
 
-#include <Rcpp.h>
-#include "cgal_spatstat_triangulation.h"
+#include "rcpp_spatstat_triangulation.h"
 using namespace Rcpp ;
 
 //Register interaction type here!!!
@@ -11,14 +10,21 @@ enum InterTypeID {
     DEL1=0, DEL2, DEL3, DEL4, ALL1, ALL2
 };
 
-//ID: type of interaction, POINT: class Point, DIM: dimension, ORDER: graph order 
-template <InterTypeID ID,class POINT,int DIM=2,int ORDER=1>
+enum TermMode {INS=0,SUPPR};
+
+//STRUCT: class of the structure (ex: Delaunay2) , ELEMENT: current element (ex: Point_2)
+//ID: type of interaction, DIM: dimension, ORDER: structure order if needed (ex: ORDER=2 for Delaunay) 
+template <InterTypeID ID,class STRUCT, class ELEMENT, int DIM=2, int ORDER=1>
 class TermType { 
 
 	public:
     TermType() {
     	Environment envir=Environment::global_env().new_child(true);
     }
+
+    void set_struct(STRUCT struct_) {structure=struct_;}
+
+    STRUCT get_struct() {return structure;}
 
     void set_exprs(List exprs_) { exprs=exprs_; }
     List get_exprs() { return exprs; }
@@ -41,18 +47,31 @@ class TermType {
     }
     List get_params() {return params;}
 
-    void set_point_to_insert(NumericVector p);
+    void set_mode(int mode_) {mode=static_cast<TermMode>(mode_);}
 
-    void set_point_to_remove(IntegerVector rank);
+    int get_mode() {return static_cast<int>(mode);}
 
-    NumericVector get_point();
+    void set_current(NumericVector p); //by coordinates
+
+    void set_current_index(int rank); //by index
+
+    NumericVector get_current();
+
+    int get_current_index();
 
     void update_infos();
 
     double eval_exprs();
      
 	private:
-        POINT point;
+        //
+        STRUCT structure;
+        //Term mode (ex: INS for insertion) 
+        TermMode mode;
+        //Current element
+        ELEMENT current;
+        //Index of the current element
+        int currentIndex;
 		//exprs: list of Language
 		List exprs;	
 		//cexprs : named list of Language

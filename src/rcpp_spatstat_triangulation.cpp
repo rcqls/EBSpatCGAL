@@ -1,5 +1,6 @@
 #include <Rcpp.h>
-#include "cgal_spatstat_triangulation.h"
+#include "rcpp_spatstat_triangulation.h"
+
 using namespace Rcpp;
 
 // helpers
