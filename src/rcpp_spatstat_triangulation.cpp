@@ -869,7 +869,7 @@ List Delaunay2_conflicted_and_boundary_edges(Delaunay2* obj, NumericVector xy) {
   std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> vertexSets;
   vertexSets=CGAL_Delaunay2_conflicted_and_boundary_edges(obj,p);
 
-  std::cout << "ICI" << std::endl;
+  //std::cout << "ICI" << std::endl;
 
   Delaunay2_VertexSet_Set boundaryEdges=vertexSets.first,conflictedEdges=vertexSets.second;
   // This is the R export!

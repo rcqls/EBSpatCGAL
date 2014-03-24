@@ -14,7 +14,8 @@ enum TermMode {INS=0,SUPPR};
 
 //STRUCT: class of the structure (ex: Delaunay2) , ELEMENT: current element (ex: Point_2)
 //ID: type of interaction, DIM: dimension, ORDER: structure order if needed (ex: ORDER=2 for Delaunay) 
-template <InterTypeID ID,class STRUCT, class ELEMENT, int DIM=2, int ORDER=1>
+//CONTAINER: class needed to update infos
+template <InterTypeID ID,class STRUCT, class ELEMENT, class CONTAINER,int DIM=2, int ORDER=1>
 class TermType { 
 
 	public:
@@ -32,8 +33,8 @@ class TermType {
     void set_cexprs(List cexprs_) { cexprs=cexprs_; }
     List get_cexprs() { return cexprs; }
 
-    void set_infos(CharacterVector infos_) { infos=infos_; }
-    CharacterVector get_infos() { return infos; }
+    void set_infos(std::vector< std::string > infos_) { infos=infos_; }
+    std::vector< std::string > get_infos() { return infos; }
 
     void set_params(List params_) {
     	params=params_;
@@ -59,9 +60,11 @@ class TermType {
 
     int get_current_index();
 
-    void update_infos();
-
     double eval_exprs();
+
+    double eval_single_expr(Language expr);
+
+    List update_infos(CONTAINER set);
      
 	private:
         //
@@ -80,13 +83,16 @@ class TermType {
 		List cexprs;
 		//infos: Vector of infos
 		// an info is a predefined quantity depending on the TermEnergyType
-		CharacterVector infos;
+		std::vector< std::string > infos;
 		// list of local contributions (before and after) and global contributions
 		List locBefore,locAfter,glob;
 		//params
 		List params;
 		//Environment
 		Environment envir;
+
+        void make_local_lists();
+        void make_global_list();
 };
 
 #endif //RCPP_TERM_EXPRESSION_H
