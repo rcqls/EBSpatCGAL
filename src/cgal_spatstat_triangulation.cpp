@@ -45,7 +45,7 @@ std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> CGAL_Delaunay2_confli
 	std::cout << "Number of conflicted edges=" << 3*i << " (amoung " << faces.size() << " faces)" << std::endl;
 
 	std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> ret;
-	ret = std::make_pair(boundaryEdges,conflictedEdges);
+	ret = std::make_pair(conflictedEdges,boundaryEdges);
 	return ret;
 }  
 
@@ -140,7 +140,7 @@ std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> CGAL_Delaunay3_confli
 	std::cout << "Number of conflicted edges=" << 6*i << " (amoung " << V.size() << " cells)" << std::endl;
 
 	std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> ret;
-	ret = std::make_pair(boundaryEdges,conflictedEdges);
+	ret = std::make_pair(conflictedEdges,boundaryEdges);
 	return ret;
 }  
 

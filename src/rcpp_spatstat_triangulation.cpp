@@ -871,7 +871,7 @@ List Delaunay2_conflicted_and_boundary_edges(Delaunay2* obj, NumericVector xy) {
 
   //std::cout << "ICI" << std::endl;
 
-  Delaunay2_VertexSet_Set boundaryEdges=vertexSets.first,conflictedEdges=vertexSets.second;
+  Delaunay2_VertexSet_Set boundaryEdges=vertexSets.second,conflictedEdges=vertexSets.first;
   // This is the R export!
   NumericMatrix be(boundaryEdges.size(),4);
   NumericMatrix ce(conflictedEdges.size(),4);
@@ -942,7 +942,7 @@ List Delaunay3_conflicted_and_boundary_edges(Delaunay3* obj, NumericVector xy) {
   std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> vertexSets;
   vertexSets=CGAL_Delaunay3_conflicted_and_boundary_edges(obj,p);
 
-  Delaunay3_VertexSet_Set boundaryEdges=vertexSets.first,conflictedEdges=vertexSets.second;
+  Delaunay3_VertexSet_Set boundaryEdges=vertexSets.second,conflictedEdges=vertexSets.first;
   // This is the R export!
   NumericMatrix be(boundaryEdges.size(),6);
   NumericMatrix ce(conflictedEdges.size(),6);

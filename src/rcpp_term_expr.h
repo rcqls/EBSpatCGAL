@@ -19,53 +19,77 @@ template <InterTypeID ID,class STRUCT, class ELEMENT, class CONTAINER,int DIM=2,
 class TermType { 
 
 	public:
-    TermType() {
-    	Environment envir=Environment::global_env().new_child(true);
-    }
+        TermType() {
+        	Environment envir=Environment::global_env().new_child(true);
+        }
 
-    void set_struct(STRUCT struct_) {structure=struct_;}
+        void set_struct(STRUCT struct_) {structure=struct_;}
 
-    STRUCT get_struct() {return structure;}
+        STRUCT get_struct() {return structure;}
 
-    void set_exprs(List exprs_) { exprs=exprs_; }
-    List get_exprs() { return exprs; }
+        void set_exprs(List exprs_) { exprs=exprs_; }
+        List get_exprs() { return exprs; }
 
-    void set_cexprs(List cexprs_) { cexprs=cexprs_; }
-    List get_cexprs() { return cexprs; }
+        void set_cexprs(List cexprs_) { cexprs=cexprs_; }
+        List get_cexprs() { return cexprs; }
 
-    void set_infos(std::vector< std::string > infos_) { infos=infos_; }
-    std::vector< std::string > get_infos() { return infos; }
+        void set_infos(std::vector< std::string > infos_) { infos=infos_; }
+        std::vector< std::string > get_infos() { return infos; }
 
-    void set_params(List params_) {
-    	params=params_;
-    	CharacterVector names=params.names();
-    	int l=params.size();
+        void set_params(List params_) {
+        	params=params_;
+        	import_vars(params);
+        }
 
-	    for(int i = 0; i < l ; i++) {
-			SEXP name = Rf_install(Rf_translateChar(STRING_ELT(names, i)));
-			Rf_defineVar(name, VECTOR_ELT(params, i), envir);
-	    }
-    }
-    List get_params() {return params;}
+        List get_params() {return params;}
 
-    void set_mode(int mode_) {mode=static_cast<TermMode>(mode_);}
+        void set_mode(int mode_) {mode=static_cast<TermMode>(mode_);}
 
-    int get_mode() {return static_cast<int>(mode);}
+        int get_mode() {return static_cast<int>(mode);}
 
-    void set_current(NumericVector p); //by coordinates
+        void set_current(NumericVector p); //by coordinates
 
-    void set_current_index(int rank); //by index
+        void set_current_index(int rank); //by index
 
-    NumericVector get_current();
+        NumericVector get_current();
 
-    int get_current_index();
+        int get_current_index();
 
-    double eval_exprs();
+        double eval_exprs();
 
-    double eval_single_expr(Language expr);
+        double eval_first_expr() {
+            double res=0;
+            for(
+                List::iterator lit=locBefore.begin();
+                lit != locBefore.end();
+                ++lit
+            ) {
+                import_vars(*lit);
+                //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
+                res -= as<double>(Rf_eval( exprs[0],envir));
+            }
 
-    List update_infos(CONTAINER set);
+            for(
+                List::iterator lit=locAfter.begin();
+                lit != locAfter.end();
+                ++lit
+            ) {
+                import_vars(*lit);
+                //DEBUG: std::cout << "after: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
+                res += as<double>(Rf_eval( exprs[0],envir));
+            }
+
+            return mode==INS ? res : -res;
+        }
+
+        List update_infos(CONTAINER set);
+
+        void make_local_lists();
+
+        void make_global_list();
      
+        // list of local contributions (before and after) and global contributions
+        List locBefore,locAfter,glob;
 	private:
         //
         STRUCT structure;
@@ -84,15 +108,21 @@ class TermType {
 		//infos: Vector of infos
 		// an info is a predefined quantity depending on the TermEnergyType
 		std::vector< std::string > infos;
-		// list of local contributions (before and after) and global contributions
-		List locBefore,locAfter,glob;
 		//params
 		List params;
 		//Environment
 		Environment envir;
 
-        void make_local_lists();
-        void make_global_list();
+        void import_vars(List vars_) {
+            CharacterVector names=vars_.names();
+            int l=vars_.size();
+
+            for(int i = 0; i < l ; i++) {
+                SEXP name = Rf_install(Rf_translateChar(STRING_ELT(names, i)));
+                Rf_defineVar(name, VECTOR_ELT(vars_, i), envir);
+            }
+        }
+
 };
 
 #endif //RCPP_TERM_EXPRESSION_H
