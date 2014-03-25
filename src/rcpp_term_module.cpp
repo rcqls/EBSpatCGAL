@@ -3,8 +3,10 @@
 RCPP_MODULE(term_module) {
 	class_<Del2TermType2D>( "Del2TermType2D" )
 	.constructor()
-    .field( "locBefore", &Del2TermType2D::locBefore, "documentation for locBefore" )
-    .field( "locAfter", &Del2TermType2D::locAfter, "documentation for locAfter" )
+    .field( "locBefore", &Del2TermType2D::locBefore, "local list before" )
+    .field( "locAfter", &Del2TermType2D::locAfter, "locol list after" )
+    .field( "exprs.size", &Del2TermType2D::exprs_size, "exprs size" )
+    .field( "cexprs.size", &Del2TermType2D::cexprs_size, "cexprs size" )
     .property( "graph", &Del2TermType2D::get_struct, &Del2TermType2D::set_struct,
     "graph structure" )
     .property( "mode", &Del2TermType2D::get_mode, &Del2TermType2D::set_mode,
@@ -20,12 +22,15 @@ RCPP_MODULE(term_module) {
     .method("set_point",&Del2TermType2D::set_current,"set point to insert")
     .method("get_point",&Del2TermType2D::get_current,"get point")
 	.method("eval_first_expr",&Del2TermType2D::eval_first_expr,"eval first expr")
+    .method("eval_exprs",&Del2TermType2D::eval_exprs,"eval exprs")
 	;
 	
 	class_<Del2TermType3D>( "Del2TermType3D" )
 	.constructor()
     .field( "locBefore", &Del2TermType3D::locBefore, "documentation for locBefore" )
     .field( "locAfter", &Del2TermType3D::locAfter, "documentation for locAfter" )
+    .field( "exprs.size", &Del2TermType3D::exprs_size, "exprs size" )
+    .field( "cexprs.size", &Del2TermType3D::cexprs_size, "cexprs size" )
     .property( "graph", &Del2TermType3D::get_struct, &Del2TermType3D::set_struct,
     "graph structure" )
     .property( "mode", &Del2TermType3D::get_mode, &Del2TermType3D::set_mode,
@@ -41,6 +46,7 @@ RCPP_MODULE(term_module) {
     .method("set_point",&Del2TermType3D::set_current,"set point to insert")
     .method("get_point",&Del2TermType3D::get_current,"get point")
     .method("eval_first_expr",&Del2TermType3D::eval_first_expr,"eval first expr")
+    .method("eval_exprs",&Del2TermType3D::eval_exprs,"eval exprs")
 	//.method("eval_exprs",&Del2EnergyType2D::eval_exprs_for,"eval exprs for a specified point")
 	;
 }

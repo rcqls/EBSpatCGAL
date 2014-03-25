@@ -55,8 +55,6 @@ class TermType {
 
         int get_current_index();
 
-        double eval_exprs();
-
         double eval_first_expr() {
             double res=0;
             for(
@@ -82,6 +80,88 @@ class TermType {
             return mode==INS ? res : -res;
         }
 
+        List eval_exprs() {
+
+            std::list< std::vector<double> > res;
+            int i,ii;
+            for(i=0;i<exprs.size();i++) {
+                std::vector<double> tmp(exprs_size[i],0);
+                res.push_back(tmp);
+            }
+            for(
+                List::iterator lit=locBefore.begin();
+                lit != locBefore.end();
+                ++lit
+            ) {
+                import_vars(*lit);
+                //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
+                i=0;
+                for(
+                    std::list< std::vector<double> >::iterator rit=res.begin();
+                    rit != res.end();
+                    ++rit,++i
+                ) {
+                    std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
+                    for(ii=0;ii<exprs_size[i];ii++) (*rit)[ii] -=  tmp[ii];
+                }
+
+            }
+
+            for(
+                List::iterator lit=locAfter.begin();
+                lit != locAfter.end();
+                ++lit
+            ) {
+                import_vars(*lit);
+                //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
+                i=0;
+                for(
+                    std::list< std::vector<double> >::iterator rit=res.begin();
+                    rit != res.end();
+                    ++rit,++i
+                ) {
+                    std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
+                    for(ii=0;ii<exprs_size[i];ii++) (*rit)[ii] += tmp[ii];
+                }
+
+            }
+
+            //return mode==INS ? res : -res;
+            List ret=wrap(res);
+            ret.attr("names") = exprs.attr("names");
+            return ret;
+        }
+
+        // NumericVector eval_exprs() {
+        //     NumericVector res(exprs.size());
+        //     int i;
+        
+        //     for(
+        //         List::iterator lit=locBefore.begin();
+        //         lit != locBefore.end();
+        //         ++lit
+        //     ) {
+        //         import_vars(*lit);
+        //         //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
+        //         for(i=0;i<exprs.size();i++)
+        //             res[i] = res[i] - as<double>(Rf_eval( exprs[i],envir));
+        //     }
+
+        //     for(
+        //         List::iterator lit=locAfter.begin();
+        //         lit != locAfter.end();
+        //         ++lit
+        //     ) {
+        //         import_vars(*lit);
+        //         //DEBUG: std::cout << "after: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
+        //         for(i=0;i<exprs.size();i++) 
+        //             res[i] = res[i] + as<double>(Rf_eval( exprs[i],envir));
+        //     }
+
+        //     //return mode==INS ? res : -res;
+        //     return res;
+        // }
+
         List update_infos(CONTAINER set);
 
         void make_local_lists();
@@ -90,7 +170,9 @@ class TermType {
      
         // list of local contributions (before and after) and global contributions
         List locBefore,locAfter,glob;
-	private:
+	
+        IntegerVector exprs_size,cexprs_size;
+    private:
         //
         STRUCT structure;
         //Term mode (ex: INS for insertion) 
