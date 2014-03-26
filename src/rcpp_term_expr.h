@@ -24,9 +24,9 @@ class TermType {
             mode_as_before=true; //Rmk: this is false only for simulation tricks
         }
 
-        void set_struct(STRUCT struct_) {structure=struct_;}
+        void set_struct(STRUCT* struct_) {structure=struct_;}
 
-        STRUCT get_struct() {return structure;}
+        STRUCT* get_struct() {return structure;}
 
         void set_exprs(List exprs_) { exprs=exprs_; }
         List get_exprs() { return exprs; }
@@ -181,7 +181,7 @@ class TermType {
         IntegerVector exprs_size,cexprs_size;
     private:
         //
-        STRUCT structure;
+        STRUCT* structure;
         //Term mode (ex: INSERTION for insertion) 
         TermMode mode;
         //Current element

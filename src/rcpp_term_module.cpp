@@ -8,8 +8,7 @@ RCPP_MODULE(term_module) {
     .field( "exprs.size", &Del2TermType2D::exprs_size, "exprs size" )
     .field( "cexprs.size", &Del2TermType2D::cexprs_size, "cexprs size" )
     //.field( "mode.as.before", &Del2TermType2D::mode_as_before, "mode as before" )
-    .property( "graph", &Del2TermType2D::get_struct, &Del2TermType2D::set_struct,
-    "graph structure" )
+    //.property( "graph", &Del2TermType2D::get_struct, &Del2TermType2D::set_struct,"graph structure" )
     .property( "mode", &Del2TermType2D::get_mode, &Del2TermType2D::set_mode,
     "mode " )
 	.property( "exprs", &Del2TermType2D::get_exprs, &Del2TermType2D::set_exprs,
@@ -20,6 +19,8 @@ RCPP_MODULE(term_module) {
     "infos list" )
     .property( "params", &Del2TermType2D::get_params, &Del2TermType2D::set_params,
     "params list" )
+    .method("set_graph",&Del2TermType2D::set_struct,"set graph")
+    .method("get_graph",&Del2TermType2D::get_struct,"get graph")
     .method("set_point",&Del2TermType2D::set_current<INSERTION>,"set point to insert")
     .method("get_point",&Del2TermType2D::get_current,"get point")
     .method("set_index",&Del2TermType2D::set_current<DELETION>,"set (index) point to delete")
@@ -34,8 +35,7 @@ RCPP_MODULE(term_module) {
     .field( "exprs.size", &Del2TermType3D::exprs_size, "exprs size" )
     .field( "cexprs.size", &Del2TermType3D::cexprs_size, "cexprs size" )
     //.field( "mode.as.before", &Del2TermType3D::mode_as_before, "mode as before" )
-    .property( "graph", &Del2TermType3D::get_struct, &Del2TermType3D::set_struct,
-    "graph structure" )
+    //.property( "graph", &Del2TermType3D::get_struct, &Del2TermType3D::set_struct,"graph structure" )
     .property( "mode", &Del2TermType3D::get_mode, &Del2TermType3D::set_mode,
     "mode " )
 	.property( "exprs", &Del2TermType3D::get_exprs, &Del2TermType3D::set_exprs,
@@ -46,11 +46,12 @@ RCPP_MODULE(term_module) {
     "infos list" )
     .property( "params", &Del2TermType3D::get_params, &Del2TermType3D::set_params,
     "params list" )
+    .method("set_graph",&Del2TermType3D::set_struct,"set graph")
+    .method("get_graph",&Del2TermType3D::get_struct,"get graph")
     .method("set_point",&Del2TermType3D::set_current<INSERTION>,"set point to insert")
     .method("get_point",&Del2TermType3D::get_current,"get point")
     .method("set_index",&Del2TermType3D::set_current<DELETION>,"set (index) point to delete")
     .method("eval_first_expr",&Del2TermType3D::eval_first_expr,"eval first expr")
     .method("eval_exprs",&Del2TermType3D::eval_exprs,"eval exprs")
-	//.method("eval_exprs",&Del2EnergyType2D::eval_exprs_for,"eval exprs for a specified point")
 	;
 }

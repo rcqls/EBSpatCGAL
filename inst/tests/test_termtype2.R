@@ -8,7 +8,7 @@ del2 <- Delaunay()
 
 insert(del2,matrix(runif(200),ncol=2))
 
-del2Term$graph <- del2$graph
+del2Term$set_graph(del2$graph)
 
 del2Term$infos <- c("x","l","l2")
 
@@ -25,8 +25,10 @@ print(del2Term$eval_first_expr())
 
 print(del2Term$eval_exprs())
 
+insert(del2,matrix(c(.5,.5),ncol=2))
 
+del2Term$set_index( 101 )
 
-# new(Del2TermType3D) -> del3Term
+print(del2Term$eval_first_expr())
 
-# del3Term$exprs <- list(substitute(2*l))
+print(del2Term$eval_exprs())

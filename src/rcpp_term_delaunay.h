@@ -32,14 +32,14 @@ List Del2TermType2D::update_infos(Delaunay2_VertexSet_Sets eSets) {
 			if(info=="x") {
 				NumericVector x0(2);
 				NumericVector x1(2);
-				if(structure.is_infinite(v0)) {
+				if(structure->is_infinite(v0)) {
 			      x0[0]=NA_REAL;
 			      x0[1]=NA_REAL;
 			    } else {
 			      x0[0]=p0.x();
 			      x0[1]=p0.y();
 			    }
-			    if(structure.is_infinite(v1)) {
+			    if(structure->is_infinite(v1)) {
 			      x1[0]=NA_REAL;
 			      x1[1]=NA_REAL;
 			    } else {
@@ -48,13 +48,13 @@ List Del2TermType2D::update_infos(Delaunay2_VertexSet_Sets eSets) {
 			    }
 			    res["x"]=List::create(x0,x1);
 			} else if (info=="l2") {
-				if(structure.is_infinite(v0) || structure.is_infinite(v1))
+				if(structure->is_infinite(v0) || structure->is_infinite(v1))
 					res["l2"]=NA_REAL; 
 				else
 					res["l2"]=pow(p0.x()-p1.x(),2) + pow(p0.y()-p1.y(),2);
 
 			} else if (info=="l") {
-				if(structure.is_infinite(v0) || structure.is_infinite(v1))
+				if(structure->is_infinite(v0) || structure->is_infinite(v1))
 					res["l"]=NA_REAL; 
 				else
 					res["l"]=sqrt(pow(p0.x()-p1.x(),2) + pow(p0.y()-p1.y(),2));
@@ -72,38 +72,38 @@ template <> template <>
 void Del2TermType2D::make_local_lists<INSERTION>() {
 	//before INSERTION
 	std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> conflictedEdges;
-  	conflictedEdges=CGAL_Delaunay2_conflicted_and_boundary_edges(&structure,current);
+  	conflictedEdges=CGAL_Delaunay2_conflicted_and_boundary_edges(structure,current);
   	//prepare the locBefore list
   	locBefore=update_infos(conflictedEdges);
 
   	//INSERTION
-  	Del2D_Vertex_handle current_handle=structure.insert(current);
+  	Del2D_Vertex_handle current_handle=structure->insert(current);
   	
   	//after INSERTION
   	Delaunay2_VertexSet_Set incidentEdges;
-  	incidentEdges=CGAL_Delaunay2_incident_edges(&structure,current_handle);
+  	incidentEdges=CGAL_Delaunay2_incident_edges(structure,current_handle);
   	//prepare the locAfter list
   	locAfter=update_infos(std::make_pair(incidentEdges,conflictedEdges.second));
   	//as before
-  	if(mode_as_before) structure.remove(current_handle);
+  	if(mode_as_before) structure->remove(current_handle);
 }
 
 template <> template <>
 void Del2TermType2D::make_local_lists<DELETION>() {
 	//before DELETION
   	Delaunay2_VertexSet_Set incidentEdges;
-  	incidentEdges=CGAL_Delaunay2_incident_edges(&structure,current_handle);
+  	incidentEdges=CGAL_Delaunay2_incident_edges(structure,current_handle);
   	//prepare the locAfter list
   	locAfter=update_infos(std::make_pair(incidentEdges,incidentEdges)); //TO DEBUG: normally second argument has to be conflictedEdges.second
   	//DELETION
-  	structure.remove(current_handle);
+  	structure->remove(current_handle);
 	//after DELETION
 	std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> conflictedEdges;
-  	conflictedEdges=CGAL_Delaunay2_conflicted_and_boundary_edges(&structure,current);
+  	conflictedEdges=CGAL_Delaunay2_conflicted_and_boundary_edges(structure,current);
   	//prepare the locBefore list
   	locBefore=update_infos(conflictedEdges);
   	//As before!
-  	if(mode_as_before) structure.insert(current);
+  	if(mode_as_before) structure->insert(current);
   	
 }
 
@@ -120,10 +120,10 @@ void Del2TermType2D::set_current<INSERTION>(NumericVector p) {
 template <> template<>
 void Del2TermType2D::set_current<DELETION>(NumericVector p) {
 	double i=p[0];
-	current_index=i;
-	if(current_index <0 || current_index >= structure.number_of_vertices()) return;
+	current_index=i-1;
+	if(current_index <0 || current_index >= structure->number_of_vertices()) return;
 	std::cout << "current_index=" << current_index <<std::endl;
-	current_handle=Triangulation_vertex_at_pos<Delaunay2>(&structure,current_index);
+	current_handle=Triangulation_vertex_at_pos<Delaunay2>(structure,current_index);
 	
 	current=current_handle->point();
 	//create the lists of edges
@@ -159,35 +159,35 @@ List Del2TermType3D::update_infos(Delaunay3_VertexSet_Sets eSets) {
 			if(info=="x") {
 				NumericVector x0(3);
 				NumericVector x1(3);
-				if(structure.is_infinite(v0)) {
-			      x0[0]=NA_REAL;
-			      x0[1]=NA_REAL;
-			      x0[2]=NA_REAL;
-			    } else {
+				// if(structure->is_infinite(v0)) {
+			 //      x0[0]=NA_REAL;
+			 //      x0[1]=NA_REAL;
+			 //      x0[2]=NA_REAL;
+			 //    } else {
 			      x0[0]=p0.x();
 			      x0[1]=p0.y();
 			      x0[2]=p0.z();
-			    }
-			    if(structure.is_infinite(v1)) {
-			      x1[0]=NA_REAL;
-			      x1[1]=NA_REAL;
-			      x1[2]=NA_REAL;
-			    } else {
+			    // }
+			    // if(structure->is_infinite(v1)) {
+			    //   x1[0]=NA_REAL;
+			    //   x1[1]=NA_REAL;
+			    //   x1[2]=NA_REAL;
+			    // } else {
 			      x1[0]=p1.x();
 			      x1[1]=p1.y();
 			      x1[2]=p1.z();
-			    }
+			    // }
 			    res["x"]=List::create(x0,x1);
 			} else if (info=="l2") {
-				if(structure.is_infinite(v0) || structure.is_infinite(v1))
-					res["l2"]=NA_REAL; 
-				else
+				//if(structure->is_infinite(v0) || structure->is_infinite(v1))
+				//	res["l2"]=NA_REAL; 
+				//else
 					res["l2"]=pow(p0.x()-p1.x(),2) + pow(p0.y()-p1.y(),2) + pow(p0.z()-p1.z(),2);
 
 			} else if (info=="l") {
-				if(structure.is_infinite(v0) || structure.is_infinite(v1))
-					res["l"]=NA_REAL; 
-				else
+				// if(structure->is_infinite(v0) || structure->is_infinite(v1))
+				// 	res["l"]=NA_REAL; 
+				// else
 					res["l"]=sqrt(pow(p0.x()-p1.x(),2) + pow(p0.y()-p1.y(),2) + pow(p0.z()-p1.z(),2));
 
 			} 
@@ -203,40 +203,40 @@ template <> template <>
 void Del2TermType3D::make_local_lists<INSERTION>() {
 	//before INSERTION
 	std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> conflictedEdges;
-  	conflictedEdges=CGAL_Delaunay3_conflicted_and_boundary_edges(&structure,current);
+  	conflictedEdges=CGAL_Delaunay3_conflicted_and_boundary_edges(structure,current);
   	//prepare the locBefore list
   	locBefore=update_infos(conflictedEdges);
 
   	//INSERTION
-  	Del3D_Vertex_handle h=structure.insert(current);
+  	Del3D_Vertex_handle h=structure->insert(current);
 
   	//after INSERTION
   	Delaunay3_VertexSet_Set incidentEdges;
-  	incidentEdges=CGAL_Delaunay3_incident_edges(&structure,h);
+  	incidentEdges=CGAL_Delaunay3_incident_edges(structure,h);
   	//prepare the locAfter list
   	locAfter=update_infos(std::make_pair(incidentEdges,conflictedEdges.second));
   	
-  	if(mode_as_before) structure.remove(h);
+  	if(mode_as_before) structure->remove(h);
 }
 
 template <> template <>
 void Del2TermType3D::make_local_lists<DELETION>() {
 	//before DELETION
   	Delaunay3_VertexSet_Set incidentEdges;
-  	incidentEdges=CGAL_Delaunay3_incident_edges(&structure,current_handle);
+  	incidentEdges=CGAL_Delaunay3_incident_edges(structure,current_handle);
   	//prepare the locAfter list
-  	locAfter=update_infos(std::make_pair(incidentEdges,incidentEdges));
+  	locBefore=update_infos(std::make_pair(incidentEdges,incidentEdges));
 
   	//DELETION
-  	structure.remove(current_handle);
+  	structure->remove(current_handle);
 
 	//after DELETION
 	std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> conflictedEdges;
-  	conflictedEdges=CGAL_Delaunay3_conflicted_and_boundary_edges(&structure,current);
+  	conflictedEdges=CGAL_Delaunay3_conflicted_and_boundary_edges(structure,current);
   	//prepare the locBefore list
-  	locBefore=update_infos(conflictedEdges);
+  	locAfter=update_infos(conflictedEdges);
   	//As before!
-  	if(mode_as_before) structure.insert(current);
+  	if(mode_as_before) structure->insert(current);
   	
 }
 
@@ -253,10 +253,10 @@ void Del2TermType3D::set_current<INSERTION>(NumericVector p) {
 template <> template<>
 void Del2TermType3D::set_current<DELETION>(NumericVector p) {
 	double i=p[0];
-	current_index=i;
-	if(current_index <0 || current_index >= structure.number_of_vertices()) return;
+	current_index=i-1;
+	if(current_index <0 || current_index >= structure->number_of_vertices()) return;
 	std::cout << "current_index=" << current_index <<std::endl;
-	current_handle=Triangulation_vertex_at_pos<Delaunay3>(&structure,current_index);
+	current_handle=Triangulation_vertex_at_pos<Delaunay3>(structure,current_index);
 	current=current_handle->point();
 	//create the lists of edges
 	make_local_lists<DELETION>();
