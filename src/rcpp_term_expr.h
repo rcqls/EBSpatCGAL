@@ -1,26 +1,27 @@
 #ifndef RCPP_TERM_EXPRESSION_H
 #define RCPP_TERM_EXPRESSION_H
 
-#include "rcpp_spatstat_triangulation.h"
 using namespace Rcpp ;
 
 //Register interaction type here!!!
 enum InterTypeID {
     //Point Process
     DEL1=0, DEL2, DEL3, DEL4, ALL1, ALL2
+    //Tesselation here
 };
 
-enum TermMode {INS=0,SUPPR};
+enum TermMode {INSERTION=0,DELETION};
 
-//STRUCT: class of the structure (ex: Delaunay2) , ELEMENT: current element (ex: Point_2)
+//STRUCT: class of the structure (ex: Delaunay2) , ELEMENT: current element (ex: Point_2), ELEMENT_HANDLE: (ex: Vertex_handle)
 //ID: type of interaction, DIM: dimension, ORDER: structure order if needed (ex: ORDER=2 for Delaunay) 
 //CONTAINER: class needed to update infos
-template <InterTypeID ID,class STRUCT, class ELEMENT, class CONTAINER,int DIM=2, int ORDER=1>
+template <InterTypeID ID, class STRUCT, class ELEMENT, class ELEMENT_HANDLE, class CONTAINER, int DIM=2, int ORDER=1>
 class TermType { 
 
 	public:
         TermType() {
         	Environment envir=Environment::global_env().new_child(true);
+            mode_as_before=true; //Rmk: this is false only for simulation tricks
         }
 
         void set_struct(STRUCT struct_) {structure=struct_;}
@@ -47,6 +48,7 @@ class TermType {
 
         int get_mode() {return static_cast<int>(mode);}
 
+        template <TermMode MODE>
         void set_current(NumericVector p); //by coordinates
 
         void set_current_index(int rank); //by index
@@ -77,7 +79,7 @@ class TermType {
                 res += as<double>(Rf_eval( exprs[0],envir));
             }
 
-            return mode==INS ? res : -res;
+            return mode==INSERTION ? res : -res;
         }
 
         List eval_exprs() {
@@ -126,7 +128,7 @@ class TermType {
 
             }
 
-            //return mode==INS ? res : -res;
+            //return mode==INSERTION ? res : -res;
             List ret=wrap(res);
             ret.attr("names") = exprs.attr("names");
             return ret;
@@ -158,12 +160,17 @@ class TermType {
         //             res[i] = res[i] + as<double>(Rf_eval( exprs[i],envir));
         //     }
 
-        //     //return mode==INS ? res : -res;
+        //     //return mode==INSERTION ? res : -res;
         //     return res;
         // }
 
         List update_infos(CONTAINER set);
 
+
+        //used to
+        bool mode_as_before;
+
+        template<TermMode MODE>
         void make_local_lists();
 
         void make_global_list();
@@ -175,12 +182,12 @@ class TermType {
     private:
         //
         STRUCT structure;
-        //Term mode (ex: INS for insertion) 
+        //Term mode (ex: INSERTION for insertion) 
         TermMode mode;
         //Current element
         ELEMENT current;
-        //Index of the current element
-        int currentIndex;
+        ELEMENT_HANDLE current_handle;//Handle of the current element
+        int current_index; //Index of the current element
 		//exprs: list of Language
 		List exprs;	
 		//cexprs : named list of Language

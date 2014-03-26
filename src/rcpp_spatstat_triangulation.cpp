@@ -981,8 +981,7 @@ RCPP_MODULE(cgal_module) {
 	.method("dual_edges",&Triangulation2_dual_edges<Delaunay2>,"dual edges coordinates")
 	.method("conflicted_faces",&Delaunay2_conflicted_faces,"conflicted faces")
 	.method("conflicted_faces_with_circles",&Delaunay2_conflicted_faces_with_circles,"conflicted faces with circles")
-  //OBSOLETE SOON
-  .method("conflicted_edges_and_boundary_edges",&Delaunay2_conflicted_edges_and_boundary_edges,"conflicted and boundary edges")
+  /*OBSOLETE SOON*/.method("conflicted_edges_and_boundary_edges",&Delaunay2_conflicted_edges_and_boundary_edges,"conflicted and boundary edges")
 	.method("conflicted_and_boundary_edges",&Delaunay2_conflicted_and_boundary_edges,"conflicted and boundary edges")
 	.method("incident_vertices",&Triangulation2_incident_vertices<Delaunay2>,"incident edges")
 	.method("incident_edges",&Triangulation2_incident_edges<Delaunay2>,"incident edges")
@@ -1010,8 +1009,7 @@ RCPP_MODULE(cgal_module) {
 	.method("dual_vertices",&Triangulation3_dual_vertices<Delaunay3>,"dual vertices coordinates")
 	.method("dual_edges",&Triangulation3_dual_edges<Delaunay3>,"dual edges coordinates")
 	.method("conflicted_cells",&Delaunay3_conflicted_cells,"conflicted cells")
-  //OBSOLETE SOON
-	.method("conflicted_cells_and_boundary_facets",&Delaunay3_conflicted_cells_and_boundary_facets,"conflicted cells and boundary facets")
+  /*OBSOLETE SOON*/.method("conflicted_cells_and_boundary_facets",&Delaunay3_conflicted_cells_and_boundary_facets,"conflicted cells and boundary facets")
 	.method("conflicted_and_boundary_edges",&Delaunay3_conflicted_and_boundary_edges,"conflicted and boundary edges")
 	.method("incident_edges",&Delaunay3_incident_edges,"incident edges")
 	//.method("show_vertices",&Delaunay_show_vertices,"vertices coordinates")

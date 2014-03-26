@@ -1,10 +1,14 @@
+#include "rcpp_spatstat_triangulation.h"
 #include "rcpp_term_expr.h"
 
 typedef std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> Delaunay2_VertexSet_Sets;
 typedef std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> Delaunay3_VertexSet_Sets;
 
-typedef TermType<DEL2,Delaunay2,Point_2,Delaunay2_VertexSet_Sets,2> Del2TermType2D;
-typedef TermType<DEL2,Delaunay3,Point_3,Delaunay3_VertexSet_Sets,3> Del2TermType3D;
+typedef Delaunay2::Vertex_handle Del2D_Vertex_handle;
+typedef Delaunay3::Vertex_handle Del3D_Vertex_handle;
+
+typedef TermType<DEL2,Delaunay2,Point_2,Del2D_Vertex_handle,Delaunay2_VertexSet_Sets,2> Del2TermType2D;
+typedef TermType<DEL2,Delaunay3,Point_3,Del3D_Vertex_handle,Delaunay3_VertexSet_Sets,3> Del2TermType3D;
 
 //specialisation methods for Del2TermType2D
 template<>
@@ -16,7 +20,7 @@ List Del2TermType2D::update_infos(Delaunay2_VertexSet_Sets eSets) {
 		eit != eSets.first.end();
 		++eit,++i
 	) {
-		Delaunay2::Vertex_handle v0=*((*eit).begin()),v1=*((*eit).rbegin());
+		Del2D_Vertex_handle v0=*((*eit).begin()),v1=*((*eit).rbegin());
 		Point_2 p0=v0->point(),p1=v1->point();
 		List res;
 		for(
@@ -64,37 +68,66 @@ List Del2TermType2D::update_infos(Delaunay2_VertexSet_Sets eSets) {
 }
 
 
-template <>
-void Del2TermType2D::make_local_lists() {
-	//before insertion
+template <> template <>
+void Del2TermType2D::make_local_lists<INSERTION>() {
+	//before INSERTION
 	std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> conflictedEdges;
   	conflictedEdges=CGAL_Delaunay2_conflicted_and_boundary_edges(&structure,current);
   	//prepare the locBefore list
   	locBefore=update_infos(conflictedEdges);
 
-  	//after insertion
-  	Delaunay2::Vertex_handle h=structure.insert(current);
+  	//INSERTION
+  	Del2D_Vertex_handle current_handle=structure.insert(current);
+  	
+  	//after INSERTION
   	Delaunay2_VertexSet_Set incidentEdges;
-  	incidentEdges=CGAL_Delaunay2_incident_edges(&structure,h);
+  	incidentEdges=CGAL_Delaunay2_incident_edges(&structure,current_handle);
   	//prepare the locAfter list
   	locAfter=update_infos(std::make_pair(incidentEdges,conflictedEdges.second));
-  	structure.remove(h);
+  	//as before
+  	if(mode_as_before) structure.remove(current_handle);
 }
 
+template <> template <>
+void Del2TermType2D::make_local_lists<DELETION>() {
+	//before DELETION
+  	Delaunay2_VertexSet_Set incidentEdges;
+  	incidentEdges=CGAL_Delaunay2_incident_edges(&structure,current_handle);
+  	//prepare the locAfter list
+  	locAfter=update_infos(std::make_pair(incidentEdges,incidentEdges)); //TO DEBUG: normally second argument has to be conflictedEdges.second
+  	//DELETION
+  	structure.remove(current_handle);
+	//after DELETION
+	std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> conflictedEdges;
+  	conflictedEdges=CGAL_Delaunay2_conflicted_and_boundary_edges(&structure,current);
+  	//prepare the locBefore list
+  	locBefore=update_infos(conflictedEdges);
+  	//As before!
+  	if(mode_as_before) structure.insert(current);
+  	
+}
 
-template <> 
-void Del2TermType2D::set_current(NumericVector p) {
+template <> template<>
+void Del2TermType2D::set_current<INSERTION>(NumericVector p) {
 	//check that structure is set!
 	//TODO
 	//set the current point
 	current=Point_2(p[0],p[1]);
 	//create the lists of edges
-	make_local_lists();
+	make_local_lists<INSERTION>();
 }
 
-template <> 
-void Del2TermType2D::set_current_index(int rank) {
+template <> template<>
+void Del2TermType2D::set_current<DELETION>(NumericVector p) {
+	double i=p[0];
+	current_index=i;
+	if(current_index <0 || current_index >= structure.number_of_vertices()) return;
+	std::cout << "current_index=" << current_index <<std::endl;
+	current_handle=Triangulation_vertex_at_pos<Delaunay2>(&structure,current_index);
 	
+	current=current_handle->point();
+	//create the lists of edges
+	make_local_lists<DELETION>();
 }
 
 template <> 
@@ -114,7 +147,7 @@ List Del2TermType3D::update_infos(Delaunay3_VertexSet_Sets eSets) {
 		eit != eSets.first.end();
 		++eit,++i
 	) {
-		Delaunay3::Vertex_handle v0=*((*eit).begin()),v1=*((*eit).rbegin());
+		Del3D_Vertex_handle v0=*((*eit).begin()),v1=*((*eit).rbegin());
 		Point_3 p0=v0->point(),p1=v1->point();
 		List res;
 		for(
@@ -166,32 +199,67 @@ List Del2TermType3D::update_infos(Delaunay3_VertexSet_Sets eSets) {
 }
 
 
-template <>
-void Del2TermType3D::make_local_lists() {
-	//before insertion
+template <> template <>
+void Del2TermType3D::make_local_lists<INSERTION>() {
+	//before INSERTION
 	std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> conflictedEdges;
   	conflictedEdges=CGAL_Delaunay3_conflicted_and_boundary_edges(&structure,current);
   	//prepare the locBefore list
   	locBefore=update_infos(conflictedEdges);
 
-  	//after insertion
-  	Delaunay3::Vertex_handle h=structure.insert(current);
+  	//INSERTION
+  	Del3D_Vertex_handle h=structure.insert(current);
+
+  	//after INSERTION
   	Delaunay3_VertexSet_Set incidentEdges;
   	incidentEdges=CGAL_Delaunay3_incident_edges(&structure,h);
   	//prepare the locAfter list
   	locAfter=update_infos(std::make_pair(incidentEdges,conflictedEdges.second));
-  	structure.remove(h);
+  	
+  	if(mode_as_before) structure.remove(h);
 }
 
+template <> template <>
+void Del2TermType3D::make_local_lists<DELETION>() {
+	//before DELETION
+  	Delaunay3_VertexSet_Set incidentEdges;
+  	incidentEdges=CGAL_Delaunay3_incident_edges(&structure,current_handle);
+  	//prepare the locAfter list
+  	locAfter=update_infos(std::make_pair(incidentEdges,incidentEdges));
 
-template <> 
-void Del2TermType3D::set_current(NumericVector p) {
+  	//DELETION
+  	structure.remove(current_handle);
+
+	//after DELETION
+	std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> conflictedEdges;
+  	conflictedEdges=CGAL_Delaunay3_conflicted_and_boundary_edges(&structure,current);
+  	//prepare the locBefore list
+  	locBefore=update_infos(conflictedEdges);
+  	//As before!
+  	if(mode_as_before) structure.insert(current);
+  	
+}
+
+template <> template<>
+void Del2TermType3D::set_current<INSERTION>(NumericVector p) {
 	//check that structure is set!
 	//TODO
 	//set the current point
 	current=Point_3(p[0],p[1],p[2]);
 	//create the lists of edges
-	make_local_lists();
+	make_local_lists<INSERTION>();
+}
+
+template <> template<>
+void Del2TermType3D::set_current<DELETION>(NumericVector p) {
+	double i=p[0];
+	current_index=i;
+	if(current_index <0 || current_index >= structure.number_of_vertices()) return;
+	std::cout << "current_index=" << current_index <<std::endl;
+	current_handle=Triangulation_vertex_at_pos<Delaunay3>(&structure,current_index);
+	current=current_handle->point();
+	//create the lists of edges
+	make_local_lists<DELETION>();
 }
 
 template <> 

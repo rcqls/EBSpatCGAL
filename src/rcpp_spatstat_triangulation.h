@@ -23,5 +23,16 @@ RCPP_EXPOSED_WRAP(Regular2)
 RCPP_EXPOSED_AS(Regular3)
 RCPP_EXPOSED_WRAP(Regular3)
 
+template <typename TRIANGULATION>
+typename TRIANGULATION::Vertex_handle Triangulation_vertex_at_pos( TRIANGULATION* obj, int index) {
+
+	//std::cout << "pos of point to remove: " << n << std::endl;
+
+	typename TRIANGULATION::Finite_vertices_iterator vit=obj->finite_vertices_begin();
+	for(int i=0;i<index;++i) ++vit;
+	return vit;
+	 
+}
+
 
 #endif
