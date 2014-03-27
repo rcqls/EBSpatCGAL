@@ -45,9 +45,16 @@ typedef Gt3::Weighted_point_3 										Weighted_point_3;
 //2D
 typedef std::set<Delaunay2::Vertex_handle> Delaunay2_VertexSet; //edge or face or cell  vertices
 typedef std::set<Delaunay2_VertexSet> Delaunay2_VertexSet_Set;
+
+//typedef std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> Delaunay2_VertexSet_Set_Pair;
+typedef Delaunay2::Vertex_handle Del2D_Vertex_handle;
+
 //3D
 typedef std::set<Delaunay3::Vertex_handle> Delaunay3_VertexSet; //edge or face or cell  vertices
 typedef std::set<Delaunay3_VertexSet> Delaunay3_VertexSet_Set;
+
+//typedef std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> Delaunay3_VertexSet_Set_Pair;
+typedef Delaunay3::Vertex_handle Del3D_Vertex_handle;
 
 std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> CGAL_Delaunay2_conflicted_and_boundary_edges(Delaunay2* obj, Point_2 p);
 Delaunay2_VertexSet_Set CGAL_Delaunay2_incident_edges(Delaunay2* obj, Delaunay2::Vertex_handle v);

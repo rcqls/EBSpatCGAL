@@ -9,4 +9,4 @@ Description: More about what it does (maybe more than one line)
 License: What Licence is it under ?
 Depends: Rcpp (>= 0.9.10), CqlsRObj (>= 0.1.0)
 LinkingTo: Rcpp
-RcppModules: cgal_module,tools_module,term_module
+RcppModules: cgal_module,tools_module,spatstat_module

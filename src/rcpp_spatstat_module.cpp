@@ -1,6 +1,8 @@
 #include "rcpp_term_delaunay.h"
+#include "rcpp_sim_delaunay.h"
 
-RCPP_MODULE(term_module) {
+
+RCPP_MODULE(spatstat_module) {
 	class_<Del2TermType2D>( "Del2TermType2D" )
 	.constructor()
     .field( "locBefore", &Del2TermType2D::locBefore, "local list before" )
@@ -54,4 +56,24 @@ RCPP_MODULE(term_module) {
     .method("eval_first_expr",&Del2TermType3D::eval_first_expr,"eval first expr")
     .method("eval_exprs",&Del2TermType3D::eval_exprs,"eval exprs")
 	;
+
+    class_<Interaction>("Interaction")
+    .constructor<List>()
+    .field( "single", &Interaction::single, "single parameter" )
+    //.method("set_before_mode",&Interaction::set_before_mode,"lset before mode")
+    .method("set_point",&Interaction::set_point,"set point")
+    .method("local_energy",&Interaction::local_energy,"local energy")
+    ;
+
+    class_<Del2SimGibbs2D>( "Del2SimGibbs2D" )
+    .constructor<List>()
+    .field( "nb_runs", &Del2SimGibbs2D::nb_runs, "nb_runs" )
+    .method("run",&Del2SimGibbs2D::run,"run")
+    ;
+
+    class_<Del2SimGibbs3D>( "Del2SimGibbs3D" )
+    .constructor<List>()
+    .field( "nb_runs", &Del2SimGibbs3D::nb_runs, "nb_runs" )
+    .method("run",&Del2SimGibbs3D::run,"run")
+    ;
 }
