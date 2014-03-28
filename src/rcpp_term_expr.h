@@ -16,43 +16,56 @@ enum TermMode {INSERTION=0,DELETION};
 class TermBase {
 public:
     TermBase() {
+        //Modifier when creating local lists
+        auto_make_list=true; //Rmk, this has to be false for Interaction
     }
 
     virtual double eval_first_expr(void) = 0;
 
-    virtual void set_point(NumericVector p) = 0;
+    virtual void set_current(NumericVector p) = 0;
 
-    virtual void set_before_mode(int mode) = 0;
+    //boolean to know if make_local_lists is automatically genertaed when current is set.
+    bool auto_make_list;
+
 
 };
 
-RCPP_EXPOSED_AS(TermBase)
-RCPP_EXPOSED_WRAP(TermBase)
+RCPP_EXPOSED_AS(TermBase);
+RCPP_EXPOSED_WRAP(TermBase);
 
-class Interaction {//equivalent of TermList
+class TermList {//List of TermBase (heterogeneous terms) 
 public:
-    Interaction(List term_list_) {
-        std::list<TermBase*> tl(term_list_.size());
+    TermList(List term_list_) {
+        //std::list<TermBase*> tl(term_list_.size());
         int i=0;
         for(
             List::iterator tit=term_list_.begin();
             tit != term_list_.end();
             ++tit,++i
         ) {
-            tl.push_back(*tit);
+            term_list.push_back(*tit);
         }
+        first_term=term_list.front();
     }
 
-    void set_point(NumericVector p) {
-        for(
-            std::list<TermBase*>::iterator lit=term_list.begin();
-            lit != term_list.end();
-            ++lit
-        ) {
-            (*lit)->set_point(p);
-        }
+    void set_current(NumericVector p) {
+        first_term->auto_make_list=false; //no more lists made in set_current 
+        first_term->set_current(p);
     }
 
+    
+protected:
+
+    std::list<TermBase*> term_list; //interaction term list
+    TermBase* first_term;
+
+
+};
+
+class Interaction: public TermList {
+public:
+    Interaction(List term_list_): TermList(term_list_) {}
+    
     double local_energy() {
         double res=single;
 
@@ -67,12 +80,13 @@ public:
         return res;
 
     }
+
+    //Weird: but I guess it is because does not know how to manage inheritance yet!
+    //TODO: to delete when Rcpp would fix that
+    void set_current(NumericVector p) {TermList::set_current(p);}
+
     //Single parameter
     double single;
-private:
-
-    std::list<TermBase*> term_list; //interaction term list
-
 };
 
 //STRUCT: class of the structure (ex: Delaunay2) , ELEMENT: current element (ex: Point_2), ELEMENT_HANDLE: (ex: Vertex_handle)
@@ -84,7 +98,6 @@ class TermType : public TermBase {
 public:
     TermType() : TermBase() {
         Environment envir=Environment::global_env().new_child(true);
-        mode_as_before=true; //Rmk: this is false only for simulation tricks
     }
 
     void set_struct(STRUCT* struct_) {structure=struct_;}
@@ -112,24 +125,16 @@ public:
     int get_mode() {return static_cast<int>(mode);}
 
     template <TermMode MODE>
-    void set_current(NumericVector p); //by coordinates
+    void set_current_(NumericVector p); //by coordinates
 
-    //just a wrapper of set_current to switch between mode operation
-    void set_point(NumericVector p) {
-        switch(mode) {
-        case INSERTION: 
-            set_current<INSERTION>(p);
-            break;
-        case DELETION: 
-            set_current<DELETION>(p);
-        }
-    }
+    //just a wrapper of set_current_ depending on mode
+    void set_current(NumericVector p);
 
     NumericVector get_current();
 
     int get_current_index();
 
-    double eval_first_expr() {
+    double eval_before_first_expr() {
         double res=0;
         for(
             List::iterator lit=locBefore.begin();
@@ -138,8 +143,14 @@ public:
         ) {
             import_vars(*lit);
             //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
-            res -= as<double>(Rf_eval( exprs[0],envir));
+            res += as<double>(Rf_eval( exprs[0],envir));
         }
+
+        return res;
+    };
+
+    double eval_after_first_expr() {
+        double res=0;
 
         for(
             List::iterator lit=locAfter.begin();
@@ -151,8 +162,15 @@ public:
             res += as<double>(Rf_eval( exprs[0],envir));
         }
 
-        return mode==INSERTION ? res : -res;
+        return res;
     }
+
+    // As in INSERTION mode!
+    double eval_first_expr() {
+        //return mode==INSERTION ? eval_after_first_expr() - eval_before_first_expr() : eval_before_first_expr() - eval_after_first_expr();
+        return eval_after_first_expr() - eval_before_first_expr();
+    }
+
 
     List eval_exprs() {
 
@@ -241,24 +259,16 @@ public:
     List update_infos(std::pair< CONTAINER,CONTAINER > sets);
 
 
-    //used to
-    bool mode_as_before;
-
-    void set_before_mode(int mode_) {
-        set_mode(mode_);
-        mode_as_before=false;
-    }
-
     template<TermMode MODE>
     void make_local_lists();
 
-    List make_positive_list();
-
-    List make_negative_list();
-
     void make_global_list();
  
+
     // list of local contributions (before and after) and global contributions
+    // Here after and before refer to insertion mode. Generally, it is related to current
+    List make_after_list();
+    List make_before_list();
     List locBefore,locAfter,glob;
 
     IntegerVector exprs_size,cexprs_size;

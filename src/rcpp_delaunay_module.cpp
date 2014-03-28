@@ -2,14 +2,13 @@
 #include "rcpp_sim_delaunay.h"
 
 
-RCPP_MODULE(spatstat_module) {
+RCPP_MODULE(delaunay_module) {
 	class_<Del2TermType2D>( "Del2TermType2D" )
 	.constructor()
     .field( "locBefore", &Del2TermType2D::locBefore, "local list before" )
     .field( "locAfter", &Del2TermType2D::locAfter, "locol list after" )
     .field( "exprs.size", &Del2TermType2D::exprs_size, "exprs size" )
     .field( "cexprs.size", &Del2TermType2D::cexprs_size, "cexprs size" )
-    //.field( "mode.as.before", &Del2TermType2D::mode_as_before, "mode as before" )
     //.property( "graph", &Del2TermType2D::get_struct, &Del2TermType2D::set_struct,"graph structure" )
     .property( "mode", &Del2TermType2D::get_mode, &Del2TermType2D::set_mode,
     "mode " )
@@ -23,9 +22,9 @@ RCPP_MODULE(spatstat_module) {
     "params list" )
     .method("set_graph",&Del2TermType2D::set_struct,"set graph")
     .method("get_graph",&Del2TermType2D::get_struct,"get graph")
-    .method("set_point",&Del2TermType2D::set_current<INSERTION>,"set point to insert")
+    .method("set_point",&Del2TermType2D::set_current_<INSERTION>,"set point to insert")
     .method("get_point",&Del2TermType2D::get_current,"get point")
-    .method("set_index",&Del2TermType2D::set_current<DELETION>,"set (index) point to delete")
+    .method("set_index",&Del2TermType2D::set_current_<DELETION>,"set (index) point to delete")
 	.method("eval_first_expr",&Del2TermType2D::eval_first_expr,"eval first expr")
     .method("eval_exprs",&Del2TermType2D::eval_exprs,"eval exprs")
 	;
@@ -36,7 +35,6 @@ RCPP_MODULE(spatstat_module) {
     .field( "locAfter", &Del2TermType3D::locAfter, "documentation for locAfter" )
     .field( "exprs.size", &Del2TermType3D::exprs_size, "exprs size" )
     .field( "cexprs.size", &Del2TermType3D::cexprs_size, "cexprs size" )
-    //.field( "mode.as.before", &Del2TermType3D::mode_as_before, "mode as before" )
     //.property( "graph", &Del2TermType3D::get_struct, &Del2TermType3D::set_struct,"graph structure" )
     .property( "mode", &Del2TermType3D::get_mode, &Del2TermType3D::set_mode,
     "mode " )
@@ -50,9 +48,9 @@ RCPP_MODULE(spatstat_module) {
     "params list" )
     .method("set_graph",&Del2TermType3D::set_struct,"set graph")
     .method("get_graph",&Del2TermType3D::get_struct,"get graph")
-    .method("set_point",&Del2TermType3D::set_current<INSERTION>,"set point to insert")
+    .method("set_point",&Del2TermType3D::set_current_<INSERTION>,"set point to insert")
     .method("get_point",&Del2TermType3D::get_current,"get point")
-    .method("set_index",&Del2TermType3D::set_current<DELETION>,"set (index) point to delete")
+    .method("set_index",&Del2TermType3D::set_current_<DELETION>,"set (index) point to delete")
     .method("eval_first_expr",&Del2TermType3D::eval_first_expr,"eval first expr")
     .method("eval_exprs",&Del2TermType3D::eval_exprs,"eval exprs")
 	;
@@ -61,7 +59,7 @@ RCPP_MODULE(spatstat_module) {
     .constructor<List>()
     .field( "single", &Interaction::single, "single parameter" )
     //.method("set_before_mode",&Interaction::set_before_mode,"lset before mode")
-    .method("set_point",&Interaction::set_point,"set point")
+    .method("set_current",&Interaction::set_current,"set current")
     .method("local_energy",&Interaction::local_energy,"local energy")
     ;
 

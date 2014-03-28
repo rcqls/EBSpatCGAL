@@ -72,7 +72,7 @@ List Del2TermType2D::update_infos(std::pair<Delaunay2_VertexSet_Set,Delaunay2_Ve
 }
 
 template <>
-List Del2TermType2D::make_negative_list() {
+List Del2TermType2D::make_before_list() {
 	std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> conflictedEdges;
   	conflictedEdges=CGAL_Delaunay2_conflicted_and_boundary_edges(structure,current);
   	//prepare the negative list
@@ -80,7 +80,7 @@ List Del2TermType2D::make_negative_list() {
 }	
 
 template <>
-List Del2TermType2D::make_positive_list() {
+List Del2TermType2D::make_after_list() {
 	Delaunay2_VertexSet_Set incidentEdges;
   	incidentEdges=CGAL_Delaunay2_incident_edges(structure,current_handle);
   	//prepare the positive list
@@ -90,34 +90,34 @@ List Del2TermType2D::make_positive_list() {
 template <> template <>
 void Del2TermType2D::make_local_lists<INSERTION>() {
 	//before INSERTION
-	locBefore=Del2TermType2D::make_negative_list();
+	locBefore=Del2TermType2D::make_before_list();
 
   	//INSERTION
   	current_handle=structure->insert(current);
   	
   	//after INSERTION
-  	locAfter=Del2TermType2D::make_positive_list();
+  	locAfter=Del2TermType2D::make_after_list();
   	//as before
-  	if(mode_as_before) structure->remove(current_handle);
+  	structure->remove(current_handle);
 }
 
 template <> template <>
 void Del2TermType2D::make_local_lists<DELETION>() {
 	//before DELETION
   	 
-  	locAfter= Del2TermType2D::make_positive_list();
+  	locAfter= Del2TermType2D::make_after_list();
   	//DELETION
   	structure->remove(current_handle);
 	//after DELETION
 	 
-  	locBefore= Del2TermType2D::make_negative_list();
+  	locBefore= Del2TermType2D::make_before_list();
   	//As before!
-  	if(mode_as_before) structure->insert(current);
+  	structure->insert(current);
   	
 }
 
 template <> template<>
-void Del2TermType2D::set_current<INSERTION>(NumericVector p) {
+void Del2TermType2D::set_current_<INSERTION>(NumericVector p) {
 	//check that structure is set!
 	//TODO
 	//set the current point
@@ -127,7 +127,7 @@ void Del2TermType2D::set_current<INSERTION>(NumericVector p) {
 }
 
 template <> template<>
-void Del2TermType2D::set_current<DELETION>(NumericVector p) {
+void Del2TermType2D::set_current_<DELETION>(NumericVector p) {
 	double i=p[0];
 	current_index=i-1;
 	if(current_index <0 || current_index >= structure->number_of_vertices()) return;
@@ -138,6 +138,20 @@ void Del2TermType2D::set_current<DELETION>(NumericVector p) {
 	//create the lists of edges
 	make_local_lists<DELETION>();
 }
+
+template <>
+void Del2TermType2D::set_current(NumericVector p) {
+	mode= p.size()==1 ? DELETION : INSERTION;
+    switch(mode) {
+    case INSERTION: 
+        set_current_<INSERTION>(p);
+        break;
+    case DELETION: 
+        set_current_<DELETION>(p);
+    }
+}
+
+
 
 template <> 
 NumericVector Del2TermType2D::get_current() {
@@ -214,7 +228,7 @@ List Del2TermType3D::update_infos(std::pair<Delaunay3_VertexSet_Set,Delaunay3_Ve
 
 
 template <>
-List Del2TermType3D::make_negative_list() {
+List Del2TermType3D::make_before_list() {
 	std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> conflictedEdges;
   	conflictedEdges=CGAL_Delaunay3_conflicted_and_boundary_edges(structure,current);
   	//prepare the negative list
@@ -222,7 +236,7 @@ List Del2TermType3D::make_negative_list() {
 }	
 
 template <>
-List Del2TermType3D::make_positive_list() {
+List Del2TermType3D::make_after_list() {
 	Delaunay3_VertexSet_Set incidentEdges;
   	incidentEdges=CGAL_Delaunay3_incident_edges(structure,current_handle);
   	//prepare the positive list
@@ -232,75 +246,34 @@ List Del2TermType3D::make_positive_list() {
 template <> template <>
 void Del2TermType3D::make_local_lists<INSERTION>() {
 	//before INSERTION
-	locBefore=Del2TermType3D::make_negative_list();
+	locBefore=Del2TermType3D::make_before_list();
 
   	//INSERTION
   	current_handle=structure->insert(current);
   	
   	//after INSERTION
-  	locAfter=Del2TermType3D::make_positive_list();
+  	locAfter=Del2TermType3D::make_after_list();
   	//as before
-  	if(mode_as_before) structure->remove(current_handle);
+  	structure->remove(current_handle);
 }
 
 template <> template <>
 void Del2TermType3D::make_local_lists<DELETION>() {
 	//before DELETION
   	 
-  	locAfter= Del2TermType3D::make_positive_list();
+  	locAfter= Del2TermType3D::make_after_list();
   	//DELETION
   	structure->remove(current_handle);
 	//after DELETION
 	 
-  	locBefore= Del2TermType3D::make_negative_list();
+  	locBefore= Del2TermType3D::make_before_list();
   	//As before!
-  	if(mode_as_before) structure->insert(current);
+  	structure->insert(current);
   	
 }
 
-// template <> template <>
-// void Del2TermType3D::make_local_lists<INSERTION>() {
-// 	//before INSERTION
-// 	std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> conflictedEdges;
-//   	conflictedEdges=CGAL_Delaunay3_conflicted_and_boundary_edges(structure,current);
-//   	//prepare the locBefore list
-//   	locBefore=update_infos(conflictedEdges);
-
-//   	//INSERTION
-//   	Del3D_Vertex_handle h=structure->insert(current);
-
-//   	//after INSERTION
-//   	Delaunay3_VertexSet_Set incidentEdges;
-//   	incidentEdges=CGAL_Delaunay3_incident_edges(structure,h);
-//   	//prepare the locAfter list
-//   	locAfter=update_infos(std::make_pair(incidentEdges,conflictedEdges.second));
-  	
-//   	if(mode_as_before) structure->remove(h);
-// }
-
-// template <> template <>
-// void Del2TermType3D::make_local_lists<DELETION>() {
-// 	//before DELETION
-//   	Delaunay3_VertexSet_Set incidentEdges;
-//   	incidentEdges=CGAL_Delaunay3_incident_edges(structure,current_handle);
-//   	//prepare the locAfter list
-//   	locBefore=update_infos(incidentEdges);
-
-//   	//DELETION
-//   	structure->remove(current_handle);
-
-// 	//after DELETION
-// 	std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> conflictedEdges;
-//   	conflictedEdges=CGAL_Delaunay3_conflicted_and_boundary_edges(structure,current);
-//   	//prepare the locBefore list
-//   	locAfter=update_infos(conflictedEdges);
-//   	//As before!
-//   	if(mode_as_before) structure->insert(current);
-  	
-// }
-
 template <> template<>
-void Del2TermType3D::set_current<INSERTION>(NumericVector p) {
+void Del2TermType3D::set_current_<INSERTION>(NumericVector p) {
 	//check that structure is set!
 	//TODO
 	//set the current point
@@ -310,7 +283,7 @@ void Del2TermType3D::set_current<INSERTION>(NumericVector p) {
 }
 
 template <> template<>
-void Del2TermType3D::set_current<DELETION>(NumericVector p) {
+void Del2TermType3D::set_current_<DELETION>(NumericVector p) {
 	double i=p[0];
 	current_index=i-1;
 	if(current_index <0 || current_index >= structure->number_of_vertices()) return;
@@ -319,6 +292,18 @@ void Del2TermType3D::set_current<DELETION>(NumericVector p) {
 	current=current_handle->point();
 	//create the lists of edges
 	make_local_lists<DELETION>();
+}
+
+template <>
+void Del2TermType3D::set_current(NumericVector p) {
+	mode= p.size()==1 ? DELETION : INSERTION;
+    switch(mode) {
+    case INSERTION: 
+        set_current_<INSERTION>(p);
+        break;
+    case DELETION: 
+        set_current_<DELETION>(p);
+    }
 }
 
 template <> 
