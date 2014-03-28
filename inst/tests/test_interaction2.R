@@ -23,16 +23,21 @@ del2Term$exprs.size <- c(1,2)
 del2Term2$exprs<-list(a1=substitute(theta*l))
 del2Term2$exprs.size <- c(1)
 
-del2Term$set_point( c(.5,.5) )
+new(Interaction,list(del2Term,del2Term2)) -> inter
 
-print(del2Term$eval_first_expr())
 
-print(del2Term$eval_exprs())
+inter$set_current( c(.5,.5) )
 
-insert(del2,matrix(c(.5,.5),ncol=2))
 
-del2Term$set_index( 101 )
 
-print(del2Term$eval_first_expr())
+print(inter$local_energy())
 
-print(del2Term$eval_exprs())
+# print(del2Term$eval_exprs())
+
+# insert(del2,matrix(c(.5,.5),ncol=2))
+
+# del2Term$set_index( 101 )
+
+# print(del2Term$eval_first_expr())
+
+# print(del2Term$eval_exprs())

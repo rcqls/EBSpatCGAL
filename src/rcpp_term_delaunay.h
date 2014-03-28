@@ -249,12 +249,12 @@ void Del2TermType3D::make_local_lists<INSERTION>() {
 	locBefore=Del2TermType3D::make_before_list();
 
   	//INSERTION
-  	current_handle=structure->insert(current);
+  	apply_insert();
   	
   	//after INSERTION
   	locAfter=Del2TermType3D::make_after_list();
   	//as before
-  	structure->remove(current_handle);
+  	apply_delete();
 }
 
 template <> template <>
@@ -263,12 +263,12 @@ void Del2TermType3D::make_local_lists<DELETION>() {
   	 
   	locAfter= Del2TermType3D::make_after_list();
   	//DELETION
-  	structure->remove(current_handle);
+  	apply_delete();
 	//after DELETION
 	 
   	locBefore= Del2TermType3D::make_before_list();
   	//As before!
-  	structure->insert(current);
+  	apply_insert();
   	
 }
 

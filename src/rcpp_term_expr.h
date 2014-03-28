@@ -24,9 +24,19 @@ public:
 
     virtual void set_current(NumericVector p) = 0;
 
+    virtual int get_mode() = 0;
+
+    virtual void apply_insert() =0;
+
+    virtual void apply_delete() =0;
+
     //boolean to know if make_local_lists is automatically genertaed when current is set.
     bool auto_make_list;
 
+    // list of local contributions (before and after) and global contributions
+    // Here after and before refer to insertion mode. Generally, it is related to current
+    virtual List make_after_list()=0;
+    virtual List make_before_list()=0;
 
 };
 
@@ -36,16 +46,36 @@ RCPP_EXPOSED_WRAP(TermBase);
 class TermList {//List of TermBase (heterogeneous terms) 
 public:
     TermList(List term_list_) {
-        //std::list<TermBase*> tl(term_list_.size());
-        int i=0;
         for(
             List::iterator tit=term_list_.begin();
             tit != term_list_.end();
-            ++tit,++i
+            ++tit
         ) {
             term_list.push_back(*tit);
         }
         first_term=term_list.front();
+    }
+
+    void make_local_lists() {
+        if(first_term->get_mode()==INSERTION) {
+            for(
+                std::list<TermBase*>::iterator tit=term_list.begin();
+                tit != term_list.end();
+                ++tit
+            ) {
+                (*tit)->make_before_list();
+            }
+            first_term->apply_insert();
+            for(
+                std::list<TermBase*>::iterator tit=term_list.begin();
+                tit != term_list.end();
+                ++tit
+            ) {
+                (*tit)->make_after_list();
+            }
+
+        }
+
     }
 
     void set_current(NumericVector p) {
@@ -68,6 +98,8 @@ public:
     
     double local_energy() {
         double res=single;
+
+        make_local_lists();
 
         for(
             std::list<TermBase*>::iterator lit=term_list.begin();
@@ -134,6 +166,10 @@ public:
 
     int get_current_index();
 
+    //Maybe to secialize if needed (when trying to embed Kiên stuff)!
+    void apply_insert() {current_handle=structure->insert(current);}
+    void apply_delete() {structure->remove(current_handle);}
+
     double eval_before_first_expr() {
         double res=0;
         for(
@@ -171,15 +207,21 @@ public:
         return eval_after_first_expr() - eval_before_first_expr();
     }
 
+    std::list< std::vector<double> > exprs_results;
 
-    List eval_exprs() {
-
-        std::list< std::vector<double> > res;
+    // (init|eval_before|eval|after)_exprs_results methods allow us to split the evaluation into several functions
+    // mainly used inside eval_exprs method below
+    void init_exprs_results() {
         int i,ii;
+        exprs_results.clear();
         for(i=0;i<exprs.size();i++) {
             std::vector<double> tmp(exprs_size[i],0);
-            res.push_back(tmp);
+            exprs_results.push_back(tmp);
         }
+    }
+
+    void eval_before_exprs_results() { 
+        int i,ii;
         for(
             List::iterator lit=locBefore.begin();
             lit != locBefore.end();
@@ -189,8 +231,8 @@ public:
             //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
             i=0;
             for(
-                std::list< std::vector<double> >::iterator rit=res.begin();
-                rit != res.end();
+                std::list< std::vector<double> >::iterator rit=exprs_results.begin();
+                rit != exprs_results.end();
                 ++rit,++i
             ) {
                 std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
@@ -199,6 +241,10 @@ public:
 
         }
 
+    };
+
+    void eval_after_exprs_results() {
+        int i,ii;
         for(
             List::iterator lit=locAfter.begin();
             lit != locAfter.end();
@@ -208,8 +254,8 @@ public:
             //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
             i=0;
             for(
-                std::list< std::vector<double> >::iterator rit=res.begin();
-                rit != res.end();
+                std::list< std::vector<double> >::iterator rit=exprs_results.begin();
+                rit != exprs_results.end();
                 ++rit,++i
             ) {
                 std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
@@ -217,13 +263,79 @@ public:
             }
 
         }
+        
+    };
 
-        //return mode==INSERTION ? res : -res;
-        List ret=wrap(res);
+    List exprs_results_as_List() {
+        List ret=wrap(exprs_results);
         ret.attr("names") = exprs.attr("names");
         return ret;
-    }
+    };
 
+    // Standalone eval exprs method
+    List eval_exprs() {
+
+        init_exprs_results();
+        eval_before_exprs_results();
+        eval_after_exprs_results();
+        return exprs_results_as_List();
+
+    };
+
+    /****************** OBSOLETE ***************/
+    // List eval_exprs() {
+
+    //     std::list< std::vector<double> > res;
+    //     int i,ii;
+    //     for(i=0;i<exprs.size();i++) {
+    //         std::vector<double> tmp(exprs_size[i],0);
+    //         res.push_back(tmp);
+    //     }
+    //     for(
+    //         List::iterator lit=locBefore.begin();
+    //         lit != locBefore.end();
+    //         ++lit
+    //     ) {
+    //         import_vars(*lit);
+    //         //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
+    //         i=0;
+    //         for(
+    //             std::list< std::vector<double> >::iterator rit=res.begin();
+    //             rit != res.end();
+    //             ++rit,++i
+    //         ) {
+    //             std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
+    //             for(ii=0;ii<exprs_size[i];ii++) (*rit)[ii] -=  tmp[ii];
+    //         }
+
+    //     }
+
+    //     for(
+    //         List::iterator lit=locAfter.begin();
+    //         lit != locAfter.end();
+    //         ++lit
+    //     ) {
+    //         import_vars(*lit);
+    //         //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
+    //         i=0;
+    //         for(
+    //             std::list< std::vector<double> >::iterator rit=res.begin();
+    //             rit != res.end();
+    //             ++rit,++i
+    //         ) {
+    //             std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
+    //             for(ii=0;ii<exprs_size[i];ii++) (*rit)[ii] += tmp[ii];
+    //         }
+
+    //     }
+
+    //     //return mode==INSERTION ? res : -res;
+    //     List ret=wrap(res);
+    //     ret.attr("names") = exprs.attr("names");
+    //     return ret;
+    // };
+
+    /****************** OBSOLETE ***************/
     // NumericVector eval_exprs() {
     //     NumericVector res(exprs.size());
     //     int i;
@@ -253,6 +365,7 @@ public:
     //     //return mode==INSERTION ? res : -res;
     //     return res;
     // }
+    /****************** OBSOLETE ***************/
 
     List update_infos(CONTAINER set);
 
@@ -263,12 +376,10 @@ public:
     void make_local_lists();
 
     void make_global_list();
- 
 
-    // list of local contributions (before and after) and global contributions
-    // Here after and before refer to insertion mode. Generally, it is related to current
     List make_after_list();
     List make_before_list();
+
     List locBefore,locAfter,glob;
 
     IntegerVector exprs_size,cexprs_size;
