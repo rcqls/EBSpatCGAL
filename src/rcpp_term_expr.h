@@ -73,17 +73,23 @@ public:
             ) {
                 (*tit)->make_after_list();
             }
+            first_term->apply_delete();
 
         }
 
     }
 
     void set_current(NumericVector p) {
-        first_term->auto_make_list=false; //no more lists made in set_current 
-        first_term->set_current(p);
+        for(
+            std::list<TermBase*>::iterator tit=term_list.begin();
+            tit != term_list.end();
+            ++tit
+        ) {
+            (*tit)->auto_make_list=false; //no more lists made in set_current 
+            (*tit)->set_current(p);
+        }
     }
 
-    
 protected:
 
     std::list<TermBase*> term_list; //interaction term list
@@ -106,6 +112,8 @@ public:
             lit != term_list.end();
             ++lit
         ) {
+            //double res2=(*lit)->eval_first_expr();
+            //std::cout << "res2=" << res2 << std::endl;
             res += (*lit)->eval_first_expr();
         }
 
@@ -116,6 +124,7 @@ public:
     //Weird: but I guess it is because does not know how to manage inheritance yet!
     //TODO: to delete when Rcpp would fix that
     void set_current(NumericVector p) {TermList::set_current(p);}
+
 
     //Single parameter
     double single;
@@ -129,7 +138,7 @@ class TermType : public TermBase {
 
 public:
     TermType() : TermBase() {
-        Environment envir=Environment::global_env().new_child(true);
+        envir=Environment::global_env().new_child(true);
     }
 
     void set_struct(STRUCT* struct_) {structure=struct_;}
