@@ -19,18 +19,20 @@ public:
         //Modifier when creating local lists
         auto_make_list=true; //Rmk, this has to be false for Interaction
     }
-
+ 
     virtual double eval_first_expr(void) = 0;
 
     virtual void set_current(NumericVector p) = 0;
 
     virtual int get_mode() = 0;
 
-    virtual void apply_insert() =0;
+    virtual void apply_INSERTION() =0;
 
-    virtual void apply_delete() =0;
+    virtual void complete_INSERTION(TermBase* term_)=0;
 
-    //boolean to know if make_local_lists is automatically genertaed when current is set.
+    virtual void apply_DELETION() =0;
+
+    //boolean to know if make_local_lists is automatically generated when current is set.
     bool auto_make_list;
 
     // list of local contributions (before and after) and global contributions
@@ -43,9 +45,12 @@ public:
 RCPP_EXPOSED_AS(TermBase);
 RCPP_EXPOSED_WRAP(TermBase);
 
+
 class TermList {//List of TermBase (heterogeneous terms) 
 public:
     TermList(List term_list_) {
+        make_local_lists_last_apply=true;
+
         for(
             List::iterator tit=term_list_.begin();
             tit != term_list_.end();
@@ -56,8 +61,17 @@ public:
         first_term=term_list.front();
     }
 
+    void apply_INSERTION() {
+        first_term->apply_INSERTION();
+    }
+
+    void apply_DELETION() {
+        first_term->apply_DELETION();
+    }
+
     void make_local_lists() {
-        if(first_term->get_mode()==INSERTION) {
+        std::cout << "mode=" << first_term->get_mode() << std::endl;
+        if(first_term->get_mode()==INSERTION) {//INSERTION mode
             for(
                 std::list<TermBase*>::iterator tit=term_list.begin();
                 tit != term_list.end();
@@ -65,7 +79,22 @@ public:
             ) {
                 (*tit)->make_before_list();
             }
-            first_term->apply_insert();
+
+            //DEBUG: std::cout << "apply_INSERTION" << std::endl;
+            apply_INSERTION();
+            
+            for(
+                std::list<TermBase*>::iterator tit=term_list.begin();
+                tit != term_list.end();
+                ++tit
+            ) {
+                (*tit)->complete_INSERTION(first_term); //if point already inserted
+                (*tit)->make_after_list();
+            }
+            //DEBUG: std::cout << "apply_DELETION" << std::endl;
+            if(make_local_lists_last_apply) apply_DELETION();
+
+        } else {//DELETION mode
             for(
                 std::list<TermBase*>::iterator tit=term_list.begin();
                 tit != term_list.end();
@@ -73,8 +102,17 @@ public:
             ) {
                 (*tit)->make_after_list();
             }
-            first_term->apply_delete();
 
+            apply_DELETION();
+            
+            for(
+                std::list<TermBase*>::iterator tit=term_list.begin();
+                tit != term_list.end();
+                ++tit
+            ) {
+                (*tit)->make_before_list();
+            }
+            if(make_local_lists_last_apply) apply_INSERTION();
         }
 
     }
@@ -95,25 +133,31 @@ protected:
     std::list<TermBase*> term_list; //interaction term list
     TermBase* first_term;
 
-
+    bool make_local_lists_last_apply;
 };
+
 
 class Interaction: public TermList {
 public:
     Interaction(List term_list_): TermList(term_list_) {}
+
+    void sim_mode(bool mode) {
+        make_local_lists_last_apply = !mode;
+    }
     
     double local_energy() {
         double res=single;
 
         make_local_lists();
-
+        int i=0;
         for(
             std::list<TermBase*>::iterator lit=term_list.begin();
             lit != term_list.end();
-            ++lit
+            ++lit,++i
         ) {
-            //double res2=(*lit)->eval_first_expr();
-            //std::cout << "res2=" << res2 << std::endl;
+            //DEBUG: std::cout << "res["<< i << "]=" << res << std::endl;
+            //DEBUG: double res2=(*lit)->eval_first_expr();
+            //DEBUG: std::cout << "res2["<< i << "]=" << res2 << std::endl;
             res += (*lit)->eval_first_expr();
         }
 
@@ -128,21 +172,27 @@ public:
 
     //Single parameter
     double single;
+
 };
 
-//STRUCT: class of the structure (ex: Delaunay2) , ELEMENT: current element (ex: Point_2), ELEMENT_HANDLE: (ex: Vertex_handle)
-//ID: type of interaction, DIM: dimension, ORDER: structure order if needed (ex: ORDER=2 for Delaunay) 
-//CONTAINER: class needed to update infos
-template <InterTypeID ID, class STRUCT, class ELEMENT, class ELEMENT_HANDLE, class CONTAINER, int DIM=2, int ORDER=1>
+//RMK: No INTEREST to embed Lines and Points in the same template!
+//     Just try to adapt the same idea if desired!
+
+//STRUCT: class of the structure (ex: Delaunay2) , ELEMENT: current element (ex: Point_2), HANDLE: (ex: Vertex_handle)
+//ID: type of interaction, DIM: dimension, ORDER: structure order if needed (ex: ORDER=2 for Delaunay)  
+template <InterTypeID ID, typename STRUCT, typename ELEMENT = typename STRUCT::Point, typename HANDLE = typename STRUCT::Vertex_handle, int ORDER=1 >
 class TermType : public TermBase { 
 
 public:
+    typedef HANDLE Handle;
+    typedef std::set<HANDLE> HandleSet;
+    typedef std::set<HandleSet> HandleSet_Set;
+
     TermType() : TermBase() {
         envir=Environment::global_env().new_child(true);
     }
 
     void set_struct(STRUCT* struct_) {structure=struct_;}
-
     STRUCT* get_struct() {return structure;}
 
     void set_exprs(List exprs_) { exprs=exprs_; }
@@ -176,8 +226,22 @@ public:
     int get_current_index();
 
     //Maybe to secialize if needed (when trying to embed Kiên stuff)!
-    void apply_insert() {current_handle=structure->insert(current);}
-    void apply_delete() {structure->remove(current_handle);}
+    //An alternative is to adapt this part!
+    
+
+    //HERE I need to comment because insert actually returns vertex_handle and graph remains unchanged
+    // when the point already exists.
+    void apply_INSERTION() {current_handle=structure->insert(current);}
+
+
+    // MAYBE to replace with apply_INSERTION() in TermList class!!!!
+    // The following could be replaced with apply_INSERTION()!!!
+    void complete_INSERTION(TermBase* term_) {
+        if(this == term_) return;
+        current_handle=static_cast<TermType*>(term_)->current_handle;
+    };
+
+    void apply_DELETION() {structure->remove(current_handle);}
 
     double eval_before_first_expr() {
         double res=0;
@@ -190,7 +254,7 @@ public:
             //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
             res += as<double>(Rf_eval( exprs[0],envir));
         }
-
+        //DEBUG: std::cout << "after before: " << res << std::endl;
         return res;
     };
 
@@ -206,7 +270,7 @@ public:
             //DEBUG: std::cout << "after: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
             res += as<double>(Rf_eval( exprs[0],envir));
         }
-
+        //DEBUG: std::cout << "after res: " << res << std::endl;
         return res;
     }
 
@@ -376,9 +440,9 @@ public:
     // }
     /****************** OBSOLETE ***************/
 
-    List update_infos(CONTAINER set);
+    List update_infos(HandleSet_Set set);
 
-    List update_infos(std::pair< CONTAINER,CONTAINER > sets);
+    List update_infos(std::pair< HandleSet_Set,HandleSet_Set > sets);
 
 
     template<TermMode MODE>
@@ -399,7 +463,7 @@ private:
     TermMode mode;
     //Current element
     ELEMENT current;
-    ELEMENT_HANDLE current_handle;//Handle of the current element
+    HANDLE current_handle;//Handle of the current element
     int current_index; //Index of the current element
 	//exprs: list of Language
 	List exprs;	

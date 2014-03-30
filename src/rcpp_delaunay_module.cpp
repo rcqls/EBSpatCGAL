@@ -6,7 +6,7 @@ RCPP_MODULE(delaunay_module) {
 	class_<Del2TermType2D>( "Del2TermType2D" )
 	.constructor()
     .field( "locBefore", &Del2TermType2D::locBefore, "local list before" )
-    .field( "locAfter", &Del2TermType2D::locAfter, "locol list after" )
+    .field( "locAfter", &Del2TermType2D::locAfter, "local list after" )
     .field( "exprs.size", &Del2TermType2D::exprs_size, "exprs size" )
     .field( "cexprs.size", &Del2TermType2D::cexprs_size, "cexprs size" )
     //.property( "graph", &Del2TermType2D::get_struct, &Del2TermType2D::set_struct,"graph structure" )
@@ -63,15 +63,29 @@ RCPP_MODULE(delaunay_module) {
     .method("local_energy",&Interaction::local_energy,"local energy")
     ;
 
-    class_<Del2SimGibbs2D>( "Del2SimGibbs2D" )
-    .constructor<List>()
-    .field( "nb_runs", &Del2SimGibbs2D::nb_runs, "nb_runs" )
-    .method("run",&Del2SimGibbs2D::run,"run")
+    class_<DomainDel2D>("DomainDel2D")
+    .constructor< Delaunay2*,std::vector<double>,std::vector<double> >()
+    .method("propose_INSERTION",&DomainDel2D::propose_INSERTION,"")
+    .method("propose_DELETION",&DomainDel2D::propose_DELETION,"")  
     ;
 
-    class_<Del2SimGibbs3D>( "Del2SimGibbs3D" )
-    .constructor<List>()
-    .field( "nb_runs", &Del2SimGibbs3D::nb_runs, "nb_runs" )
-    .method("run",&Del2SimGibbs3D::run,"run")
+    class_<DomainDel3D>("DomainDel3D")
+    .constructor< Delaunay3*,std::vector<double>,std::vector<double> >()
+    ;
+
+    class_<SimGibbsDel2D>( "SimGibbsDel2D" )
+    .constructor()
+    .constructor< List,DomainDel2D* >()
+    .constructor< List,Delaunay2*,std::vector<double>,std::vector<double> >()
+    .field( "nb_runs", &SimGibbsDel2D::nb_runs, "nb_runs" )
+    .method("run",&SimGibbsDel2D::run,"run")
+    ;
+
+    class_<SimGibbsDel3D>( "SimGibbsDel3D" )
+    .constructor()
+    .constructor< List,DomainDel3D* >()
+    .constructor< List,Delaunay3*,std::vector<double>,std::vector<double> >()
+    .field( "nb_runs", &SimGibbsDel3D::nb_runs, "nb_runs" )
+    .method("run",&SimGibbsDel3D::run,"run")
     ;
 }

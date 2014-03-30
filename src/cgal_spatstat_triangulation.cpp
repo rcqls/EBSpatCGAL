@@ -54,8 +54,10 @@ Delaunay2_VertexSet_Set CGAL_Delaunay2_incident_edges(Delaunay2* obj, Delaunay2:
 	Delaunay2_VertexSet_Set incidentEdges;
 
 	Delaunay2::Vertex_circulator vc=obj->incident_vertices(v),done(vc);
+	//DEBUG: std::cout << "incident0" << std::endl;
 	if (vc != 0) {	 
 		do {
+			//DEBUG: std::cout << "incident" << std::endl;
 			Delaunay2_VertexSet e;
 			e.insert(v);e.insert(vc);
 			incidentEdges.insert(e);   	 
