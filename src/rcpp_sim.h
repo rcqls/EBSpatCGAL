@@ -14,7 +14,7 @@ public:
         left=left_;right=right_;
         dim=left.size();
         std::cout << "dim="<< dim << std::endl;
-        inside_number=0;
+        inside_number=structure->number_of_vertices();
         set_size();
     };
 
@@ -29,6 +29,8 @@ public:
         return NumericVector::create(floor(as<double>(runif(1,0,structure->number_of_vertices()))));
         
     };
+
+    STRUCT* get_struct() {return structure;}
 
     std::vector<double> left,right; //in some axe
     
@@ -62,16 +64,19 @@ class SimGibbs {
          //domain=new Domain<STRUCT>()
         	//inter=new Interaction(inter_);
             //nb_pts=;
+            nb_runs=10000;
         }
 
         SimGibbs(List inter_,Domain<STRUCT>* domain_ ) {
             set_interaction(inter_);
             set_domain(domain_);
+            nb_runs=10000;
         }
 
         SimGibbs(List inter_,STRUCT* structure_,std::vector<double> left_,std::vector<double> right_) {
             set_interaction(inter_);
             set_domain(structure_,left_,right_);
+            nb_runs=10000;
         }
 
         void set_interaction(List inter_) {
@@ -85,6 +90,12 @@ class SimGibbs {
         void set_domain(STRUCT* structure_,std::vector<double> left_,std::vector<double> right_) {
             domain=new Domain<STRUCT>(structure_,left_,right_);
         }
+
+        void set_single(double single_) {inter->single=single_;}
+
+        double get_single() {return inter->single;}
+
+        Domain<STRUCT>* get_domain() {return domain;}
 
         void run() {
             init();
@@ -111,10 +122,9 @@ class SimGibbs {
 
         TermMode propose_action() {
             double r = as<double>(runif(1,0,1));
-            if (r<=action_split)
-                return INSERTION;
-            else
-                return DELETION;
+            TermMode action=r<=action_split ? INSERTION : DELETION;
+            std::cout << "action: "<<action << std::endl;
+            return action;
         };
 
         double value_INSERTION() {
@@ -128,17 +138,22 @@ class SimGibbs {
         } 
 
         void run_once() {
-            double g = as<double>(runif(1,0,1));
+
+            double g = as<double>(runif(1,0,1)),val;
             if( domain->inside_number == 0 ) {
                 inter-> set_current(domain->propose_INSERTION());
                 if(g < (domain->get_size())*exp(inter->single)) {}
             } else if(propose_action() == INSERTION) {  
                 inter-> set_current(domain->propose_INSERTION());
-                if(g <  value_INSERTION()) (domain->inside_number)++;
+                val=value_INSERTION();
+                std::cout << "nb=" << domain->inside_number << " g=" << g << " value_INSERTION=" << val << std::endl;
+                if(g < val ) (domain->inside_number)++;
                 else inter->apply_DELETION();
             } else {//else propose_action() == DELETION
                 inter-> set_current(domain->propose_DELETION());
-                if(g <  value_DELETION()) (domain->inside_number)--;
+                val=value_DELETION();
+                std::cout << "nb=" << domain->inside_number << " g=" << g << " value_DELETION=" << val << std::endl;
+                if(g <  val) (domain->inside_number)--;
                 else inter->apply_INSERTION();
             }
 

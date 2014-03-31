@@ -66,7 +66,8 @@ RCPP_MODULE(delaunay_module) {
     class_<DomainDel2D>("DomainDel2D")
     .constructor< Delaunay2*,std::vector<double>,std::vector<double> >()
     .method("propose_INSERTION",&DomainDel2D::propose_INSERTION,"")
-    .method("propose_DELETION",&DomainDel2D::propose_DELETION,"")  
+    .method("propose_DELETION",&DomainDel2D::propose_DELETION,"")
+    .method("get_graph",&DomainDel2D::get_struct,"get graph")
     ;
 
     class_<DomainDel3D>("DomainDel3D")
@@ -78,7 +79,9 @@ RCPP_MODULE(delaunay_module) {
     .constructor< List,DomainDel2D* >()
     .constructor< List,Delaunay2*,std::vector<double>,std::vector<double> >()
     .field( "nb_runs", &SimGibbsDel2D::nb_runs, "nb_runs" )
+    .property("single",&SimGibbsDel2D::get_single,&SimGibbsDel2D::set_single,"single")
     .method("run",&SimGibbsDel2D::run,"run")
+    .method("get_domain",&SimGibbsDel2D::get_domain,"get domain")
     ;
 
     class_<SimGibbsDel3D>( "SimGibbsDel3D" )
