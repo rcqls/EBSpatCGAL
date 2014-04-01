@@ -7,7 +7,7 @@ new(Del2TermType2D) -> del2Term2
 
 del2 <- Delaunay()
 
-insert(del2,matrix(runif(200,-350,350),ncol=2))
+insert(del2,matrix(runif(200),ncol=2))
 
 #### OLD CALL
 # gd<-EBGibbs(~ 2 +Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4)))
@@ -29,17 +29,12 @@ del2Term$exprs.size <- c(1)
 
 #new(Interaction,list(del2Term,del2Term2)) -> inter
 
-#new(Interaction,list(del2Term)) -> inter
+new(Interaction,list(del2Term)) -> inter
 
+inter$single <- 2
 
-sim2 <- new(SimGibbsDel2D,list(del2Term),del2$graph,c(-350,-350),c(350,350))
+inter$set_current( c(.5,.5) )
 
-sim2$single <- 2
-
-sim2$nb_runs <- 10000
-
-(sc <- Scene()) %<<% window2d(c(-350,350),c(-350,350),xlab="",ylab="",main="what a beautiful plot!") 
-sc %<<% points(del2,col="blue")  %<<% lines(del2,type="vor") 
-sc %<<% lines(del2)
+print(inter$local_energy())
 
 

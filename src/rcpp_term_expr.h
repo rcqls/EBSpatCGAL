@@ -70,7 +70,7 @@ public:
     }
 
     void make_local_lists() {
-        std::cout << "mode=" << first_term->get_mode() << std::endl;
+        //DEBUG: std::cout << "mode=" << first_term->get_mode() << std::endl;
         if(first_term->get_mode()==INSERTION) {//INSERTION mode
             for(
                 std::list<TermBase*>::iterator tit=term_list.begin();

@@ -89,6 +89,8 @@ RCPP_MODULE(delaunay_module) {
     .constructor< List,DomainDel3D* >()
     .constructor< List,Delaunay3*,std::vector<double>,std::vector<double> >()
     .field( "nb_runs", &SimGibbsDel3D::nb_runs, "nb_runs" )
+    .property("single",&SimGibbsDel3D::get_single,&SimGibbsDel3D::set_single,"single")
+    .field( "nb_runs", &SimGibbsDel3D::nb_runs, "nb_runs" )
     .method("run",&SimGibbsDel3D::run,"run")
     ;
 }

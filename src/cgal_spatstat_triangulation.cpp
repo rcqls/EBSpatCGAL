@@ -22,7 +22,7 @@ std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> CGAL_Delaunay2_confli
 		e0.insert(v0);e0.insert(v1);boundaryEdges.insert(e0);
 	}
 
-	std::cout << "Number of boundary edges=" << i << std::endl;
+	//DEBUG: std::cout << "Number of boundary edges=" << i << std::endl;
 
 	std::set<Delaunay2_VertexSet> conflictedEdges;
 
@@ -42,7 +42,7 @@ std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> CGAL_Delaunay2_confli
 		if(boundaryEdges.find(e2) == boundaryEdges.end()) conflictedEdges.insert(e2);
 	}
 
-	std::cout << "Number of conflicted edges=" << 3*i << " (amoung " << faces.size() << " faces)" << std::endl;
+	//DEBUG: std::cout << "Number of conflicted edges=" << 3*i << " (amoung " << faces.size() << " faces)" << std::endl;
 
 	std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> ret;
 	ret = std::make_pair(conflictedEdges,boundaryEdges);
@@ -108,7 +108,7 @@ std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> CGAL_Delaunay3_confli
 		e2.insert(v1);e2.insert(v2);boundaryEdges.insert(e2);
 	}
 
-	std::cout << "Number of boundary edges=" << 3*i << " (amoung " << f.size() << " facets)" << std::endl;
+	//DEBUG: std::cout << "Number of boundary edges=" << 3*i << " (amoung " << f.size() << " facets)" << std::endl;
 
 	Delaunay3_VertexSet_Set conflictedEdges;
 
@@ -139,7 +139,7 @@ std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> CGAL_Delaunay3_confli
 		if(boundaryEdges.find(e5) == boundaryEdges.end()) conflictedEdges.insert(e5);
 	}
 
-	std::cout << "Number of conflicted edges=" << 6*i << " (amoung " << V.size() << " cells)" << std::endl;
+	//DEBUG: std::cout << "Number of conflicted edges=" << 6*i << " (amoung " << V.size() << " cells)" << std::endl;
 
 	std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> ret;
 	ret = std::make_pair(conflictedEdges,boundaryEdges);

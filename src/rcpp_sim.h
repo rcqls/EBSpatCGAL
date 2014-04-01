@@ -13,7 +13,7 @@ public:
         structure=structure_;
         left=left_;right=right_;
         dim=left.size();
-        std::cout << "dim="<< dim << std::endl;
+        //DEBUG: std::cout << "dim="<< dim << std::endl;
         inside_number=structure->number_of_vertices();
         set_size();
     };
@@ -26,7 +26,7 @@ public:
     };
 
     NumericVector propose_DELETION() {
-        return NumericVector::create(floor(as<double>(runif(1,0,structure->number_of_vertices()))));
+        return NumericVector::create(as<double>(runif(1,0,inside_number)));
         
     };
 
@@ -123,7 +123,7 @@ class SimGibbs {
         TermMode propose_action() {
             double r = as<double>(runif(1,0,1));
             TermMode action=r<=action_split ? INSERTION : DELETION;
-            std::cout << "action: "<<action << std::endl;
+            //DEBUG: std::cout << "action: "<<action << std::endl;
             return action;
         };
 
@@ -146,13 +146,13 @@ class SimGibbs {
             } else if(propose_action() == INSERTION) {  
                 inter-> set_current(domain->propose_INSERTION());
                 val=value_INSERTION();
-                std::cout << "nb=" << domain->inside_number << " g=" << g << " value_INSERTION=" << val << std::endl;
+                //DEBUG: std::cout << "nb=" << domain->inside_number << " g=" << g << " value_INSERTION=" << val << std::endl;
                 if(g < val ) (domain->inside_number)++;
                 else inter->apply_DELETION();
             } else {//else propose_action() == DELETION
                 inter-> set_current(domain->propose_DELETION());
                 val=value_DELETION();
-                std::cout << "nb=" << domain->inside_number << " g=" << g << " value_DELETION=" << val << std::endl;
+                //DEBUG: std::cout << "nb=" << domain->inside_number << " g=" << g << " value_DELETION=" << val << std::endl;
                 if(g <  val) (domain->inside_number)--;
                 else inter->apply_INSERTION();
             }

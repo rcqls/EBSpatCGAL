@@ -78,7 +78,7 @@ List Del2TermType2D::make_before_list() {
 	std::pair< HandleSet_Set,HandleSet_Set > conflictedEdges;
   	conflictedEdges=CGAL_Delaunay2_conflicted_and_boundary_edges(structure,current);
   	//prepare the negative list
-  	std::cout << "conflictedEdges=" << conflictedEdges.first.size() << std::endl;
+  	//DEBUG: std::cout << "conflictedEdges=" << conflictedEdges.first.size() << std::endl;
   	return (locBefore=update_infos(conflictedEdges));
 }	
 
@@ -87,7 +87,7 @@ List Del2TermType2D::make_after_list() {
 	HandleSet_Set incidentEdges;
   	incidentEdges=CGAL_Delaunay2_incident_edges(structure,current_handle);
   	//prepare the positive list
-  	std::cout << "incidentEdges=" << incidentEdges.size() << std::endl;
+  	//DEBUG: std::cout << "incidentEdges=" << incidentEdges.size() << std::endl;
   	return (locAfter=update_infos(incidentEdges));
 }
 
@@ -133,9 +133,13 @@ void Del2TermType2D::set_current_<INSERTION>(NumericVector p) {
 template <> template<>
 void Del2TermType2D::set_current_<DELETION>(NumericVector p) {
 	double i=p[0];
-	current_index=i-1;
-	if(current_index <0 || current_index >= structure->number_of_vertices()) return;
-	std::cout << "current_index=" << current_index <<std::endl;
+	current_index=i;
+	if(current_index <0 || current_index >= structure->number_of_vertices()) {
+		//DEBUG: std::cout << "current_index=" << current_index ;
+		//DEBUG: std::cout << " not in [0,"<<structure->number_of_vertices()-1<<"]" << std::endl;
+		return;
+	}
+	//DEBUG: std::cout << "current_index=" << current_index <<std::endl;
 	current_handle=Triangulation_vertex_at_pos<Delaunay2>(structure,current_index);
 	
 	current=current_handle->point();
@@ -289,9 +293,9 @@ void Del2TermType3D::set_current_<INSERTION>(NumericVector p) {
 template <> template<>
 void Del2TermType3D::set_current_<DELETION>(NumericVector p) {
 	double i=p[0];
-	current_index=i-1;
+	current_index=i;
 	if(current_index <0 || current_index >= structure->number_of_vertices()) return;
-	std::cout << "current_index=" << current_index <<std::endl;
+	//DEBUG: std::cout << "current_index=" << current_index <<std::endl;
 	current_handle=Triangulation_vertex_at_pos<Delaunay3>(structure,current_index);
 	current=current_handle->point();
 	//create the lists of edges
