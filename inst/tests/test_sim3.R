@@ -37,7 +37,7 @@ sim3$single <- 2
 sim3$nb_runs <- 10000
 
 (sc <- Scene()) %<<% window3d(c(-350,350),c(-350,350),c(-350,350)) 
-sc %<<% points(del3,col="blue")  %<<% lines(del3)
+sc %<<% points(del3,col="red",radius=3)  %<<% lines(del3)
 
 sim3$run( )
 
