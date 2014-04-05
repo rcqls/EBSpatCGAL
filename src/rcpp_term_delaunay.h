@@ -314,6 +314,7 @@ void Del2TermType3D::set_current(NumericVector p) {
     }
 }
 
+
 template <> 
 NumericVector Del2TermType3D::get_current() {
 	return NumericVector::create(current.x(),current.y(),current.z());

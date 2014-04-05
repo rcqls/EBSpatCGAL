@@ -39,6 +39,8 @@ public:
     // Here after and before refer to insertion mode. Generally, it is related to current
     virtual List make_after_list()=0;
     virtual List make_before_list()=0;
+    virtual List get_after_list()=0;
+    virtual List get_before_list()=0;
 
 };
 
@@ -148,7 +150,9 @@ public:
     double local_energy() {
         double res=single;
 
+        // prepare local lists before evaluating first expr
         make_local_lists();
+
         int i=0;
         for(
             std::list<TermBase*>::iterator lit=term_list.begin();
@@ -164,6 +168,40 @@ public:
         return res;
 
     }
+
+    //Save infos only!
+    List get_local_lists() {
+
+        make_local_lists_last_apply = true;
+
+        List res(term_list.size()); 
+
+        // prepare local lists before evaluating first expr
+        make_local_lists();
+
+        int i=0;
+        for(
+            std::list<TermBase*>::iterator lit=term_list.begin();
+            lit != term_list.end();
+            ++lit,++i
+        ) {
+            //DEBUG: std::cout << "res["<< i << "]=" << res << std::endl;
+            //DEBUG: double res2=(*lit)->eval_first_expr();
+            //DEBUG: std::cout << "res2["<< i << "]=" << res2 << std::endl;
+            List ret;
+            ret["before"] = (*lit)->get_before_list();
+            ret["after"] = (*lit)->get_after_list();
+            res[i]=ret;
+        }
+
+        return res;
+
+    }
+
+    //TODO if interesting: saving intermediate computation instead of infos only.
+    //Could improve performance.
+    //List export_cexprs() {
+    //}
 
     //Weird: but I guess it is because does not know how to manage inheritance yet!
     //TODO: to delete when Rcpp would fix that
@@ -355,91 +393,6 @@ public:
 
     };
 
-    /****************** OBSOLETE ***************/
-    // List eval_exprs() {
-
-    //     std::list< std::vector<double> > res;
-    //     int i,ii;
-    //     for(i=0;i<exprs.size();i++) {
-    //         std::vector<double> tmp(exprs_size[i],0);
-    //         res.push_back(tmp);
-    //     }
-    //     for(
-    //         List::iterator lit=locBefore.begin();
-    //         lit != locBefore.end();
-    //         ++lit
-    //     ) {
-    //         import_vars(*lit);
-    //         //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
-    //         i=0;
-    //         for(
-    //             std::list< std::vector<double> >::iterator rit=res.begin();
-    //             rit != res.end();
-    //             ++rit,++i
-    //         ) {
-    //             std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
-    //             for(ii=0;ii<exprs_size[i];ii++) (*rit)[ii] -=  tmp[ii];
-    //         }
-
-    //     }
-
-    //     for(
-    //         List::iterator lit=locAfter.begin();
-    //         lit != locAfter.end();
-    //         ++lit
-    //     ) {
-    //         import_vars(*lit);
-    //         //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
-    //         i=0;
-    //         for(
-    //             std::list< std::vector<double> >::iterator rit=res.begin();
-    //             rit != res.end();
-    //             ++rit,++i
-    //         ) {
-    //             std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
-    //             for(ii=0;ii<exprs_size[i];ii++) (*rit)[ii] += tmp[ii];
-    //         }
-
-    //     }
-
-    //     //return mode==INSERTION ? res : -res;
-    //     List ret=wrap(res);
-    //     ret.attr("names") = exprs.attr("names");
-    //     return ret;
-    // };
-
-    /****************** OBSOLETE ***************/
-    // NumericVector eval_exprs() {
-    //     NumericVector res(exprs.size());
-    //     int i;
-    
-    //     for(
-    //         List::iterator lit=locBefore.begin();
-    //         lit != locBefore.end();
-    //         ++lit
-    //     ) {
-    //         import_vars(*lit);
-    //         //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
-    //         for(i=0;i<exprs.size();i++)
-    //             res[i] = res[i] - as<double>(Rf_eval( exprs[i],envir));
-    //     }
-
-    //     for(
-    //         List::iterator lit=locAfter.begin();
-    //         lit != locAfter.end();
-    //         ++lit
-    //     ) {
-    //         import_vars(*lit);
-    //         //DEBUG: std::cout << "after: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
-    //         for(i=0;i<exprs.size();i++) 
-    //             res[i] = res[i] + as<double>(Rf_eval( exprs[i],envir));
-    //     }
-
-    //     //return mode==INSERTION ? res : -res;
-    //     return res;
-    // }
-    /****************** OBSOLETE ***************/
-
     List update_infos(HandleSet_Set set);
 
     List update_infos(std::pair< HandleSet_Set,HandleSet_Set > sets);
@@ -453,6 +406,9 @@ public:
     List make_after_list();
     List make_before_list();
 
+    List get_after_list() {return locAfter;};
+    List get_before_list() {return locBefore;};
+
     List locBefore,locAfter,glob;
 
     IntegerVector exprs_size,cexprs_size;
@@ -465,6 +421,7 @@ private:
     ELEMENT current;
     HANDLE current_handle;//Handle of the current element
     int current_index; //Index of the current element
+
 	//exprs: list of Language
 	List exprs;	
 	//cexprs : named list of Language

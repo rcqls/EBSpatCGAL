@@ -1,5 +1,4 @@
-#include "rcpp_term_delaunay.h"
-#include "rcpp_sim_delaunay.h"
+#include "rcpp_delaunay_module.h"
 
 
 RCPP_MODULE(delaunay_module) {
@@ -61,6 +60,13 @@ RCPP_MODULE(delaunay_module) {
     //.method("set_before_mode",&Interaction::set_before_mode,"lset before mode")
     .method("set_current",&Interaction::set_current,"set current")
     .method("local_energy",&Interaction::local_energy,"local energy")
+    ;
+
+    class_<ListsCacheDel2D>("ListsCacheDel2D")
+    .constructor<DomainDel2D*,Interaction*>()
+    .method("set_mode",&ListsCacheDel2D::set_mode,"set mode")
+    .method("make_lists",&ListsCacheDel2D::make_lists,"make lists cache")
+    .method("get_lists",&ListsCacheDel2D::get_lists,"get lists cache")
     ;
 
     class_<DomainDel2D>("DomainDel2D")
