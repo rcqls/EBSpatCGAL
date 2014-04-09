@@ -6,7 +6,7 @@
   TermTypes <- list(
                 id=list(
                       ##clique type (i<i+1 allows us to easily insert new id!)
-                      Del1=(i<-0),Del2=(i<-i+1),Del3=(i<-i+1),All2=(i<-i+1),NNG=(i<-i+1)
+                      Del1=(i<-1),Del2=(i<-i+1),Del3=(i<-i+1),All2=(i<-i+1),NNG=(i<-i+1)
                     )
                 )
 
@@ -61,15 +61,19 @@
 #        Interaction Manager 
 ########################################## 
 
-InteractionMngr <- function(formula,mode="default") {
+InteractionMngr <- function(form,mode="default") {
+  # auto initialize .TermTypes global variable!
+  if(!exists(".TermTypes",envir=globalenv())) .TermTypesInit() 
+
   interMngr <- new.env()
-  interMngr$formula <- formula
-  interMngr$termtypes <- terms(formula)
+  interMngr$formula <- form
+  class(interMngr) <- "InteractionMngr"
+  interMngr$termtypes <- terms.InteractionMngr(form)
   if(length(attr(interMngr$termtypes,"response"))) {
     interMngr$response<-interMngr$termtypes[[1]] #register only the response as a R call!!
     interMngr$termtypes<-interMngr$termtypes[-1]
   }
-  class(interMngr) <- InteractionMngr
+  interMngr$terms <- sapply(interMngr$termtypes,eval)
   interMngr
 }
 
@@ -124,6 +128,38 @@ TermTypeMngr <- function(type,callR,mode="default") {
   parse.TermTypeMngr(termMngr)
   termMngr
 }
+
+TermType <- function(id,...) {
+  callR<-match.call()
+  term <- list(
+    call=callR,
+    mngr=TermTypeMngr(.TermTypes$type[[id]],callR),
+    rcpp=new(eval(parse(text=paste(.TermTypes$type[[id]],"TermType","2D",sep=""))))
+  )
+  term$rcpp$infos <- term$mngr$infos
+#   del2Term$params <- list(theta=2,theta2=3)
+
+# del2Term$mode <- 0
+
+# del2Term$exprs<-list(a2=substitute(theta2*l),a1=substitute(theta*c(l,sqrt(l2))))
+# del2Term$exprs.size
+  
+  class(term) <- "TermType"
+  term
+}
+
+params.TermType <- function(term) term$rcpp$params
+
+"params<-.TermType" <- function(term,params) {
+  term$rcpp$params <- params
+}
+
+# update.TermType <- function(term,struct) {
+#   l<-list(...)
+#   for(e in l) {
+#     term$rcpp[[e]] <- l[[e]]
+#   }
+# }
 
 # build the result
 parse.TermTypeMngr<-function(termMngr,skip=2) {

@@ -9,7 +9,7 @@ export(
 
   .TermTypesInit,
   InteractionMngr,
-  ComponentFunctionalFormulaManager,
+  ComponentFunctionalFormulaManager
 )
 S3method("%<<%",Scene)
 S3method("[[",Scene)
