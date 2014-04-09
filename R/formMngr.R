@@ -1,68 +1,14 @@
-############################################### TermTypes
-## Declaration of TermTypes here
-
-TermTypes <- function() {
-  TermTypes <- list(
-                id=list(
-                      ##clique type (i<i+1 allows us to easily insert new id!)
-                      Del1=(i<-0),Del2=(i<-i+1),Del3=(i<-i+1),All2=(i<-i+1),NNG=(i<-i+1)
-                    )
-                )
-
-  TermTypes$type<-names(TermTypes$id)
-
-  TermTypes$convertTermType <- list(
-    All2="All2",A2="All2",ALL2="All2",a2="All2",all2="All2",
-    Del1="Del1",D1="Del1",DEL1="Del1",d1="Del1",del1="Del1",
-    Del2="Del2",D2="Del2",DEL2="Del2",d2="Del2",del2="Del2",
-    Del3="Del3",D3="Del3",DEL3="Del3",d3="Del3",del3="Del3",
-    NNG="NNG",NN="NNG",Nn="NNG",nn="NNG"
-  )
-
-  TermTypes$infos<-list(
-    Del1=c("id","x","v","a"),
-    Del2=c("id","x","v","a","l2","l","ol2","ol","da"),
-    Del3=c("id","x","v","a","ta","tp","c","r2","r","sa","ga"),
-    All2=c("id","x","v","l2","l"),
-    NNG=c("id","x","v","l2","l")
-  )
-
-  ## additonal names for declaration of interaction
-  TermTypes$args<-list(
-  Del2="order",
-  All2="range",
-  NNG="order"
-)
-
-  TermTypes$envir <- new.env()
-
-  ## to determine the size of carac and compFunc!
-  TermTypes$infosTest<- function(type,struct=NULL) {
-    termEnv <- .TermTypes$envir
-    #ok <- (!is.null(struct) && inherits(struct,"EBVor") && is.marked(struct))
-    ok <- FALSE
-    switch(type,
-      Del1={termEnv$id<-1L;termEnv$x<-c(0,0);if(ok) termEnv$v <- eval(parse(text=struct$del.marks.gen));termEnv$a<-0},
-      Del2={termEnv$id <- c(1L,2L);termEnv$x<-list(c(0,0),c(1,1));if(ok) termEnv$v<-lapply(1:2,function(i) eval(parse(text=struct$del.marks.gen)));termEnv$a<-c(0,0);termEnv$l2<-0;termEnv$l<-0;termEnv$ol2<-0;termEnv$ol<-0;termEnv$da<-0},
-      Del3={termEnv$id<-c(1L,2L,3L);termEnv$x<-list(c(0,0),c(0,1),c(1,0));if(ok) termEnv$v<-lapply(1:3,function(i) eval(parse(text=struct$del.marks.gen)));termEnv$a<-c(0,0,0);termEnv$ta<-0;termEnv$tp<-0;termEnv$c<-c(0,0);termEnv$r2<-0;termEnv$r<-0;termEnv$sa<-0;termEnv$ga<-0},
-      All2={termEnv$id<-c(1L,2L);termEnv$x<-list(c(0,0),c(1,1));if(ok) termEnv$v<-lapply(1:2,function(i) eval(parse(text=struct$del.marks.gen)));termEnv$l2<-0;termEnv$l<-0},
-      NNG={termEnv$id<-c(1L,2L);termEnv$x<-list(c(0,0),c(1,1));if(ok) termEnv$v<-lapply(1:2,function(i) eval(parse(text=struct$del.marks.gen)));termEnv$l2<-0;termEnv$l<-0}
-    )
-    return(invisible())
-  }
-
-  TermTypes$length<- function(expr) return(length(eval(expr,envir=.TermTypes$envir)))
-  # export in globalenv as .TermTypes
-  assign(".TermTypes",TermTypes,envir=globalenv())
-}
-
 ###################################################
 ##    Component Functional Formulae Manager      ##
 ###################################################
+# This takes formulae as input to be split in several minimal
+# parts to be saved in order to compute formulae for each
+# change of the values of the parameters.
 
 ComponentFunctionalFormulaManager <- function() {
-  # auto initialize
-  if(!exists(".TermTypes",envir=globalenv())) TermTypes()
+  # auto initialize if first used (see termtypes.R)
+  if(!exists(".TermTypes",envir=globalenv())) .TermTypesInit() 
+  # declare this object as an environment to be dynamic (instead of list)
   formMngr <- new.env()
   formMngr$formulas <- list()
   formMngr$origFormulas <- list()
@@ -76,8 +22,7 @@ ComponentFunctionalFormulaManager <- function() {
 
 ## convert a form to a form with its related TermType object
 ## Rmk: useful for EBResid objects!
-## Call: formula(formMngr,formula,)
-
+## Call: 1) formula(formMngr,formula,...) to add formula into formMngr
 ## 2) formula(formMngr) prints the result
 
 formula.ComponentFunctionalFormulaManager <- function(formMngr,form=NULL,struct=NULL,local=NULL) {

@@ -5,7 +5,11 @@ export(
   "[[","[[.Scene",
   "[[<-","[[<-.Scene",
   "[","[.Scene",
-  "[<-","[<-.Scene"
+  "[<-","[<-.Scene",
+
+  .TermTypesInit,
+  InteractionMngr,
+  ComponentFunctionalFormulaManager,
 )
 S3method("%<<%",Scene)
 S3method("[[",Scene)
