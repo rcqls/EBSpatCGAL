@@ -8,7 +8,7 @@ del3D <- Delaunay(3)
 
 insert(del3D,matrix(runif(3000),ncol=3))
 
-del2Term3D$set_graph(del3D$graph)
+del2Term3D$set_graph(del3D$rcpp())
 
 del2Term3D$infos <- c("x","l","l2")
 

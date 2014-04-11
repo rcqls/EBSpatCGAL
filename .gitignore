@@ -6,4 +6,5 @@ src-*
 *DEBUG
 *SAVE
 *.RData
+*.rds
 *.Rhistory

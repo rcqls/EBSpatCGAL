@@ -10,7 +10,7 @@ insert(del3,matrix(runif(300,-350,350),ncol=3))
 #### OLD CALL
 # gd<-EBGibbs(~ 2 +Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4)))
 
-del3Term$set_graph(del3$graph)
+del3Term$set_graph(del3$rcpp())
 #del2Term2$set_graph(del2$graph)
 
 del3Term$infos <- c("l")
@@ -30,15 +30,15 @@ del3Term$exprs.size <- c(1)
 #new(Interaction,list(del2Term)) -> inter
 
 
-sim3 <- new(SimGibbsDel3D,list(del3Term),del3$graph,c(-350,-350,-350),c(350,350,350))
+sim3 <- new(SimGibbsDel3D,list(del3Term),del3$rcpp(),c(-350,-350,-350),c(350,350,350))
 
 sim3$single <- 2
 
 sim3$nb_runs <- 10000
 
-(sc <- Scene()) %<<% window3d(c(-350,350),c(-350,350),c(-350,350)) 
-sc %<<% points(del3,col="red",radius=3)  %<<% lines(del3)
+(sc3 <- Scene()) %<<% window3d(c(-350,350),c(-350,350),c(-350,350)) 
+sc3 %<<% points(del3,col="red",radius=3)  %<<% lines(del3)
 
 sim3$run( )
 
-plot(sc)
+plot(sc3)

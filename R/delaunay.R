@@ -1,47 +1,47 @@
-Delaunay <- function(dim=2) {
-	obj <- new.env() #CqlsObj(Delaunay)
-	class(obj) <- "Delaunay"
-	obj$dim <- dim
+## Notice: self is required inside constructor providing to avoid first argument in method!
+## in the "ruby" way! (as in rcpp_persistent_object.R).
 
-	# function to create the object (because reused later!)
-	obj$create <- function(obj) {
-		# Never use $.rcpp directly! Use $rcpp() instead!
-		obj$.rcpp <- switch(paste("dim",dim,sep=""),
+Delaunay <- function(dim=2) {
+	## 1) create an environment (required use of self)
+	self <- new.env() # self can now be used inside method defined inside this constructor!
+	
+	## 2) declare everything here
+	class(self) <- "Delaunay"
+	self$dim <- dim
+
+	## 3) Managing persistency
+	## Rmk: no function but bloc with 
+	RcppPersistentObject(self,
+		new = {
+			switch(paste("dim",self$dim,sep=""),
 			dim2={
-				class(obj) <- c("Delaunay_2d",class(obj))
+				class(self) <- unique(c("Delaunay_2d",class(self)))
 				new(Delaunay2)
 			},
 			dim3={
-				class(obj) <- c("Delaunay_3d",class(obj))
+				class(self) <- unique(c("Delaunay_3d",class(self)))
 				new(Delaunay3)
-			}
-		)
-	}
-
-	# first call of constructor
-	obj$create(obj)
-
-	#print(obj)
-	# Managing persistency
-	PersistentRcppObject(obj,
-		# initialize
-		{
-			obj$create(obj)
-			insert(obj,load.PersistentRcppObject(obj)$last.points)
+			})
 		},
-		# finalize
-		{
-			save.PersistentRcppObject(obj,last.points=obj$rcpp()$vertices())
-			cat("Delaunay object!\n")
+		renew = {
+			cat("Delaunay object Rcpp-reinitialized!\n")
+			insert(self,self$.last.points)
+		},
+		save = {
+			self$.last.points=self$rcpp()$vertices()
+			cat("Delaunay object Rcpp-saved!\n")
 		}
 	)
 
-	return(obj)
+	## 4) return the created object
+	return(self)
 }
 
 Delaunay_2d <- function(...) Delaunay(dim=2,...)
 Delaunay_3d <- function(...) Delaunay(dim=3,...)
 
+
+## in the R way, I prefer to use obj instead of 
 insert.Delaunay <- function(obj,pts,...) {
 	tmp <- cbind(...)
 	if(NCOL(tmp)>1) pts <- cbind(pts,tmp)
@@ -50,6 +50,8 @@ insert.Delaunay <- function(obj,pts,...) {
 	if(obj$dim==2) obj$point.index <- obj$rcpp()$insert(pts[,1],pts[,2])
 	else if(obj$dim==3) obj$point.index <- obj$rcpp()$insert(pts[,1],pts[,2],pts[,3])
 	obj$points <- pts
+	## special call for persistency
+	obj$save()
 	return(invisible())
 }
 
@@ -57,19 +59,4 @@ insert.Delaunay <- function(obj,pts,...) {
 # 	update(obj)
 # 	print.default(obj$rcpp())
 # 	print.default(obj)
-# }
-
-# use update(obj) instead obj to ensure xptr not NULL
-# update.Delaunay <- function(obj) {
-# 	if(is_xptr_null(obj$graph$.pointer)) {
-# 		obj$graph <-  switch(paste("dim",obj$dim,sep=""),
-# 		dim2={
-# 			new(Delaunay2)
-# 		},
-# 		dim3={
-# 			new(Delaunay3)
-# 		})
-# 		insert(obj,obj$points)
-# 	}
-# 	return(invisible(obj))
 # }
