@@ -1,7 +1,7 @@
 points.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
 	type <- match.arg(type)
-	if(obj$dim==2) res <- CqlsObj(Vertex2d,type=type) 
-	else if(obj$dim==3) res <- CqlsObj(Vertex3d,type=type)
+	if(obj$dim==2) res <- newEnv(Vertex2d,type=type) 
+	else if(obj$dim==3) res <- newEnv(Vertex3d,type=type)
  	res$obj <- obj
  	res$pt <- pt
 	res$attr <- list(...)
@@ -12,8 +12,8 @@ points.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
 
 lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
 	type <- match.arg(type)
-	if(obj$dim==2) res <- CqlsObj(Segment2d,type=type) 
-	else if(obj$dim==3) res <- CqlsObj(Segment3d,type=type)
+	if(obj$dim==2) res <- newEnv(Segment2d,type=type) 
+	else if(obj$dim==3) res <- newEnv(Segment3d,type=type)
 	res$obj <- obj
 	res$pt <- pt
 	res$attr <- list(...)
@@ -23,7 +23,7 @@ lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
 }
 
 facets.Delaunay <- function(obj,...) {
-	if(obj$dim==3) res <- CqlsObj(Facet3d)
+	if(obj$dim==3) res <- newEnv(Facet3d)
 	else return(NULL)
 	res$obj <- obj
 	res$attr <- list(...)

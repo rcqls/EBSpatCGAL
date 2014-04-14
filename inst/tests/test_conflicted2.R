@@ -5,11 +5,11 @@ del2 <- Delaunay(2)
 insert(del2,matrix(runif(200),ncol=2))
 
 cat("edgesMoins\n")
-print(del2$graph$conflicted_and_boundary_edges( c(.5,.5))->edgesMoins)
+print(del2$rcpp()$conflicted_and_boundary_edges( c(.5,.5))->edgesMoins)
 
 insert(del2,c(.5,.5))
 
-del2$graph$incident_edges( del2$point.index) -> edgesPlus
+del2$rcpp()$incident_edges( del2$point.index) -> edgesPlus
 
 cat("edgesPlus\n")
 

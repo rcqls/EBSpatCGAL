@@ -1,5 +1,5 @@
 Scene <- function() {
-	obj <- CqlsObj(Scene)
+	obj <- newEnv(Scene)
 	obj$list <- list()
 	obj
 }
@@ -53,7 +53,7 @@ plot.Scene <- function(obj,subset) {
 #}
 
 window2d <- function(xrange=c(0,1),yrange=c(0,1),...) {
-	res <- CqlsObj(Window2d)
+	res <- newEnv(Window2d)
 	res$obj <- list(xrange,yrange)
 	res$attr <- list(...)
 	res
@@ -64,7 +64,7 @@ plot.Window2d <- function(obj) {
 }
 
 window3d <- function(xrange=c(0,1),yrange=c(0,1),zrange=c(0,1),...) {
-	res <- CqlsObj(Window3d)
+	res <- newEnv(Window3d)
 	res$obj <- list(xrange,yrange,zrange=c(0,1))
 	res$attr <- list(...)
 	res

@@ -3,16 +3,11 @@
 
 Delaunay <- function(dim=2) {
 	## 1) create an environment (required use of self)
-	self <- new.env() # self can now be used inside method defined inside this constructor!
+	self <- newEnv(Delaunay,dim=dim) # self can now be used inside method defined inside this constructor!
 	
-	## 2) declare everything here
-	class(self) <- "Delaunay"
-	self$dim <- dim
-
 	## 3) Managing persistency
 	## Rmk: no function but bloc with 
-	RcppPersistentObject(self,
-		new = {
+	RcppPersistentObject(self, new = { # this is required
 			switch(paste("dim",self$dim,sep=""),
 			dim2={
 				class(self) <- unique(c("Delaunay_2d",class(self)))
@@ -23,11 +18,11 @@ Delaunay <- function(dim=2) {
 				new(Delaunay3)
 			})
 		},
-		renew = {
+		renew = { # the new method is called before this optional method
 			cat("Delaunay object Rcpp-reinitialized!\n")
 			insert(self,self$.last.points)
 		},
-		save = {
+		save = { # this optional method has to be called whenever you need to update data used in the renew process
 			self$.last.points=self$rcpp()$vertices()
 			cat("Delaunay object Rcpp-saved!\n")
 		}
@@ -50,13 +45,12 @@ insert.Delaunay <- function(obj,pts,...) {
 	if(obj$dim==2) obj$point.index <- obj$rcpp()$insert(pts[,1],pts[,2])
 	else if(obj$dim==3) obj$point.index <- obj$rcpp()$insert(pts[,1],pts[,2],pts[,3])
 	obj$points <- pts
-	## special call for persistency
+	## special save call for persistency
 	obj$save()
 	return(invisible())
 }
 
-# print.Delaunay <- function(obj) {
-# 	update(obj)
-# 	print.default(obj$rcpp())
-# 	print.default(obj)
-# }
+print.Delaunay <- function(obj) {
+	print.default(obj$rcpp())
+	print.default(obj)
+}

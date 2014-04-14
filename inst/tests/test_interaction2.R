@@ -9,8 +9,8 @@ del2 <- Delaunay()
 
 insert(del2,matrix(runif(200),ncol=2))
 
-del2Term$set_graph(del2$graph)
-del2Term2$set_graph(del2$graph)
+del2Term$set_graph(del2$rcpp())
+del2Term2$set_graph(del2$rcpp())
 
 del2Term$infos <- c("x","l","l2")
 del2Term2$infos <- c("x","l","l2")

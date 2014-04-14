@@ -1,4 +1,4 @@
-RcppPersistentObject <- function(self,new_body,renew_body,save_body) {
+RcppPersistentObject <- function(self,new_body,renew_body={},save_body={}) {
 	if(is.environment(self)) { 
 
 		## rcpp recreate method
