@@ -1,9 +1,11 @@
 insert <- function(obj,...) UseMethod("insert")
 "%<<%" <- function(obj,...) UseMethod("%<<%")
-vertices <- function(obj,...) UseMethod("points")
-edges <- function(obj,...) UseMethod("lines")
+vertices <- function(obj,...) UseMethod("vertices")
+edges <- function(obj,...) UseMethod("edges")
 facets <- function(obj,...) UseMethod("facets")
 cells <- function(obj,...) UseMethod("cells")
+
+params <- function(obj,...) UseMethod("params")
 
 
 newEnv <- function (...) 

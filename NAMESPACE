@@ -6,6 +6,7 @@ export(
   "[[<-","[[<-.Scene",
   "[","[.Scene",
   "[<-","[<-.Scene",
+  "[.TermType",
 
   .TermTypesInit,
   InteractionMngr,
@@ -17,5 +18,7 @@ S3method("[[<-",Scene)
 S3method("[",Scene)
 S3method("[<-",Scene)
 S3method("facets",Delaunay)
+
+S3method("[",TermType)
 
 import( Rcpp )

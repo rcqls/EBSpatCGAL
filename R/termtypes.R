@@ -65,18 +65,42 @@ InteractionMngr <- function(form,mode="default") {
   # auto initialize .TermTypes global variable!
   if(!exists(".TermTypes",envir=globalenv())) .TermTypesInit() 
 
-  interMngr <- newEnv(InteractionMngr,formula=form)
+  self <- newEnv(InteractionMngr,formula=form)
   # complete the intialisation
-  interMngr$termtypes <- terms.InteractionMngr(form)
-  if(length(attr(interMngr$termtypes,"response"))) {
-    interMngr$response<-interMngr$termtypes[[1]] #register only the response as a R call!!
-    interMngr$termtypes<-interMngr$termtypes[-1]
+  self$termtypes <- parseTermTypes(form)
+  if(length(attr(self$termtypes,"response"))) {
+    self$response<-self$termtypes[[1]] #register only the response as a R call!!
+    self$termtypes<-self$termtypes[-1]
   }
-  interMngr$terms <- sapply(interMngr$termtypes,eval)
-  interMngr
+  self$terms <- sapply(self$termtypes,eval)
+
+  ###############################################################
+  # IMPORTANT: the use of Interaction is not very useful in R!!!
+  # So the next lines are not provided!
+  ###############################################################
+  # RcppPersistentObject(self, new = {
+  #   new(Interaction,terms(self))
+  # })
+  ###############################################################
+
+  self
 }
 
-terms.InteractionMngr <- parseTermTypes<-function(e) {
+#####################################################################
+# terms retuns everything needed for creating SimGibbs object
+# or ListCache object both having a member of class Rcpp_Interaction
+#####################################################################
+terms.InteractionMngr <- function(interMngr,mode=c("rcpp","R")) {
+  switch(match.arg(mode),
+    rcpp=lapply(interMngr$terms,function(term) term$rcpp()),
+    { 
+      lapply(interMngr$terms,function(term) term$rcpp())
+      interMngr$terms
+    }
+  )
+}
+
+parseTermTypes<-function(e) {
   if(length(e)>1) {
     if(e[[1]]==as.name("+")) return(unlist(c(parseTermTypes(e[[2]]),parseTermTypes(e[[3]]))))
     if(e[[1]]==as.name("~")) {
@@ -124,28 +148,50 @@ TermTypeMngr <- function(type,callR,mode="default") {
 
 TermType <- function(id,...) {
   callR<-match.call()
-  term <- list(
-    call=callR,
-    mngr=TermTypeMngr(.TermTypes$type[[id]],callR),
-    rcpp=new(eval(parse(text=paste(.TermTypes$type[[id]],"TermType","2D",sep=""))))
-  )
-  term$rcpp$infos <- term$mngr$infos
-#   del2Term$params <- list(theta=2,theta2=3)
 
-# del2Term$mode <- 0
+  ## self required for persistent object creation
+  self <- newEnv(TermType,
+                  call=callR,
+                  id=id,
+                  mngr=TermTypeMngr(.TermTypes$type[[id]],callR)
+          )
+  RcppPersistentObject(self, new = {
+    rcpp <- new(eval(parse(text=paste(.TermTypes$type[[self$id]],"TermType","2D",sep=""))))
+    # initialization of rcpp from self$mngr 
+    rcpp$infos <- self$mngr$infos
+    rcpp$params <- as.list(self$mngr$vars)
+    ## self$mngr$local
+    rcpp$exprs <- self$mngr$local$exprs$term
+    rcpp$exprs.size <- self$mngr$local$exprs$size
+    rcpp
+  })
+
+  # exprs, exprs.size
+  # params, mode need only to be initiated when computing expression
 
 # del2Term$exprs<-list(a2=substitute(theta2*l),a1=substitute(theta*c(l,sqrt(l2))))
 # del2Term$exprs.size
   
-  class(term) <- "TermType"
-  term
+  self
 }
 
-params.TermType <- function(term) term$rcpp$params
+"[.TermType" <- function(term,struct,current) {
+  if(missing(current)) as.data.frame(lapply(seq(struct$rcpp()),function(i) term[struct,i]))
+  else {
+    rcpp <- term$rcpp()
+    rcpp$.set_graph(struct$rcpp())
+    rcpp$.set_point(current) #maybe test if numeric
+    rcpp$eval_exprs()
+  }
+}
+
+params.TermType <- function(term) term$rcpp()$params
 
 "params<-.TermType" <- function(term,params) {
-  term$rcpp$params <- params
+  term$rcpp()$params <- params
 }
+
+terms.TermType <- function(term) term$rcpp()$exprs
 
 # update.TermType <- function(term,struct) {
 #   l<-list(...)

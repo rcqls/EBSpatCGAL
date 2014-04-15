@@ -323,7 +323,7 @@ public:
     // (init|eval_before|eval|after)_exprs_results methods allow us to split the evaluation into several functions
     // mainly used inside eval_exprs method below
     void init_exprs_results() {
-        int i,ii;
+        int i;
         exprs_results.clear();
         for(i=0;i<exprs.size();i++) {
             std::vector<double> tmp(exprs_size[i],0);

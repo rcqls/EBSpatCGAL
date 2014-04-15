@@ -35,7 +35,6 @@ Delaunay <- function(dim=2) {
 Delaunay_2d <- function(...) Delaunay(dim=2,...)
 Delaunay_3d <- function(...) Delaunay(dim=3,...)
 
-
 ## in the R way, I prefer to use obj instead of 
 insert.Delaunay <- function(obj,pts,...) {
 	tmp <- cbind(...)
@@ -54,3 +53,28 @@ print.Delaunay <- function(obj) {
 	print.default(obj$rcpp())
 	print.default(obj)
 }
+
+## extract
+
+vertices.Delaunay <- function(obj,mode=c("default","incident","dual"),pt=NULL) {
+	switch(match.arg(mode),
+		incident=if(!is.null(pt)) obj$rcpp()$incident_vertices(pt) else NULL,
+		dual=obj$rcpp()$dual_vertices(),
+		obj$rcpp()$vertices()
+	)
+}
+
+
+edges.Delaunay <- function(obj,mode=c("default","incident","conflicted","dual"),pt=NULL) {
+	switch(match.arg(mode),
+	  	"incident"= if(length(pt)==1) obj$rcpp()$incident_edges(as.integer(pt)),
+		"conflicted"= if(length(pt)==2) {
+			confl_faces <- obj$rcpp()$conflicted_faces(pt)
+			return(rbind(confl_faces[,1:4],confl_faces[,3:6],confl_faces[,c(1:2,5:6)]))
+		},
+		"dual"=obj$rcpp()$dual_edges(),
+		obj$rcpp()$edges()
+	)
+}
+
+seq.Delaunay <- function(obj) 1:NROW(vertices(obj))

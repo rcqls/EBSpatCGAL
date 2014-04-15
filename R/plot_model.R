@@ -2,7 +2,7 @@ points.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
 	type <- match.arg(type)
 	if(obj$dim==2) res <- newEnv(Vertex2d,type=type) 
 	else if(obj$dim==3) res <- newEnv(Vertex3d,type=type)
- 	res$obj <- obj
+ 	res$parent <- obj
  	res$pt <- pt
 	res$attr <- list(...)
 	## default color
@@ -14,7 +14,7 @@ lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
 	type <- match.arg(type)
 	if(obj$dim==2) res <- newEnv(Segment2d,type=type) 
 	else if(obj$dim==3) res <- newEnv(Segment3d,type=type)
-	res$obj <- obj
+	res$parent <- obj
 	res$pt <- pt
 	res$attr <- list(...)
 	## default color
@@ -25,7 +25,7 @@ lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
 facets.Delaunay <- function(obj,...) {
 	if(obj$dim==3) res <- newEnv(Facet3d)
 	else return(NULL)
-	res$obj <- obj
+	res$parent <- obj
 	res$attr <- list(...)
 	## default color
 	if(is.null(res$attr$col)) res$attr$col <- "blue"
@@ -36,10 +36,10 @@ facets.Delaunay <- function(obj,...) {
 plot.Vertex2d <- function(obj) {
 	switch(obj$type,
 		delaunay= {
-			if(is.null(obj$pt)) pts <- obj$obj$rcpp()$vertices()
-			else pts <- obj$obj$rcpp()$incident_vertices(obj$pt)
+			if(is.null(obj$pt)) pts <- vertices(obj$parent)
+			else pts <- vertices(obj$parent,"incident",obj$pt)
 		},
-		voronoi= pts <- obj$obj$rcpp()$dual_vertices()[,1:2],
+		voronoi= pts <- vertices(obj$parent,"dual")[,1:2],
 		return()
 	)
 	#print(pts);print(c(list(pts),obj$attr))
@@ -49,18 +49,11 @@ plot.Vertex2d <- function(obj) {
 plot.Segment2d <- function(obj) {
 	switch(obj$type,
 		delaunay= {
-			if(is.null(obj$pt)) edges <- obj$obj$rcpp()$edges()
-			else if(length(obj$pt)==1) edges <- obj$obj$rcpp()$incident_edges(as.integer(obj$pt))
-			else if(length(obj$pt)==2) {
-				edges <- rbind(
-					obj$obj$rcpp()$conflicted_faces(obj$pt)[,1:4],
-					obj$obj$rcpp()$conflicted_faces(obj$pt)[,3:6],
-					obj$obj$rcpp()$conflicted_faces(obj$pt)[,c(1:2,5:6)]
-
-				)
-			}
+			if(is.null(obj$pt)) edges <- edges(obj$parent)
+			else if(length(obj$pt)==1) edges <- edges(obj$parent,"incident",as.integer(obj$pt))
+			else if(length(obj$pt)==2)  edges <- edges(obj$parent,"conflicted",obj$pt)
 		},
-		voronoi= edges <- obj$obj$rcpp()$dual_edges(),
+		voronoi= edges <- edges(obj$parent),
 		return()
 	)
 	#print(pts);print(c(list(pts),obj$attr))

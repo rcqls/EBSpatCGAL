@@ -19,7 +19,6 @@ public:
     };
 
     NumericVector propose_INSERTION() {
-        double a,b;
         std::vector<double> newPt(dim);
         for(int i=0;i<dim;i++) newPt[i]=as<double>(runif(1,left[i],right[i]));
         return NumericVector(newPt.begin(),newPt.end());
