@@ -9,14 +9,13 @@ ComponentFunctionalFormulaManager <- function() {
   # auto initialize if first used (see termtypes.R)
   if(!exists(".TermTypes",envir=globalenv())) .TermTypesInit() 
   # declare this object as an environment to be dynamic (instead of list)
-  formMngr <- new.env()
-  formMngr$formulas <- list()
-  formMngr$origFormulas <- list()
-  formMngr$compFuncList <- list()
-  formMngr$compFuncCpt <- 0
-  ## init carac environment for autoCaracFormula use!
-  formMngr$caracEnv <- list()
-  class(formMngr) <- "ComponentFunctionalFormulaManager"
+  formMngr <- newEnv(ComponentFunctionalFormulaManager,
+                      formulas=list(),
+                      origFormulas=list(),
+                      compFuncList=list(),
+                      compFuncCpt=0,
+                      ## init carac environment for autoCaracFormula use!
+                      caracEnv=list())
   formMngr
 }
 

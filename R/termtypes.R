@@ -65,9 +65,8 @@ InteractionMngr <- function(form,mode="default") {
   # auto initialize .TermTypes global variable!
   if(!exists(".TermTypes",envir=globalenv())) .TermTypesInit() 
 
-  interMngr <- new.env()
-  interMngr$formula <- form
-  class(interMngr) <- "InteractionMngr"
+  interMngr <- newEnv(InteractionMngr,formula=form)
+  # complete the intialisation
   interMngr$termtypes <- terms.InteractionMngr(form)
   if(length(attr(interMngr$termtypes,"response"))) {
     interMngr$response<-interMngr$termtypes[[1]] #register only the response as a R call!!
@@ -118,13 +117,7 @@ TermTypeMngr <- function(type,callR,mode="default") {
   if(!exists(".TermTypes",envir=globalenv())) .TermTypesInit() 
 
   # the TermType manager
-  termMngr <- new.env()
-  termMngr$mode <- mode
-  termMngr$type <- type
-  termMngr$id <- .TermTypes$id[[type]]
-  termMngr$callR <- callR
-
-  class(termMngr) <- "TermTypeMngr"
+  termMngr <- newEnv(TermTypeMngr,mode=mode,type=type,id=.TermTypes$id[[type]],callR=callR)
   parse.TermTypeMngr(termMngr)
   termMngr
 }
