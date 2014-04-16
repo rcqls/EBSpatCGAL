@@ -10,7 +10,7 @@ insert(del3,matrix(runif(300,-350,350),ncol=3))
 #### OLD CALL
 # gd<-EBGibbs(~ 2 +Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4)))
 
-del3Term$set_graph(del3$rcpp())
+del3Term$.set_graph(del3$rcpp())
 #del2Term2$set_graph(del2$rcpp())
 
 del3Term$infos <- c("l")

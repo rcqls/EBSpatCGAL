@@ -17,8 +17,8 @@ RcppPersistentObject <- function(self,new_body,renew_body={},save_body={}) {
 		body(self$save) <- substitute(save_body)
 
 		# use self$rcpp() to get the self$.rcpp object after a rcpp_renew call
-		self$rcpp <- function() {
-			if(EBSpatCGAL:::is_xptr_null(self$.rcpp$.pointer)) {
+		self$rcpp <- function(force=FALSE) {
+			if(force || EBSpatCGAL:::is_xptr_null(self$.rcpp$.pointer)) {
 				self$.rcpp <- self$new()
 				self$renew() # build .rcpp
 			}

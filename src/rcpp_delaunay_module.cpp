@@ -70,8 +70,8 @@ RCPP_MODULE(delaunay_module) {
 
     class_<DomainDel2D>("DomainDel2D")
     .constructor< Delaunay2*,std::vector<double>,std::vector<double> >()
-    .method("propose_INSERTION",&DomainDel2D::propose_INSERTION,"")
-    .method("propose_DELETION",&DomainDel2D::propose_DELETION,"")
+    .method("pick_INSERTION",&DomainDel2D::pick_INSERTION,"")
+    .method("pick_DELETION",&DomainDel2D::pick_DELETION,"")
     .method("get_graph",&DomainDel2D::get_struct,"get graph")
     ;
 

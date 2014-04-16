@@ -91,19 +91,19 @@ private:
 
         double g = as<double>(runif(1,0,1)),val;
         if( domain->inside_number == 0 ) {
-            inter-> set_current(domain->propose_INSERTION());
+            inter-> set_current(domain->pick_INSERTION());
             if(g < (domain->get_size())*exp(inter->single)) {
                 inter->apply_INSERTION();
                 (domain->inside_number)++;
             }
         } else if(propose_action() == INSERTION) {  
-            inter-> set_current(domain->propose_INSERTION());
+            inter-> set_current(domain->pick_INSERTION());
             val=value_INSERTION();
             //DEBUG: std::cout << "nb=" << domain->inside_number << " g=" << g << " value_INSERTION=" << val << std::endl;
             if(g < val ) (domain->inside_number)++;
             else inter->apply_DELETION();
         } else {//else propose_action() == DELETION
-            inter-> set_current(domain->propose_DELETION());
+            inter-> set_current(domain->pick_DELETION());
             val=value_DELETION();
             //DEBUG: std::cout << "nb=" << domain->inside_number << " g=" << g << " value_DELETION=" << val << std::endl;
             if(g <  val) (domain->inside_number)--;

@@ -87,7 +87,7 @@ InteractionMngr <- function(form,mode="default") {
 }
 
 #####################################################################
-# terms retuns everything needed for creating SimGibbs object
+# terms returns everything needed for creating SimGibbs object
 # or ListCache object both having a member of class Rcpp_Interaction
 #####################################################################
 terms.InteractionMngr <- function(interMngr,mode=c("rcpp","R")) {
@@ -153,32 +153,41 @@ TermType <- function(id,...) {
   self <- newEnv(TermType,
                   call=callR,
                   id=id,
-                  mngr=TermTypeMngr(.TermTypes$type[[id]],callR)
+                  mngr=TermTypeMngr(.TermTypes$type[[id]],callR),
+                  dim=2 # default but can be change later
           )
+
   RcppPersistentObject(self, new = {
-    rcpp <- new(eval(parse(text=paste(.TermTypes$type[[self$id]],"TermType","2D",sep=""))))
+    rcpp <- new(eval(parse(text=paste(.TermTypes$type[[self$id]],"TermType",self$dim,"D",sep=""))))
     # initialization of rcpp from self$mngr 
     rcpp$infos <- self$mngr$infos
     rcpp$params <- as.list(self$mngr$vars)
-    ## self$mngr$local
+    ## self$mngr$local (TODO: maybe no need of difference between local and global expressions)
     rcpp$exprs <- self$mngr$local$exprs$term
     rcpp$exprs.size <- self$mngr$local$exprs$size
     rcpp
   })
 
-  # exprs, exprs.size
-  # params, mode need only to be initiated when computing expression
-
-# del2Term$exprs<-list(a2=substitute(theta2*l),a1=substitute(theta*c(l,sqrt(l2))))
-# del2Term$exprs.size
-  
   self
 }
 
+########################################################################
+## Extract exprs values from struct object with adaptative dimension 
+#######################################################################
 "[.TermType" <- function(term,struct,current) {
-  if(missing(current)) as.data.frame(lapply(seq(struct$rcpp()),function(i) term[struct,i]))
+  if(missing(current)) {
+    res<-sapply(seq(struct),function(i) unlist(term[struct,i]))
+    if(is.null(dim(res))) dim(res) <- c(1,length(res))
+    res <- as.data.frame(t(res))
+    names(res) <- names(term$mngr$local$exprs$term)
+    res
+  }
   else {
-    rcpp <- term$rcpp()
+    # force renew only dimension does not match
+    rcpp <- if(struct$dim != term$dim) { 
+      term$dim <- struct$dim  # update dim inside term
+      term$rcpp(TRUE)         # TRUE means force to renew the rcpp object!
+    } else term$rcpp() 
     rcpp$.set_graph(struct$rcpp())
     rcpp$.set_point(current) #maybe test if numeric
     rcpp$eval_exprs()

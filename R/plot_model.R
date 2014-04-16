@@ -61,8 +61,8 @@ plot.Segment2d <- function(obj) {
 }
 
 plot.Vertex3d <- function(obj) {
-	if(obj$type=="delaunay") pts <- obj$obj$rcpp()$vertices()
-	else if(obj$type=="voronoi") pts <- obj$obj$rcpp()$dual_vertices()[,1:3]
+	if(obj$type=="delaunay") pts <- obj$parent$rcpp()$vertices()
+	else if(obj$type=="voronoi") pts <- obj$parent$rcpp()$dual_vertices()[,1:3]
 	else return()
 	#print(pts);print(c(list(pts),obj$attr))
 	cmd <- if(!is.null(obj$attr$radius)) "spheres3d" else "points3d"  
@@ -70,14 +70,14 @@ plot.Vertex3d <- function(obj) {
 }
 
 plot.Segment3d <- function(obj) {
-	if(obj$type=="delaunay") edges <- t(matrix(t(obj$obj$rcpp()$edges()),nr=3))
-	else if(obj$type=="voronoi") edges <- t(matrix(t(obj$obj$rcpp()$dual_edges()),nr=3))
+	if(obj$type=="delaunay") edges <- t(matrix(t(obj$parent$rcpp()$edges()),nr=3))
+	else if(obj$type=="voronoi") edges <- t(matrix(t(obj$parent$rcpp()$dual_edges()),nr=3))
 	else return()
 	#print(pts);print(c(list(pts),obj$attr))
 	do.call("segments3d",c(list(edges),obj$attr))
 }
 
 plot.Facet3d <- function(obj) {
-	facets <- t(matrix(t(obj$obj$rcpp()$facets()),nr=3))
+	facets <- t(matrix(t(obj$parent$rcpp()$facets()),nr=3))
 	do.call("triangles3d",c(list(facets),obj$attr))
 }
