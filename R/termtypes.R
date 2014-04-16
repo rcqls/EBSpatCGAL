@@ -65,12 +65,14 @@ InteractionMngr <- function(form,mode="default") {
   # auto initialize .TermTypes global variable!
   if(!exists(".TermTypes",envir=globalenv())) .TermTypesInit() 
 
-  self <- newEnv(InteractionMngr,formula=form)
+  self <- newEnv(InteractionMngr,formula=form,dim=2)
   # complete the intialisation
   self$termtypes <- parseTermTypes(form)
   if(length(attr(self$termtypes,"response"))) {
     self$response<-self$termtypes[[1]] #register only the response as a R call!!
     self$termtypes<-self$termtypes[-1]
+    try.response <- try(eval.parent(self$response)) 
+    if(!inherits(try.response,"try-error") && !is.null(try.response$dim)) self$dim <- try.response$dim
   }
   self$terms <- sapply(self$termtypes,eval)
 
@@ -98,6 +100,13 @@ terms.InteractionMngr <- function(interMngr,mode=c("rcpp","R")) {
       interMngr$terms
     }
   )
+}
+
+# To use when the struct dim changes!
+"dim<-.InteractionMngr" <- function(interMngr,value) {
+  # update dim for each term
+  for(term in interMngr$terms) term$dim <- value
+  return(interMngr)
 }
 
 parseTermTypes<-function(e) {
@@ -171,6 +180,17 @@ TermType <- function(id,...) {
   self
 }
 
+"dim.TermType" <- function(term) return(term$dim)
+
+## allow rcpp update related of a change of dim
+"dim<-.TermType" <- function(term,value) {
+  if( value != term$dim) { 
+      term$dim <- value  # update dim inside term
+      term$rcpp(TRUE)
+  }
+  return(term)
+}
+
 ########################################################################
 ## Extract exprs values from struct object with adaptative dimension 
 #######################################################################
@@ -183,11 +203,18 @@ TermType <- function(id,...) {
     res
   }
   else {
+
     # force renew only dimension does not match
-    rcpp <- if(struct$dim != term$dim) { 
-      term$dim <- struct$dim  # update dim inside term
-      term$rcpp(TRUE)         # TRUE means force to renew the rcpp object!
-    } else term$rcpp() 
+    # rcpp <- if(struct$dim != term$dim) { 
+    #   term$dim <- struct$dim  # update dim inside term
+    #   term$rcpp(TRUE)         # TRUE means force to renew the rcpp object!
+    # } else term$rcpp()
+
+    # previous code replaced with the next one
+
+    # update dim for term only if necessary
+    dim(term) <- struct$dim  # force renew only if dimension does not match
+    rcpp <- term$rcpp()
     rcpp$.set_graph(struct$rcpp())
     rcpp$.set_point(current) #maybe test if numeric
     rcpp$eval_exprs()

@@ -19,11 +19,17 @@
 
 SimGibbs <-function(form,runs=10000) {
 	self <- newEnv(SimGibbs,interMngr=InteractionMngr(form),runs=runs)
+	if(!is.null(self$response)) {
+		self$struct <- try(eval.parent(self$response))
+		if(inherits(self$struct,"try-error")) warning("No proper response in SimGibbs!")
+		self$dim <- self$struct$dim 
+	} else self$dim=2
 
 	# Maybe no need to generate at the beginning but only when needed
-	new(SimGibbsDel2D,list(del2Term),del2$rcpp(),c(-350,-350),c(350,350))
+	class <- eval(parse(text=paste("SimGibbsDel",self$dim,"D",sep="")))
+	#new(SimGibbsDel2D,terms),del2$rcpp(),c(-350,-350),c(350,350))
 
 #sim2$single <- 2
 
 #sim2$nb_runs <- 10000
-} 
+}
