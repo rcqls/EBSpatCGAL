@@ -76,6 +76,11 @@ InteractionMngr <- function(form,mode="default") {
   }
   self$terms <- sapply(self$termtypes,eval)
 
+  if(any(single_terms <- sapply(self$terms,is.numeric) )) {
+    self$single <- sum(unlist(self$terms[single_terms]))
+    self$terms <- self$terms[!single_terms] 
+  } else self$single <- 0
+
   ###############################################################
   # IMPORTANT: the use of Interaction is not very useful in R!!!
   # So the next lines are not provided!
@@ -104,9 +109,18 @@ terms.InteractionMngr <- function(interMngr,mode=c("rcpp","R")) {
 
 # To use when the struct dim changes!
 "dim<-.InteractionMngr" <- function(interMngr,value) {
-  # update dim for each term
-  for(term in interMngr$terms) term$dim <- value
+  if(interMngr$dim != value) {
+    # update dim for each term
+    for(term in interMngr$terms) term$dim <- value
+  }
   return(interMngr)
+}
+
+params.InteractionMngr <- function(interMngr) {
+  params_complete <- sapply(interMngr$terms,function(term) length(params(term))==length(term$mngr$varsList))
+  if(any(!params_complete)) {
+    warning("Some value of parameter needs to be provided")
+  } else c(list(single=interMngr$single),lapply(interMngr$terms,params))
 }
 
 parseTermTypes<-function(e) {
@@ -184,7 +198,7 @@ TermType <- function(id,...) {
 
 ## allow rcpp update related of a change of dim
 "dim<-.TermType" <- function(term,value) {
-  if( value != term$dim) { 
+  if( term$dim != value ) { 
       term$dim <- value  # update dim inside term
       term$rcpp(TRUE)
   }

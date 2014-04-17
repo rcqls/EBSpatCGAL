@@ -6,6 +6,7 @@ facets <- function(obj,...) UseMethod("facets")
 cells <- function(obj,...) UseMethod("cells")
 
 params <- function(obj,...) UseMethod("params")
+run <- function(obj,...) UseMethod("run")
 
 
 newEnv <- function (...,class.as.character) 

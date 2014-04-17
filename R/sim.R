@@ -17,19 +17,29 @@
 # gd$dom <- del2dom 
 # run(gd) 					# as many times as desired
 
-SimGibbs <-function(form,runs=10000) {
-	self <- newEnv(SimGibbs,interMngr=InteractionMngr(form),runs=runs)
+
+## TODO: domain would be included later in Domain object embedding Struct 
+## playing the role of response in formula
+SimGibbs <-function(form,runs=10000,domain=c(-350,-350,350,350)) {
+	self <- newEnv(SimGibbs,interMngr=InteractionMngr(form),runs=runs,domain=domain)
 	if(!is.null(self$response)) {
 		self$struct <- try(eval.parent(self$response))
 		if(inherits(self$struct,"try-error")) warning("No proper response in SimGibbs!")
-		self$dim <- self$struct$dim 
-	} else self$dim=2
+		self$dim <- self$struct$dim
+		dim(self$interMngr) <- self$dim
+	} else self$dim <- 2
 
+	self$single <- self$interMngr$single
+
+	init.SimGibbs(self)
+
+	self
+}
+
+init.SimGibbs <- function(self) {
 	# Maybe no need to generate at the beginning but only when needed
-	class <- eval(parse(text=paste("SimGibbsDel",self$dim,"D",sep="")))
-	#new(SimGibbsDel2D,terms),del2$rcpp(),c(-350,-350),c(350,350))
-
-#sim2$single <- 2
-
-#sim2$nb_runs <- 10000
+	PersistentRcppObject(self,{
+		class <- eval(parse(text=paste("SimGibbsDel",self$dim,"D",sep="")))
+		new(class,terms(self$interMngr),self$struct$rcpp(),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
+	})
 }
