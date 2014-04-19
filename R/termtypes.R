@@ -90,6 +90,8 @@ InteractionMngr <- function(form,mode="default") {
   # })
   ###############################################################
 
+  check.params.in.terms(self)
+
   self
 }
 
@@ -116,11 +118,33 @@ terms.InteractionMngr <- function(interMngr,mode=c("rcpp","R")) {
   return(interMngr)
 }
 
-params.InteractionMngr <- function(interMngr) {
-  params_complete <- sapply(interMngr$terms,function(term) length(params(term))==length(term$mngr$varsList))
-  if(any(!params_complete)) {
-    warning("Some value of parameter needs to be provided")
-  } else c(list(single=interMngr$single),lapply(interMngr$terms,params))
+# check if param names are unique and initialized
+check.params.in.terms <- function(interMngr) {
+  interMngr$params.completed <- sapply(interMngr$terms,function(term) length(params(term))==length(term$mngr$varsList))
+  if(any(!interMngr$params.completed)) {
+      cat("WARNING: Some value of parameter needs to be provided!!!\n")
+  }
+  tmp <- sapply(interMngr$terms,function(term) term$mngr$varsList)
+  interMngr$params.duplicated.names <- unique(tmp[duplicated(tmp)])
+  if(length(interMngr$params.duplicated.names)>0) {
+      cat("WARNING: Many parameters have the same name!!!\n")
+  }
+}
+
+params.InteractionMngr <- function(interMngr,...) {
+  params <- list(...)
+  if(length(params)==0) {
+    if(any(!interMngr$params.completed)) {
+      cat("WARNING: Some value of parameter needs to be provided!!!\n")
+    } else c(list(single=interMngr$single),lapply(interMngr$terms,params))
+  } else {
+    if(length(interMngr$params.duplicated.names)>0) {
+      cat("WARNING: Many parameters have the same name!!!\n")
+      } else {
+        for(term in interMngr$terms) params(term,...)
+      }
+    return(params(interMngr))
+  }
 }
 
 parseTermTypes<-function(e) {
@@ -235,11 +259,24 @@ TermType <- function(id,...) {
   }
 }
 
-params.TermType <- function(term) term$rcpp()$params
-
-"params<-.TermType" <- function(term,params) {
-  term$rcpp()$params <- params
+params.TermType <- function(term,...) {
+  params <- list(...)
+  if(length(params)==0) term$rcpp()$params
+  else if(any(names(params) %in% term$mngr$varsList)) {
+    # update in the envir related to rcpp term object
+    # RMK: term$rcpp()$params <- params[term$mngr$varsList] failed
+    # => split into 2 lines as below!
+    tmp <- term$rcpp()
+    tmp$params <- params[term$mngr$varsList]
+    # in the TermTypeMngr
+    for(var in intersect(names(params),term$mngr$varsList))
+      assign(var,params[[var]],envir=term$mngr$vars)
+  }
 }
+
+# "params<-.TermType" <- function(term,params) {
+#   term$rcpp()$params <- params
+# }
 
 terms.TermType <- function(term) term$rcpp()$exprs
 

@@ -38,8 +38,12 @@ SimGibbs <-function(form,runs=10000,domain=c(-350,-350,350,350)) {
 
 init.SimGibbs <- function(self) {
 	# Maybe no need to generate at the beginning but only when needed
-	PersistentRcppObject(self,{
-		class <- eval(parse(text=paste("SimGibbsDel",self$dim,"D",sep="")))
-		new(class,terms(self$interMngr),self$struct$rcpp(),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
+	PersistentRcppObject(self,new = {
+		rccpClass <- eval(parse(text=paste("SimGibbsDel",self$dim,"D",sep="")))
+		rcpp <- new(rcppClass,terms(self$interMngr),self$struct$rcpp(),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
+		rcpp$single <- self$single
+		rcpp 
 	})
 }
+
+params.SimGibbs <- function(self,...) params(self$interMngr,...)
