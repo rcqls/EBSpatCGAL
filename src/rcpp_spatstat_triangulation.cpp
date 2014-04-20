@@ -88,6 +88,24 @@ void Delaunay2_remove_neighbour_of( Delaunay2* obj, NumericVector xy) {
 
 }
 
+// TODO: extension
+template <typename TRIANGULATION2>
+void Triangulation2_remove_inside( TRIANGULATION2* obj, NumericVector xy) {
+
+  Point_2 p(xy[0],xy[1]),q(xy[2],xy[3]); //to extend to polygon
+
+  Rect_2 rect(p,q);
+
+  for(typename TRIANGULATION2::Finite_vertices_iterator 
+          vit = obj->finite_vertices_begin(),
+          end = obj->finite_vertices_end();
+        vit!= end; ++vit)
+    {
+       if(rect.has_on_bounded_side(vit->point())) obj->remove(vit);
+    }
+
+}
+
 void Delaunay3_remove_neighbour_of( Delaunay3* obj, NumericVector xyz) {
 
 	Point_3 pt(xyz[0],xyz[1],xyz[2]);
@@ -974,6 +992,7 @@ RCPP_MODULE(cgal_module) {
 	.constructor()
 	.method("insert",&Delaunay2_insert,"insert points")
 	.method("remove_at_pos",&Triangulation_remove_at_pos<Delaunay2>,"remove point at position")
+  .method("remove_inside",&Triangulation2_remove_inside<Delaunay2>,"remove inside rect")
 	.method("remove_neighbour_of",&Delaunay2_remove_neighbour_of,"remove point neighbour of point")
 	.method("vertices",&Triangulation2_vertices<Delaunay2>,"vertices coordinates")
 	.method("edges",&Triangulation2_edges<Delaunay2>,"edges coordinates")

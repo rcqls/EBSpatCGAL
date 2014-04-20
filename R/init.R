@@ -1,4 +1,5 @@
 insert <- function(obj,...) UseMethod("insert")
+delete <- function(obj,...) UseMethod("delete")
 "%<<%" <- function(obj,...) UseMethod("%<<%")
 vertices <- function(obj,...) UseMethod("vertices")
 edges <- function(obj,...) UseMethod("edges")

@@ -21,6 +21,7 @@
 typedef CGAL::Exact_predicates_inexact_constructions_kernel 		K;
 typedef K::Point_2 													Point_2;
 typedef K::Circle_2 												Circle_2;
+typedef K::Iso_rectangle_2 											Rect_2;
 typedef K::Segment_2 												Segment_2;
 typedef K::Ray_2 													Ray_2;
 typedef CGAL::Delaunay_triangulation_2<K> 							Delaunay2;

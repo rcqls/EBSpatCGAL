@@ -118,6 +118,10 @@ terms.InteractionMngr <- function(interMngr,mode=c("rcpp","R")) {
   return(interMngr)
 }
 
+update.InteractionMngr <- function(interMngr,struct) {
+  for(term in interMngr$terms) update(term,struct)
+}
+
 # check if param names are unique and initialized
 check.params.in.terms <- function(interMngr) {
   interMngr$params.completed <- sapply(interMngr$terms,function(term) length(params(term))==length(term$mngr$varsList))
@@ -220,13 +224,14 @@ TermType <- function(id,...) {
 
 "dim.TermType" <- function(term) return(term$dim)
 
-## allow rcpp update related of a change of dim
-"dim<-.TermType" <- function(term,value) {
-  if( term$dim != value ) { 
-      term$dim <- value  # update dim inside term
-      term$rcpp(TRUE)
+update.TermType <- function(term,struct) {
+  if(struct$dim != term$dim) {
+    term$dim <- struct$dim
+    term$rcpp(TRUE) # force renew
   }
-  return(term)
+  rcpp <- term$rcpp()
+  rcpp$.set_graph(struct$rcpp())
+  rcpp
 }
 
 ########################################################################
@@ -250,10 +255,7 @@ TermType <- function(id,...) {
 
     # previous code replaced with the next one
 
-    # update dim for term only if necessary
-    dim(term) <- struct$dim  # force renew only if dimension does not match
-    rcpp <- term$rcpp()
-    rcpp$.set_graph(struct$rcpp())
+    rcpp <- update(term,struct)
     rcpp$.set_point(current) #maybe test if numeric
     rcpp$eval_exprs()
   }

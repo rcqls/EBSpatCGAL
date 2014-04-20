@@ -3,7 +3,7 @@
 
 Delaunay <- function(dim=2) {
 	## 1) create an environment (required use of self)
-	self <- newEnv(Delaunay,dim=dim) # self can now be used inside method defined inside this constructor!
+	self <- newEnv(Delaunay,Simulable,dim=dim) # self can now be used inside method defined inside this constructor!
 	
 	## 3) Managing persistency
 	## Rmk: no function but bloc with 
@@ -35,7 +35,7 @@ Delaunay <- function(dim=2) {
 Delaunay_2d <- function(...) Delaunay(dim=2,...)
 Delaunay_3d <- function(...) Delaunay(dim=3,...)
 
-## in the R way, I prefer to use obj instead of 
+## in the R way, I prefer to use obj instead of self
 insert.Delaunay <- function(obj,pts,...) {
 	tmp <- cbind(...)
 	if(NCOL(tmp)>1) pts <- cbind(pts,tmp)
@@ -47,6 +47,16 @@ insert.Delaunay <- function(obj,pts,...) {
 	## special save call for persistency
 	obj$save()
 	return(invisible())
+}
+
+delete.Delaunay <- function(obj,pts,inside) {
+	if(!missing(inside)) {
+		obj$rcpp()$remove_inside(inside)
+	} else {
+		if(missing(pts)) pts <- seq(obj)
+		for(i in pts) obj$rcpp()$remove_at_pos(i)
+	}
+	obj$save()
 }
 
 print.Delaunay <- function(obj) {
