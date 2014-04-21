@@ -37,6 +37,7 @@ typedef K::Ray_3													Ray_3;
 typedef K::Triangle_3												Triangle_3;
 typedef K::Tetrahedron_3 											Tetrahedron_3;
 typedef K::Sphere_3 												Sphere_3;
+typedef K::Iso_cuboid_3 											Cuboid_3;
 typedef K::Object_3            										Object_3;
 typedef CGAL::Regular_triangulation_euclidean_traits_3<K> 			Gt3;
 typedef CGAL::Regular_triangulation_3<Gt3> 							Regular3;

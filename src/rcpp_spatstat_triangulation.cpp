@@ -106,6 +106,23 @@ void Triangulation2_remove_inside( TRIANGULATION2* obj, NumericVector xy) {
 
 }
 
+template <typename TRIANGULATION3>
+void Triangulation3_remove_inside( TRIANGULATION3* obj, NumericVector xy) {
+
+  Point_3 p(xy[0],xy[1],xy[2]),q(xy[3],xy[4],xy[5]); //to extend to polygon
+
+  Cuboid_3 cuboid(p,q);
+
+  for(typename TRIANGULATION3::Finite_vertices_iterator 
+          vit = obj->finite_vertices_begin(),
+          end = obj->finite_vertices_end();
+        vit!= end; ++vit)
+    {
+       if(cuboid.has_on_bounded_side(vit->point())) obj->remove(vit);
+    }
+
+}
+
 void Delaunay3_remove_neighbour_of( Delaunay3* obj, NumericVector xyz) {
 
 	Point_3 pt(xyz[0],xyz[1],xyz[2]);
@@ -1020,7 +1037,8 @@ RCPP_MODULE(cgal_module) {
 	.constructor()
 	.method("insert",&Delaunay3_insert,"insert points")
 	.method("remove_at_pos",&Triangulation_remove_at_pos<Delaunay3>,"remove point at position")
-	.method("remove_neighbour_of",&Delaunay3_remove_neighbour_of,"remove point neighbour of point")
+	.method("remove_inside",&Triangulation3_remove_inside<Delaunay3>,"remove inside rect")
+  .method("remove_neighbour_of",&Delaunay3_remove_neighbour_of,"remove point neighbour of point")
 	.method("vertices",&Triangulation3_vertices<Delaunay3>,"vertices coordinates")
 	.method("edges",&Triangulation3_edges<Delaunay3>,"edges coordinates")
 	.method("facets",&Triangulation3_facets<Delaunay3>,"facets coordinates")
