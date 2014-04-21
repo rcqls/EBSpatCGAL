@@ -77,6 +77,9 @@ RCPP_MODULE(delaunay_module) {
 
     class_<DomainDel3D>("DomainDel3D")
     .constructor< Delaunay3*,std::vector<double>,std::vector<double> >()
+    .method("pick_INSERTION",&DomainDel3D::pick_INSERTION,"")
+    .method("pick_DELETION",&DomainDel3D::pick_DELETION,"")
+    .method("get_graph",&DomainDel3D::get_struct,"get graph")
     ;
 
     class_<SimGibbsDel2D>( "SimGibbsDel2D" )

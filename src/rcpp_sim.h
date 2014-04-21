@@ -49,6 +49,7 @@ public:
 
     void run() {
         init();
+        domain->init_inside_number();
         inter->sim_mode(true);
         for(int i=0;i<nb_runs;i++) run_once();
         inter->sim_mode(false);

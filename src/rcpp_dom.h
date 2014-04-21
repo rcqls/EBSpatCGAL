@@ -28,6 +28,8 @@ public:
         set_size();
     };
 
+    void init_inside_number() {inside_number=structure->number_of_vertices();};
+
     NumericVector pick_INSERTION() {
         std::vector<double> newPt(dim);
         for(int i=0;i<dim;i++) newPt[i]=as<double>(runif(1,left[i],right[i]));

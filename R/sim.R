@@ -1,5 +1,5 @@
 # Option I:
-# gd <- SimGibbs(del2dom ~ 2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4)))
+# gd <- SimGibbs(del2 ~ 2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4)))
 # => params(gd,th=c(2,4)) and update(gd,current=del2)
 # run(gd) 					# as many times as desired
 #
@@ -8,13 +8,13 @@
 # => struct to be specified later! 
 # gd$nb_runs <- 1000 # optional since default value is 10000
 # As an example, you want to change "th" parameter too
-# run(gd,del2dom,th=c(3,4)) 	# then run(gd) as many times as desired
+# run(gd,del2,th=c(3,4)) 	# then run(gd) as many times as desired
 # or
 # params(gd,th=c(3,4))
-# run(gd,del2dom) 				# then run(gd) as many times as desired
+# run(gd,del2) 				# then run(gd) as many times as desired
 # or 
 # params(gd,th=c(3,4))
-# gd$dom <- del2dom 
+# gd$dom <- del2 
 # run(gd) 					# as many times as desired
 
 
@@ -37,6 +37,9 @@ SimGibbs <-function(form,runs=10000,domain=c(-350,-350,350,350)) {
 		} else {	
 			rcpp <- new(eval(parse(text=paste("SimGibbsDel",self$dim,"D",sep=""))),terms(self$interMngr),self$struct$rcpp(),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
 			rcpp$single <- self$interMngr$single
+			rcpp$nb_runs <- self$runs
+			# important for renew process!
+			if(!is.null(self$struct)) update(self$interMngr,self$struct)
 			rcpp
 		} 
 	})
@@ -47,11 +50,13 @@ params.SimGibbs <- function(self,...) params(self$interMngr,...)
 
 update.SimGibbs <- function(self,current) {
 	self$struct <- current
+	# force renew of TermType taking into account of the new dimension of struct if necessary
+	update(self$interMngr,self$struct)
+	# change of dim with renew if necessary
 	if(is.null(self$dim) || self$dim != self$struct$dim) {
 		force <- !is.null(self$dim)
 		self$dim <- self$struct$dim
-		update(self$interMngr,self$struct) # force renew of TermType taking into account of the new dimension
-		if(force) self$rcpp(TRUE) #force renew of since change of dimension
+		if(force) self$rcpp(TRUE) #force renew since change of dimension
 	}
 }
 
@@ -61,6 +66,8 @@ run.SimGibbs <- function(self,current,...) {
 		if(inherits(current,"Simulable")) update(self,current) 
 		else cat("WARNING: object not of class Simulable!\n")
 	}
-	self$rcpp()$run()
-	self$struct$save()
+	if(!is.null(self$struct)) {
+		self$rcpp()$run()
+		self$struct$save()
+	}
 }

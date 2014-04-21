@@ -32,7 +32,7 @@ del3Term$exprs.size <- c(1)
 
 sim3 <- new(SimGibbsDel3D,list(del3Term),del3$rcpp(),c(-350,-350,-350),c(350,350,350))
 
-sim3$single <- 2
+sim3$single <- 10
 
 sim3$nb_runs <- 10000
 
