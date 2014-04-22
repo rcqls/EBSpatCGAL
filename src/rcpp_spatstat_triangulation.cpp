@@ -4,6 +4,12 @@
 using namespace Rcpp;
 
 // helpers
+void Delaunay2_insert_one_with_info( Delaunay2* obj, NumericVector xy, List info ) {
+  Point_2 point(xy[0],xy[1]);
+  Delaunay2::Vertex_handle vh=obj->insert(point);
+  vh->info() = info;
+}
+
 IntegerVector Delaunay2_insert( Delaunay2* obj, NumericVector ptsX, NumericVector ptsY ) {
 	std::vector<Point_2> points;
 	int nbPts=ptsX.size();
@@ -17,6 +23,12 @@ IntegerVector Delaunay2_insert( Delaunay2* obj, NumericVector ptsX, NumericVecto
 	std::cout << "Number of inserted vertices is " << obj->number_of_vertices() << std::endl;
 	
 	return IntegerVector::create(obj->number_of_vertices());
+}
+
+void Delaunay3_insert_one_with_info( Delaunay3* obj, NumericVector xyz, List info ) {
+  Point_3 point(xyz[0],xyz[1],xyz[2]);
+  Delaunay3::Vertex_handle vh=obj->insert(point);
+  vh->info() = info;
 }
 
 IntegerVector  Delaunay3_insert( Delaunay3* obj, NumericVector ptsX, NumericVector ptsY, NumericVector ptsZ ) {
@@ -146,6 +158,21 @@ NumericMatrix Triangulation2_vertices(TRIANGULATION2* obj) {
        dv(i,0)=vit->point().x();dv(i,1)=vit->point().y();
     }
     return dv;
+}
+
+template <typename TRIANGULATION>
+List Triangulation_vertices_infos(TRIANGULATION* obj) {
+
+  List infos(obj->number_of_vertices());
+  int i=0;
+  for(typename TRIANGULATION::Finite_vertices_iterator 
+          vit = obj->finite_vertices_begin(),
+          end = obj->finite_vertices_end();
+        vit!= end; ++vit,++i)
+    {
+       infos[i]=vit->info();
+    }
+    return infos;
 }
 
 template <typename TRIANGULATION3>
@@ -1007,11 +1034,13 @@ NumericMatrix Delaunay3_incident_edges(Delaunay3* obj, IntegerVector rank) {
 RCPP_MODULE(cgal_module) {
 	class_<Delaunay2>( "Delaunay2" )
 	.constructor()
+  .method("insert_one_with_info",&Delaunay2_insert_one_with_info,"insert points")
 	.method("insert",&Delaunay2_insert,"insert points")
 	.method("remove_at_pos",&Triangulation_remove_at_pos<Delaunay2>,"remove point at position")
   .method("remove_inside",&Triangulation2_remove_inside<Delaunay2>,"remove inside rect")
 	.method("remove_neighbour_of",&Delaunay2_remove_neighbour_of,"remove point neighbour of point")
 	.method("vertices",&Triangulation2_vertices<Delaunay2>,"vertices coordinates")
+  .method("vertices_infos",&Triangulation_vertices_infos<Delaunay2>,"vertices infos")
 	.method("edges",&Triangulation2_edges<Delaunay2>,"edges coordinates")
 	.method("dual_vertices",&Triangulation2_dual_vertices<Delaunay2>,"dual vertices coordinates")
 	.method("dual_edges",&Triangulation2_dual_edges<Delaunay2>,"dual edges coordinates")
@@ -1035,12 +1064,14 @@ RCPP_MODULE(cgal_module) {
 	;
 	class_<Delaunay3>( "Delaunay3" )
 	.constructor()
+  .method("insert_one_with_info",&Delaunay3_insert_one_with_info,"insert points")
 	.method("insert",&Delaunay3_insert,"insert points")
 	.method("remove_at_pos",&Triangulation_remove_at_pos<Delaunay3>,"remove point at position")
 	.method("remove_inside",&Triangulation3_remove_inside<Delaunay3>,"remove inside rect")
   .method("remove_neighbour_of",&Delaunay3_remove_neighbour_of,"remove point neighbour of point")
 	.method("vertices",&Triangulation3_vertices<Delaunay3>,"vertices coordinates")
-	.method("edges",&Triangulation3_edges<Delaunay3>,"edges coordinates")
+	.method("vertices_infos",&Triangulation_vertices_infos<Delaunay3>,"vertices infos")
+  .method("edges",&Triangulation3_edges<Delaunay3>,"edges coordinates")
 	.method("facets",&Triangulation3_facets<Delaunay3>,"facets coordinates")
 	.method("cells",&Triangulation3_cells<Delaunay3>,"cells coordinates")
 	.method("dual_vertices",&Triangulation3_dual_vertices<Delaunay3>,"dual vertices coordinates")

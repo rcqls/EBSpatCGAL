@@ -23,7 +23,7 @@ Delaunay <- function(dim=2) {
 			insert(self,self$.last.points)
 		},
 		save = { # this optional method has to be called whenever you need to update data used in the renew process
-			self$.last.points=self$rcpp()$vertices()
+			self$.last.points=vertices(self,"save") #self$rcpp()$vertices()
 			cat("Delaunay object Rcpp-saved!\n")
 		}
 	)
@@ -37,14 +37,33 @@ Delaunay_3d <- function(...) Delaunay(dim=3,...)
 
 ## in the R way, I prefer to use obj instead of self
 insert.Delaunay <- function(obj,pts,...) {
-	tmp <- cbind(...)
-	if(NCOL(tmp)>1) pts <- cbind(pts,tmp)
-	if(!is.matrix(pts)) pts <- matrix(pts,nrow=obj$dim)
-	if(NCOL(pts)!=obj$dim && NROW(pts)==obj$dim) pts <- t(pts)
-	if(obj$dim==2) obj$point.index <- obj$rcpp()$insert(pts[,1],pts[,2])
-	else if(obj$dim==3) obj$point.index <- obj$rcpp()$insert(pts[,1],pts[,2],pts[,3])
-	obj$points <- pts
-	## special save call for persistency
+	if(missing(pts)) pts <- data.frame(...)
+	# VERY IMPORTANT: to renew Delaunay object
+	# RMK: ultimately, this can save the NN-graph if "id" is saved and k-NN are saved too => I like it! 
+	if(!is.null(attr(pts,"saved.infos"))) { 
+		for(i in 1:NROW(pts)) obj$rcpp()$insert_one_with_info(unlist(pts[i,]), attr(pts,"saved.infos")[[i]])
+		return()
+	}
+	# regular insertion!
+	if(is.data.frame(pts)) {# one by one (maybe too slow) but with info (i.e. mark)
+		if(all((coord <- c("x","y","z")) %in% names(pts))) {
+			if(obj$dim != 3) coord <- c("x","y") # "z" is a mark!
+		} else if(all((coord <- c("x","y")) %in% names(pts))) {
+			if(obj$dim ==2) stop("z coordinate is missing!")
+		} else stop("No coordinates provided!")
+		info <- pts[,-which(coord %in% names(pts)),drop=FALSE]
+		coord <- pts[,coord,drop=FALSE]
+		for(i in 1:NROW(coord)) obj$rcpp()$insert_one_with_info(unlist(coord[i,]),as.list(info[i,,drop=FALSE]))
+	} else {
+		tmp <- cbind(...)
+		if(NCOL(tmp)>1) pts <- cbind(pts,tmp)
+		if(!is.matrix(pts)) pts <- matrix(pts,nrow=obj$dim)
+		if(NCOL(pts)!=obj$dim && NROW(pts)==obj$dim) pts <- t(pts)
+		if(obj$dim==2) obj$point.index <- obj$rcpp()$insert(pts[,1],pts[,2])
+		else if(obj$dim==3) obj$point.index <- obj$rcpp()$insert(pts[,1],pts[,2],pts[,3])
+		obj$points <- pts
+		## special save call for persistency
+	}
 	obj$save()
 	return(invisible())
 }
@@ -66,10 +85,26 @@ print.Delaunay <- function(obj) {
 
 ## extract
 
-vertices.Delaunay <- function(obj,mode=c("default","incident","dual"),pt=NULL) {
+vertices.Delaunay <- function(obj,mode=c("default","incident","dual","all","save"),pt=NULL) {
 	switch(match.arg(mode),
 		incident=if(!is.null(pt)) obj$rcpp()$incident_vertices(pt) else NULL,
 		dual=obj$rcpp()$dual_vertices(),
+		all={
+			data.frame(tmp<-obj$rcpp()$vertices()) -> tmp3
+			names(tmp3) <- c("x","y","z")[1:ncol(tmp)]
+			obj$rcpp()$vertices_infos() -> tmp2
+			if(!is.null(names(tmp2[[1]]))) {
+				cbind(tmp3,as.data.frame(t(sapply(tmp2,function(e) e[names(tmp2[[1]])])))) -> tmp3
+				names(tmp3) <- c(c("x","y","z")[1:ncol(tmp)],names(tmp2[[1]]))
+			}
+			tmp3
+		},
+		save={
+			data.frame(tmp<-obj$rcpp()$vertices()) -> tmp3
+			names(tmp3) <- c("x","y","z")[1:ncol(tmp)]
+			attr(tmp3,"saved.infos") <- obj$rcpp()$vertices_infos()
+			tmp3
+		},
 		obj$rcpp()$vertices()
 	)
 }

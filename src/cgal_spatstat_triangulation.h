@@ -18,19 +18,41 @@
 #include <CGAL/Regular_triangulation_3.h>
 #include <CGAL/Regular_triangulation_euclidean_traits_3.h>
 
+
+#define MARKED_VERTEX_BASE
+#ifdef MARKED_VERTEX_BASE
+#include <Rcpp.h>
+#include <CGAL/Triangulation_vertex_base_with_info_2.h>
+#include <CGAL/Triangulation_vertex_base_with_info_3.h>
+#endif
+
 typedef CGAL::Exact_predicates_inexact_constructions_kernel 		K;
 typedef K::Point_2 													Point_2;
 typedef K::Circle_2 												Circle_2;
 typedef K::Iso_rectangle_2 											Rect_2;
 typedef K::Segment_2 												Segment_2;
 typedef K::Ray_2 													Ray_2;
+
+
+#ifdef MARKED_VERTEX_BASE
+typedef CGAL::Triangulation_vertex_base_with_info_2<Rcpp::List, K>    Vb2;
+typedef CGAL::Triangulation_data_structure_2<Vb2>                    Tds2;
+typedef CGAL::Delaunay_triangulation_2<K, Tds2>                      Delaunay2;
+#else
 typedef CGAL::Delaunay_triangulation_2<K> 							Delaunay2;
-//typedef K::Point_2 													Circle_2;
+#endif
+
 typedef double 														Weight;
 typedef CGAL::Regular_triangulation_euclidean_traits_2<K,Weight>  	Gt2;
 typedef CGAL::Regular_triangulation_2<Gt2> 							Regular2;
 typedef Gt2::Weighted_point_2 										Weighted_point_2;
+#ifdef MARKED_VERTEX_BASE
+typedef CGAL::Triangulation_vertex_base_with_info_3<Rcpp::List, K>    Vb3;
+typedef CGAL::Triangulation_data_structure_3<Vb3>                    Tds3;
+typedef CGAL::Delaunay_triangulation_3<K, Tds3,CGAL::Fast_location>   Delaunay3;
+#else
 typedef CGAL::Delaunay_triangulation_3<K, CGAL::Fast_location> 		Delaunay3;
+#endif
 typedef K::Point_3 													Point_3;
 typedef K::Segment_3												Segment_3;
 typedef K::Ray_3													Ray_3;
