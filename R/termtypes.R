@@ -66,8 +66,11 @@ InteractionMngr <- function(form,mode="default") {
   if(!exists(".TermTypes",envir=globalenv())) .TermTypesInit() 
 
   self <- newEnv(InteractionMngr,formula=form,dim=2)
+
   # complete the intialisation
-  self$termtypes <- parseTermTypes(form)
+  parseMarksFormula(self)
+  self$termtypes <- parseTermTypes(self$formula)
+
   if(length(attr(self$termtypes,"response"))) {
     self$response<-self$termtypes[[1]] #register only the response as a R call!!
     self$termtypes<-self$termtypes[-1]
@@ -149,6 +152,32 @@ params.InteractionMngr <- function(interMngr,...) {
       }
     return(params(interMngr))
   }
+}
+
+# 
+parseMarksFormula <- function(interMngr) {
+
+  pipeSep <- "--PIPE--"
+
+  splitPipe <- function(form) {
+    if(length(form)==2 && (form[[1]]==as.name("~"))) {
+      c(splitPipe(form[[1]]),splitPipe(form[[2]]))
+    } else if(length(form)==3 && (form[[1]]==as.name("~"))) {
+      c(splitPipe(form[[2]]),splitPipe(form[[1]]),splitPipe(form[[3]]))
+    } else if(length(form)==3 && (form[[1]]==as.name("|")))   {
+      c(deparse(form[[2]]),pipeSep,deparse(form[[3]]))
+    } else {
+      deparse(form)
+    }
+  }
+
+  form <- interMngr$formula
+
+  form <- lapply(strsplit(paste(splitPipe(form),collapse=""),pipeSep)[[1]],function(e) parse(text=e)[[1]])
+
+  interMngr$formula <- eval(form[[1]],envir=globalenv())
+  if(length(form)==2) interMngr$mark.formula <- eval(form[[2]],envir=globalenv())
+
 }
 
 parseTermTypes<-function(e) {

@@ -36,20 +36,27 @@ Delaunay_2d <- function(...) Delaunay(dim=2,...)
 Delaunay_3d <- function(...) Delaunay(dim=3,...)
 
 ## in the R way, I prefer to use obj instead of self
+
 insert.Delaunay <- function(obj,pts,...) {
+	# if missing pts, pts is completed with ...
 	if(missing(pts)) pts <- data.frame(...)
+
 	# VERY IMPORTANT: to renew Delaunay object
 	# RMK: ultimately, this can save the NN-graph if "id" is saved and k-NN are saved too => I like it! 
 	if(!is.null(attr(pts,"saved.infos"))) { 
 		for(i in 1:NROW(pts)) obj$rcpp()$insert_one_with_info(unlist(pts[i,]), attr(pts,"saved.infos")[[i]])
 		return()
 	}
-	# regular insertion!
-	if(is.data.frame(pts)) {# one by one (maybe too slow) but with info (i.e. mark)
+
+	# The rest is for regular insertion!
+
+	# insertion one by one (maybe too slow) but with info (i.e. mark)
+	# mark is considered here as unidimensional and all vertices have values for each mark
+	if(is.data.frame(pts)) {
 		if(all((coord <- c("x","y","z")) %in% names(pts))) {
-			if(obj$dim != 3) coord <- c("x","y") # "z" is a mark!
+			if(obj$dim == 3) coord <- c("x","y") # "z" is then a mark!
 		} else if(all((coord <- c("x","y")) %in% names(pts))) {
-			if(obj$dim ==2) stop("z coordinate is missing!")
+			if(obj$dim == 3) stop("z coordinate is missing!")
 		} else stop("No coordinates provided!")
 		info <- pts[,-which(coord %in% names(pts)),drop=FALSE]
 		coord <- pts[,coord,drop=FALSE]
@@ -93,7 +100,7 @@ vertices.Delaunay <- function(obj,mode=c("default","incident","dual","all","save
 			data.frame(tmp<-obj$rcpp()$vertices()) -> tmp3
 			names(tmp3) <- c("x","y","z")[1:ncol(tmp)]
 			obj$rcpp()$vertices_infos() -> tmp2
-			if(!is.null(names(tmp2[[1]]))) {
+			if(length(names(tmp2[[1]]))>0) {
 				cbind(tmp3,as.data.frame(t(sapply(tmp2,function(e) e[names(tmp2[[1]])])))) -> tmp3
 				names(tmp3) <- c(c("x","y","z")[1:ncol(tmp)],names(tmp2[[1]]))
 			}
