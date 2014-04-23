@@ -77,7 +77,12 @@ InteractionMngr <- function(form,mode="default") {
     try.response <- try(eval.parent(self$response)) 
     if(!inherits(try.response,"try-error") && !is.null(try.response$dim)) self$dim <- try.response$dim
   }
+
+  # to temporarily communicate with TermType about marks
+  # Rmk: not a perfect solution but speed is not required!
+  assign(".tmp.interactionMngr",self,envir=globalenv())
   self$terms <- sapply(self$termtypes,eval)
+  remove(".tmp.interactionMngr",envir=globalenv())
 
   if(any(single_terms <- sapply(self$terms,is.numeric) )) {
     self$single <- sum(unlist(self$terms[single_terms]))
@@ -176,7 +181,30 @@ parseMarksFormula <- function(interMngr) {
   form <- lapply(strsplit(paste(splitPipe(form),collapse=""),pipeSep)[[1]],function(e) parse(text=e)[[1]])
 
   interMngr$formula <- eval(form[[1]],envir=globalenv())
-  if(length(form)==2) interMngr$mark.formula <- eval(form[[2]],envir=globalenv())
+  if(length(form)==2) {
+    interMngr$mark.formula <- eval(form[[2]],envir=globalenv())
+
+    (splitMarks <- function(form) {
+      tmp <- strsplit(c(deparse(form[[2]]),deparse(form[[3]])),":")
+      tmp[[2]] <- lapply(paste("r",tmp[[2]],sep=""),function(e) parse(text=e)[[1]])
+      markfun <- lapply(tmp[[2]],function(e) {
+        tmp2 <- function(n) {}
+        body(tmp2) <- as.call(c(e[[1]],as.name("n"),sapply(2:length(e),function(i) e[[i]])))
+        tmp2
+      })
+      names(markfun) <- tmp[[1]]
+
+      markexpr <- as.call(c(as.name("list"),lapply(tmp[[2]],function(e) as.call(c(e[[1]],1,sapply(2:length(e),function(i) e[[i]]))))))
+      names(markexpr) <- c("",tmp[[1]])
+
+      list(mark.name=tmp[[1]],mark.fun=markfun,mark.expr=markexpr)
+    })(interMngr$mark.formula) -> tmp
+
+
+    interMngr$mark.fun <- tmp$mark.fun
+    interMngr$mark.expr <- tmp$mark.expr
+    interMngr$mark.name <- tmp$mark.name
+  }
 
 }
 
@@ -259,7 +287,7 @@ update.TermType <- function(term,struct) {
     term$rcpp(TRUE) # force renew
   }
   rcpp <- term$rcpp()
-  rcpp$.set_graph(struct$rcpp())
+  rcpp$set_struct(struct$rcpp())
   rcpp
 }
 
@@ -285,7 +313,7 @@ update.TermType <- function(term,struct) {
     # previous code replaced with the next one
 
     rcpp <- update(term,struct)
-    rcpp$.set_point(current) #maybe test if numeric
+    rcpp$set_current(current) #maybe test if numeric
     rcpp$eval_exprs()
   }
 }
@@ -338,7 +366,7 @@ parse.TermTypeMngr<-function(termMngr,skip=2) {
   # The real starting point is here!
   # Extract the TermType components and the arguments (graph and components) 
   comps<- as.list(termMngr$callR)[-(1:skip)]
-  print(comps)
+  ##print(comps)
   #form first containing the unnamed values of comps 
   form<-comps[!is.named(comps)]
   opts<-list() #for additional
@@ -389,7 +417,8 @@ parse.TermTypeMngr<-function(termMngr,skip=2) {
   ### => infos are definitely determined! ##cat("infos ->");print(infos)
   
   #named formulas => not an info no more marks
-  varsList<-sapply(namesList,function(vars) setdiff(vars,c(infos))) #TODO MARKS! ,.funcEnv$.marks.names)))
+  
+  varsList<-sapply(namesList,function(vars) setdiff(vars,c(infos,.tmp.interactionMngr$mark.name)))
   ### debugMode: cat("varsList->");print(varsList);print(infos)
   isFunc<-sapply(varsList,function(vars) length(vars)>0)
   ### => isFunc definitely determined! ##cat("isFunc ->");print(isFunc)
@@ -398,7 +427,8 @@ parse.TermTypeMngr<-function(termMngr,skip=2) {
   ### => varsList definitely determined! ##cat("varsList ->");print(varsList)
   varsList<-setdiff(varsList,sapply(comps2,function(e) names(comps2)[!is.null(find.names.in.expression(e))]))
   
-  # TODO: MARKS! varsList<-setdiff(varsList,.funcEnv$.marks.names)
+  # TODO: MARKS! cat(".tmp.inter->");print(.tmp.interactionMngr$mark.name)
+  varsList<-setdiff(varsList,.tmp.interactionMngr$mark.name)
   ### cat("varsList (last) ->");print(varsList)
   
   isVar<- names(comps2) %in% varsList 

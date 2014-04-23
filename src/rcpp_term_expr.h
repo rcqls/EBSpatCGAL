@@ -1,5 +1,6 @@
 #ifndef RCPP_TERM_EXPRESSION_H
 #define RCPP_TERM_EXPRESSION_H
+#include "rcpp_dom.h"
 
 using namespace Rcpp ;
 
@@ -25,6 +26,12 @@ public:
     virtual void set_current(NumericVector p) = 0;
 
     virtual int get_mode() = 0;
+
+    virtual List get_mark() = 0;
+
+    virtual void set_mark(List mark) = 0;
+
+    virtual int inside_number(Domain* domain) = 0;
 
     virtual void apply_INSERTION() =0;
 
@@ -63,6 +70,12 @@ public:
         first_term=term_list.front();
     }
 
+    // delegators to first_term (avoid STRUCT templating in SimGibbs and ListCache)
+
+    int inside_number(Domain* domain) {
+        return first_term->inside_number(domain);
+    }
+
     void apply_INSERTION() {
         first_term->apply_INSERTION();
     }
@@ -70,6 +83,14 @@ public:
     void apply_DELETION() {
         first_term->apply_DELETION();
     }
+
+    void set_mark(List mark) {
+        first_term->set_mark(mark);
+    }
+
+    List get_mark() {return first_term->get_mark();}
+
+    // the other methods
 
     void make_local_lists() {
         //DEBUG: std::cout << "mode=" << first_term->get_mode() << std::endl;
@@ -141,7 +162,27 @@ protected:
 
 class Interaction: public TermList {
 public:
-    Interaction(List term_list_): TermList(term_list_) {}
+
+    Interaction(List term_list_): TermList(term_list_) {
+    }
+
+    List new_mark() {
+        return Rf_eval( mark_expr,mark_envir );
+    }
+
+    void set_mark_expr(Language expr) {
+        mark_expr = expr;
+        mark_envir = Environment::global_env();
+    }
+
+    void set_mark() {TermList::set_mark(new_mark());}
+
+    // void set_mark_function(List func) {mark_func=func;}
+
+    // List new_mark() {
+    //     Function func=mark_func(1);
+    //     return func();
+    // }
 
     void sim_mode(bool mode) {
         make_local_lists_last_apply = !mode;
@@ -207,9 +248,15 @@ public:
     //TODO: to delete when Rcpp would fix that
     void set_current(NumericVector p) {TermList::set_current(p);}
 
+    // set_mark is defined in TermList!
 
     //Single parameter
     double single;
+
+private:
+    List mark_func;
+    Language mark_expr;
+    Environment mark_envir;
 
 };
 
@@ -231,6 +278,7 @@ public:
     }
 
     void set_struct(STRUCT* struct_) {structure=struct_;}
+    
     STRUCT* get_struct() {return structure;}
 
     void set_exprs(List exprs_) { exprs=exprs_; }
@@ -257,11 +305,26 @@ public:
     void set_current_(NumericVector p); //by coordinates
 
     //just a wrapper of set_current_ depending on mode
-    void set_current(NumericVector p);
+    void set_current(NumericVector p) {
+        mode= p.size()==1 ? DELETION : INSERTION;
+        switch(mode) {
+        case INSERTION: 
+            set_current_<INSERTION>(p);
+            break;
+        case DELETION: 
+            set_current_<DELETION>(p);
+        }
+    }
 
     NumericVector get_current();
 
     int get_current_index();
+
+    //only needed for the first_term of Interaction object
+    void set_mark(List mark) {current_handle->info()=mark;}
+    List get_mark() {return current_handle->info();}
+
+    int inside_number(Domain* domain) {return structure->number_of_vertices();};
 
     //Maybe to secialize if needed (when trying to embed Kiên stuff)!
     //An alternative is to adapt this part!

@@ -147,20 +147,6 @@ void Del2TermType2D::set_current_<DELETION>(NumericVector p) {
 	if(auto_make_list) make_local_lists<DELETION>();
 }
 
-template <>
-void Del2TermType2D::set_current(NumericVector p) {
-	mode= p.size()==1 ? DELETION : INSERTION;
-    switch(mode) {
-    case INSERTION: 
-        set_current_<INSERTION>(p);
-        break;
-    case DELETION: 
-        set_current_<DELETION>(p);
-    }
-}
-
-
-
 template <> 
 NumericVector Del2TermType2D::get_current() {
 	return NumericVector::create(current.x(),current.y());
@@ -301,19 +287,6 @@ void Del2TermType3D::set_current_<DELETION>(NumericVector p) {
 	//create the lists of edges
 	if(auto_make_list) make_local_lists<DELETION>();
 }
-
-template <>
-void Del2TermType3D::set_current(NumericVector p) {
-	mode= p.size()==1 ? DELETION : INSERTION;
-    switch(mode) {
-    case INSERTION: 
-        set_current_<INSERTION>(p);
-        break;
-    case DELETION: 
-        set_current_<DELETION>(p);
-    }
-}
-
 
 template <> 
 NumericVector Del2TermType3D::get_current() {

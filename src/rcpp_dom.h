@@ -5,7 +5,6 @@
 
 using namespace Rcpp ;
 
-template <typename STRUCT> //, typename ELEMENT = typename STRUCT::Point, typename HANDLE = typename STRUCT::Vertex_handle>
 class Domain {
 public: 
     // TODO : completer en spécifiant 4 types de domaines : 
@@ -19,41 +18,29 @@ public:
     // 3) générer aléatoire point à insérer ou à supprimer
 
     Domain() {}; //needed by rcpp_delaunay_module.cpp
-    Domain(STRUCT* structure_,std::vector<double> left_,std::vector<double> right_) {//Rectangle first
-        structure=structure_;
+    Domain(std::vector<double> left_,std::vector<double> right_) {//Rectangle first
         left=left_;right=right_;
         dim=left.size();
         //DEBUG: std::cout << "dim="<< dim << std::endl;
-        inside_number=structure->number_of_vertices();
         set_size();
     };
 
-    void init_inside_number() {inside_number=structure->number_of_vertices();};
-
-    NumericVector pick_INSERTION() {
+    NumericVector pick() {
         std::vector<double> newPt(dim);
         for(int i=0;i<dim;i++) newPt[i]=as<double>(runif(1,left[i],right[i]));
         return NumericVector(newPt.begin(),newPt.end());
     };
 
-    NumericVector pick_DELETION() {
-        return NumericVector::create(as<double>(runif(1,0,inside_number)));
-        
-    };
-
-    STRUCT* get_struct() {return structure;}
-    
-    //maintain number of inside domain point
-    int inside_number;
 
     double get_size() {return size;} //area or volume
 
     int get_dim() {return dim;}
-protected:
-    STRUCT* structure;
+
 
     std::vector<double> left,right; //in some axe
     std::vector<double> in_left,in_right; //in some axe
+
+protected:
 
     int dim;
 

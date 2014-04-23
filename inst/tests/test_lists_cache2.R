@@ -10,8 +10,8 @@ del2 <- Delaunay()
 insert(del2,matrix(runif(200,-350,350),ncol=2))
 
 
-del2Term$set_graph(del2$rcpp())
-del2Term2$set_graph(del2$rcpp())
+del2Term$set_struct(del2$rcpp())
+del2Term2$set_struct(del2$rcpp())
 
 del2Term$infos <- c("l")
 del2Term2$infos <- c("x","l","l2")
@@ -29,10 +29,10 @@ del2Term2$exprs.size <- c(1)
 
 new(Interaction,list(del2Term,del2Term2)) -> inter
 
-dom2 <- new(DomainDel2D,del2$rcpp(),c(-350,-350),c(350,350)) 
+dom2 <- new(DomainDel2D,c(-350,-350),c(350,350)) 
 
 
-cache2 <- new(ListsCacheDel2D,dom2,inter)
+cache2 <- new(ListsCacheDel2D,del2$rcpp(),dom2,inter)
 
 cache2$set_mode(2)
 

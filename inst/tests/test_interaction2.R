@@ -9,8 +9,8 @@ del2 <- Delaunay()
 
 insert(del2,matrix(runif(200),ncol=2))
 
-del2Term$set_graph(del2$rcpp())
-del2Term2$set_graph(del2$rcpp())
+del2Term$set_struct(del2$rcpp())
+del2Term2$set_struct(del2$rcpp())
 
 del2Term$infos <- c("x","l","l2")
 del2Term2$infos <- c("x","l","l2")
@@ -31,7 +31,7 @@ print(inter$local_energy())
 
 print(del2Term$eval_exprs())
 
-del2Term2$set_point( c(.5,.5) )
+del2Term2$set_current( c(.5,.5) )
 
 
 print(del2Term2$eval_exprs())

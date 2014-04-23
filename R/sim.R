@@ -34,10 +34,14 @@ SimGibbs <-function(form,runs=10000,domain=c(-350,-350,350,350)) {
 	RcppPersistentObject(self,new = { 
 		if(is.null(self$struct)) {
 			## TODO: initialilize SimGibbsDel(2|3)D without del2
+			## Maybe create one! 
 		} else {	
-			rcpp <- new(eval(parse(text=paste("SimGibbsDel",self$dim,"D",sep=""))),terms(self$interMngr),self$struct$rcpp(),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
+			## No more SimGibbsDel(2|3)D even if TermType depends on dimension
+			##rcpp <- new(eval(parse(text=paste("SimGibbsDel",self$dim,"D",sep=""))),terms(self$interMngr),self$struct$rcpp(),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
+			rcpp <- new(SimGibbsCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
 			rcpp$single <- self$interMngr$single
 			rcpp$nb_runs <- self$runs
+			rcpp$set_mark_expr(self$interMngr$mark.expr)
 			# important for renew process!
 			if(!is.null(self$struct)) update(self$interMngr,self$struct)
 			rcpp
@@ -48,6 +52,13 @@ SimGibbs <-function(form,runs=10000,domain=c(-350,-350,350,350)) {
 
 params.SimGibbs <- function(self,...) params(self$interMngr,...)
 
+
+##########################################################################
+# RMK: Interaction C++ object knows about STRUCT class via its first term 
+# so no need to communicate the graph structure to SimGibbs.
+# This method is in charge to communicate the struct to all the terms of 
+# the interaction manager.
+##########################################################################
 update.SimGibbs <- function(self,current) {
 	self$struct <- current
 	# force renew of TermType taking into account of the new dimension of struct if necessary

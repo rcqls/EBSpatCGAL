@@ -3,16 +3,8 @@
 #include "rcpp_sim.h"
 #include "rcpp_lists_cache.h"
 
-typedef Domain<Delaunay2> DomainDel2D;
-typedef Domain<Delaunay3> DomainDel3D;
-
-RCPP_EXPOSED_AS(DomainDel2D);
-RCPP_EXPOSED_WRAP(DomainDel2D);
-RCPP_EXPOSED_AS(DomainDel3D);
-RCPP_EXPOSED_WRAP(DomainDel3D);
-
-typedef SimGibbs<Delaunay2> SimGibbsDel2D;
-typedef SimGibbs<Delaunay3> SimGibbsDel3D;
+RCPP_EXPOSED_AS(Domain);
+RCPP_EXPOSED_WRAP(Domain);
 
 typedef ListsCache<Delaunay2> ListsCacheDel2D;
 typedef ListsCache<Delaunay3> ListsCacheDel3D;

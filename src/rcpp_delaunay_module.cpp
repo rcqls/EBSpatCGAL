@@ -19,10 +19,10 @@ RCPP_MODULE(delaunay_module) {
     "infos list" )
     .property( "params", &Del2TermType2D::get_params, &Del2TermType2D::set_params,
     "params list" )
-    .method(".set_graph",&Del2TermType2D::set_struct,"set graph")
-    .method(".get_graph",&Del2TermType2D::get_struct,"get graph")
-    .method(".set_point",&Del2TermType2D::set_current,"set point by coordinates (insertion) or index (suppression)")
-    .method(".get_point",&Del2TermType2D::get_current,"get point")
+    .method("set_struct",&Del2TermType2D::set_struct,"set struct")
+    .method("get_struct",&Del2TermType2D::get_struct,"get struct")
+    .method("set_current",&Del2TermType2D::set_current,"set point by coordinates (insertion) or index (suppression)")
+    .method("get_current",&Del2TermType2D::get_current,"get point")
 	.method("eval_first_expr",&Del2TermType2D::eval_first_expr,"eval first expr")
     .method("eval_exprs",&Del2TermType2D::eval_exprs,"eval exprs")
 	;
@@ -44,10 +44,10 @@ RCPP_MODULE(delaunay_module) {
     "infos list" )
     .property( "params", &Del2TermType3D::get_params, &Del2TermType3D::set_params,
     "params list" )
-    .method(".set_graph",&Del2TermType3D::set_struct,"set graph")
-    .method(".get_graph",&Del2TermType3D::get_struct,"get graph")
-    .method(".set_point",&Del2TermType3D::set_current,"set point by coordinates (insertion) or index (suppression)")
-    .method(".get_point",&Del2TermType3D::get_current,"get point")
+    .method("set_struct",&Del2TermType3D::set_struct,"set struct")
+    .method("get_struct",&Del2TermType3D::get_struct,"get struct")
+    .method("set_current",&Del2TermType3D::set_current,"set point by coordinates (insertion) or index (suppression)")
+    .method("get_current",&Del2TermType3D::get_current,"get point")
     .method("set_index",&Del2TermType3D::set_current_<DELETION>,"set (index) point to delete")
     .method("eval_first_expr",&Del2TermType3D::eval_first_expr,"eval first expr")
     .method("eval_exprs",&Del2TermType3D::eval_exprs,"eval exprs")
@@ -62,43 +62,25 @@ RCPP_MODULE(delaunay_module) {
     ;
 
     class_<ListsCacheDel2D>("ListsCacheDel2D")
-    .constructor<DomainDel2D*,Interaction*>()
+    .constructor<Delaunay2*,Domain*,Interaction*>()
     .method("set_mode",&ListsCacheDel2D::set_mode,"set mode")
     .method("make_lists",&ListsCacheDel2D::make_lists,"make lists cache")
     .method("get_lists",&ListsCacheDel2D::get_lists,"get lists cache")
     ;
 
-    class_<DomainDel2D>("DomainDel2D")
-    .constructor< Delaunay2*,std::vector<double>,std::vector<double> >()
-    .method("pick_INSERTION",&DomainDel2D::pick_INSERTION,"")
-    .method("pick_DELETION",&DomainDel2D::pick_DELETION,"")
-    .method("get_graph",&DomainDel2D::get_struct,"get graph")
+    class_<Domain>("Domain")
+    .constructor<std::vector<double>,std::vector<double> >()
+    .method("pick",&Domain::pick,"")
     ;
 
-    class_<DomainDel3D>("DomainDel3D")
-    .constructor< Delaunay3*,std::vector<double>,std::vector<double> >()
-    .method("pick_INSERTION",&DomainDel3D::pick_INSERTION,"")
-    .method("pick_DELETION",&DomainDel3D::pick_DELETION,"")
-    .method("get_graph",&DomainDel3D::get_struct,"get graph")
-    ;
-
-    class_<SimGibbsDel2D>( "SimGibbsDel2D" )
+    class_<SimGibbs>( "SimGibbsCpp" )
     .constructor()
-    .constructor< List,DomainDel2D* >()
-    .constructor< List,Delaunay2*,std::vector<double>,std::vector<double> >()
-    .field( "nb_runs", &SimGibbsDel2D::nb_runs, "nb_runs" )
-    .property("single",&SimGibbsDel2D::get_single,&SimGibbsDel2D::set_single,"single")
-    .method("run",&SimGibbsDel2D::run,"run")
-    .method("get_domain",&SimGibbsDel2D::get_domain,"get domain")
+    .constructor< List,std::vector<double>,std::vector<double> >()
+    .field( "nb_runs", &SimGibbs::nb_runs, "nb_runs" )
+    .property("single",&SimGibbs::get_single,&SimGibbs::set_single,"single")
+    .method("mark_expr",&SimGibbs::set_mark_expr,"set mark expr")
+    .method("run",&SimGibbs::run,"run")
+    .method("get_domain",&SimGibbs::get_domain,"get domain")
     ;
 
-    class_<SimGibbsDel3D>( "SimGibbsDel3D" )
-    .constructor()
-    .constructor< List,DomainDel3D* >()
-    .constructor< List,Delaunay3*,std::vector<double>,std::vector<double> >()
-    .field( "nb_runs", &SimGibbsDel3D::nb_runs, "nb_runs" )
-    .property("single",&SimGibbsDel3D::get_single,&SimGibbsDel3D::set_single,"single")
-    .field( "nb_runs", &SimGibbsDel3D::nb_runs, "nb_runs" )
-    .method("run",&SimGibbsDel3D::run,"run")
-    ;
 }

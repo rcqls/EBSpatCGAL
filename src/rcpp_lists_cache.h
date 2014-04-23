@@ -7,13 +7,14 @@ using namespace Rcpp ;
 
 enum CacheMode {Systematic=0,Random,Existing};
 
+//TODO: remove the dependency on STRUCT since Interaction via first TermType knows everything about STRUCT (like SimGibbs)
 template <typename STRUCT> //, typename ELEMENT = typename STRUCT::Point, typename HANDLE = typename STRUCT::Vertex_handle>
 class ListsCache {
 public: 
     ListsCache() {}; //needed by rcpp_delaunay_module.cpp
-    ListsCache(Domain<STRUCT>* domain_,Interaction* inter_) {
+    ListsCache(STRUCT* structure_,Domain* domain_,Interaction* inter_) {
+        structure=structure_;
         domain=domain_;
-        structure=domain->get_struct();
         inter=inter_;
     };
 
@@ -64,7 +65,7 @@ public:
     List get_lists() {return lists;};
 
 protected:
-	Domain<STRUCT>* domain;
+	Domain* domain;
 	STRUCT* structure;
 	std::vector<int> size,delta;
 	Interaction* inter;
