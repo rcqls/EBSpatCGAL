@@ -29,6 +29,11 @@ public:
         inter->set_mark_expr(expr);
     }
 
+    void set_marked(bool state) {marked=state;}
+
+    List new_mark() {return inter->new_mark();}
+
+
     void set_domain(Domain* domain_ ) {
         domain=domain_;
     }
@@ -67,6 +72,8 @@ private:
 
     Domain* domain;
 
+    bool marked;
+
     Interaction* inter; //For Sim only the first expression is supposed to contain the local energy formula
 
     void init() {
@@ -81,11 +88,26 @@ private:
         return action;
     };
 
+    void pick_mark_for_current() {
+        if(marked) inter->set_current_mark();
+    }
+
     NumericVector pick_INSERTION() {return domain->pick();}
 
     NumericVector pick_DELETION() {
         return NumericVector::create(as<double>(runif(1,0,inside_number))); 
     };
+
+    void propose_INSERTION() {
+        //std::cout << (marked ? "marked" : "not marked") << std::endl; 
+        inter -> set_current(pick_INSERTION());
+        pick_mark_for_current();
+    }
+
+    void propose_DELETION() {
+        inter -> set_current(pick_DELETION());
+    }
+
 
     double value_INSERTION() {
         //self->area/(DOUBLE)nb_dv_total*EXP(-(self->local_energy)(func,poly))
@@ -101,19 +123,19 @@ private:
 
         double g = as<double>(runif(1,0,1)),val;
         if( inside_number == 0 ) {
-            inter -> set_current(pick_INSERTION());
+            propose_INSERTION();
             if(g < (domain->get_size())*exp(inter->single)) {
                 inter->apply_INSERTION();
                 (inside_number)++;
             }
         } else if(propose_action() == INSERTION) {  
-            inter-> set_current(pick_INSERTION());
+            propose_INSERTION();
             val=value_INSERTION();
             //DEBUG: std::cout << "nb=" << inside_number << " g=" << g << " value_INSERTION=" << val << std::endl;
             if(g < val ) (inside_number)++;
             else inter->apply_DELETION();
         } else {//else propose_action() == DELETION
-            inter-> set_current(pick_DELETION());
+            propose_DELETION();
             val=value_DELETION();
             //DEBUG: std::cout << "nb=" << inside_number << " g=" << g << " value_DELETION=" << val << std::endl;
             if(g <  val) (inside_number)--;

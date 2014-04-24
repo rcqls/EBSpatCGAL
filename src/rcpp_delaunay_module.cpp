@@ -19,6 +19,7 @@ RCPP_MODULE(delaunay_module) {
     "infos list" )
     .property( "params", &Del2TermType2D::get_params, &Del2TermType2D::set_params,
     "params list" )
+    .method("get_envir",&Del2TermType2D::get_envir,"get envir")
     .method("set_struct",&Del2TermType2D::set_struct,"set struct")
     .method("get_struct",&Del2TermType2D::get_struct,"get struct")
     .method("set_current",&Del2TermType2D::set_current,"set point by coordinates (insertion) or index (suppression)")
@@ -79,6 +80,8 @@ RCPP_MODULE(delaunay_module) {
     .field( "nb_runs", &SimGibbs::nb_runs, "nb_runs" )
     .property("single",&SimGibbs::get_single,&SimGibbs::set_single,"single")
     .method("mark_expr",&SimGibbs::set_mark_expr,"set mark expr")
+    .method("marked",&SimGibbs::set_marked,"set marked")
+    .method("new_mark",&SimGibbs::new_mark,"new mark")
     .method("run",&SimGibbs::run,"run")
     .method("get_domain",&SimGibbs::get_domain,"get domain")
     ;

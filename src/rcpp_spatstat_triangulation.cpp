@@ -7,6 +7,14 @@ using namespace Rcpp;
 void Delaunay2_insert_one_with_info( Delaunay2* obj, NumericVector xy, List info ) {
   Point_2 point(xy[0],xy[1]);
   Delaunay2::Vertex_handle vh=obj->insert(point);
+  //R_PreserveObject(info);
+  vh->info() = info;
+}
+
+template <typename TRIANGULATION>
+void Triangulation_update_infinte_vertex_info(TRIANGULATION* obj, List info ) {
+  typename TRIANGULATION::Vertex_handle vh=obj->infinite_vertex();
+  //R_PreserveObject(info);
   vh->info() = info;
 }
 
@@ -1036,6 +1044,7 @@ RCPP_MODULE(cgal_module) {
 	.constructor()
   .method("insert_one_with_info",&Delaunay2_insert_one_with_info,"insert points")
 	.method("insert",&Delaunay2_insert,"insert points")
+  .method("update_infinite_vertex_info",&Triangulation_update_infinte_vertex_info<Delaunay2>,"update infinite vertex info")
 	.method("remove_at_pos",&Triangulation_remove_at_pos<Delaunay2>,"remove point at position")
   .method("remove_inside",&Triangulation2_remove_inside<Delaunay2>,"remove inside rect")
 	.method("remove_neighbour_of",&Delaunay2_remove_neighbour_of,"remove point neighbour of point")

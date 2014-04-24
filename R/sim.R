@@ -41,7 +41,13 @@ SimGibbs <-function(form,runs=10000,domain=c(-350,-350,350,350)) {
 			rcpp <- new(SimGibbsCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
 			rcpp$single <- self$interMngr$single
 			rcpp$nb_runs <- self$runs
-			rcpp$set_mark_expr(self$interMngr$mark.expr)
+			if(!is.null(self$interMngr$mark.name)) {
+				rcpp$marked(TRUE)
+				rcpp$mark_expr(self$interMngr$mark.expr)
+				tmp <- as.list(rep(NA,length(self$interMngr$mark.name)))
+				names(tmp) <- self$interMngr$mark.name
+				self$struct$rcpp()$update_infinite_vertex_info(tmp)
+			} else rcpp$marked(FALSE)
 			# important for renew process!
 			if(!is.null(self$struct)) update(self$interMngr,self$struct)
 			rcpp

@@ -101,7 +101,11 @@ vertices.Delaunay <- function(obj,mode=c("default","incident","dual","all","save
 			names(tmp3) <- c("x","y","z")[1:ncol(tmp)]
 			obj$rcpp()$vertices_infos() -> tmp2
 			if(length(names(tmp2[[1]]))>0) {
-				cbind(tmp3,as.data.frame(t(sapply(tmp2,function(e) e[names(tmp2[[1]])])))) -> tmp3
+				if(length(tmp2[[1]])==1) {#specific treatment for length 1
+					tmp22 <- data.frame(unlist(tmp2))
+					names(tmp22) <- names(tmp2[[1]])
+				} else tmp22 <- as.data.frame(t(sapply(tmp2,function(e) e[names(tmp2[[1]])])))
+				cbind(tmp3,tmp22) -> tmp3
 				names(tmp3) <- c(c("x","y","z")[1:ncol(tmp)],names(tmp2[[1]]))
 			}
 			tmp3

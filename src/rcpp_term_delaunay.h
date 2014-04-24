@@ -59,7 +59,9 @@ List Del2TermType2D::update_infos(HandleSet_Set set) {
 				else
 					res["l"]=sqrt(pow(p0.x()-p1.x(),2) + pow(p0.y()-p1.y(),2));
 
-			} 
+			}  else if( info == "v") {
+				res["v"]=List::create(v0->info(),v1->info());
+			}
 			ret[i]=res;
 		}
 
@@ -143,6 +145,7 @@ void Del2TermType2D::set_current_<DELETION>(NumericVector p) {
 	current_handle=Triangulation_vertex_at_pos<Delaunay2>(structure,current_index);
 	
 	current=current_handle->point();
+	current_info=current_handle->info();
 	//create the lists of edges
 	if(auto_make_list) make_local_lists<DELETION>();
 }
@@ -207,7 +210,9 @@ List Del2TermType3D::update_infos(HandleSet_Set set) {
 				// else
 					res["l"]=sqrt(pow(p0.x()-p1.x(),2) + pow(p0.y()-p1.y(),2) + pow(p0.z()-p1.z(),2));
 
-			} 
+			} else if( info == "v") {
+				res["v"]=List::create(v0->info(),v1->info());
+			}
 			ret[i]=res;
 		}
 
@@ -284,6 +289,7 @@ void Del2TermType3D::set_current_<DELETION>(NumericVector p) {
 	//DEBUG: std::cout << "current_index=" << current_index <<std::endl;
 	current_handle=Triangulation_vertex_at_pos<Delaunay3>(structure,current_index);
 	current=current_handle->point();
+	current_info=current_handle->info();
 	//create the lists of edges
 	if(auto_make_list) make_local_lists<DELETION>();
 }

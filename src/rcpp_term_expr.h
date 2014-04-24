@@ -167,22 +167,14 @@ public:
     }
 
     List new_mark() {
-        return Rf_eval( mark_expr,mark_envir );
+        return Rf_eval( mark_expr,R_GlobalEnv );
     }
 
     void set_mark_expr(Language expr) {
         mark_expr = expr;
-        mark_envir = Environment::global_env();
     }
 
-    void set_mark() {TermList::set_mark(new_mark());}
-
-    // void set_mark_function(List func) {mark_func=func;}
-
-    // List new_mark() {
-    //     Function func=mark_func(1);
-    //     return func();
-    // }
+    void set_current_mark() {TermList::set_mark(new_mark());}
 
     void sim_mode(bool mode) {
         make_local_lists_last_apply = !mode;
@@ -254,9 +246,7 @@ public:
     double single;
 
 private:
-    List mark_func;
     Language mark_expr;
-    Environment mark_envir;
 
 };
 
@@ -276,6 +266,8 @@ public:
     TermType() : TermBase() {
         envir=Environment::global_env().new_child(true);
     }
+
+    Environment get_envir() {return envir;}
 
     void set_struct(STRUCT* struct_) {structure=struct_;}
     
@@ -321,7 +313,10 @@ public:
     int get_current_index();
 
     //only needed for the first_term of Interaction object
-    void set_mark(List mark) {current_handle->info()=mark;}
+    void set_mark(List mark) {
+        current_info=mark;
+    }
+
     List get_mark() {return current_handle->info();}
 
     int inside_number(Domain* domain) {return structure->number_of_vertices();};
@@ -332,7 +327,10 @@ public:
 
     //HERE I need to comment because insert actually returns vertex_handle and graph remains unchanged
     // when the point already exists.
-    void apply_INSERTION() {current_handle=structure->insert(current);}
+    void apply_INSERTION() {
+        current_handle=structure->insert(current);
+        current_handle->info()=current_info;
+    }
 
 
     // MAYBE to replace with apply_INSERTION() in TermList class!!!!
@@ -342,7 +340,11 @@ public:
         current_handle=static_cast<TermType*>(term_)->current_handle;
     };
 
-    void apply_DELETION() {structure->remove(current_handle);}
+    void apply_DELETION() {
+        //save current_info first
+        current_info=current_handle->info();
+        structure->remove(current_handle);
+    }
 
     double eval_before_first_expr() {
         double res=0;
@@ -483,6 +485,7 @@ private:
     //Current element
     ELEMENT current;
     HANDLE current_handle;//Handle of the current element
+    List current_info;
     int current_index; //Index of the current element
 
 	//exprs: list of Language

@@ -39,15 +39,16 @@
 
   ## to determine the size of carac and compFunc!
   TermTypes$infosTest<- function(type,struct=NULL) {
+    interMngr <- .tmp.interactionMngr
     termEnv <- .TermTypes$envir
-    #ok <- (!is.null(struct) && inherits(struct,"EBVor") && is.marked(struct))
+    #ok <- (!is.null(interMngr$struct) && inherits(interMngr$struct,"Simulable") && !is.null(interMngr$mark.name))
     ok <- FALSE
     switch(type,
-      Del1={termEnv$id<-1L;termEnv$x<-c(0,0);if(ok) termEnv$v <- eval(parse(text=struct$del.marks.gen));termEnv$a<-0},
-      Del2={termEnv$id <- c(1L,2L);termEnv$x<-list(c(0,0),c(1,1));if(ok) termEnv$v<-lapply(1:2,function(i) eval(parse(text=struct$del.marks.gen)));termEnv$a<-c(0,0);termEnv$l2<-0;termEnv$l<-0;termEnv$ol2<-0;termEnv$ol<-0;termEnv$da<-0},
-      Del3={termEnv$id<-c(1L,2L,3L);termEnv$x<-list(c(0,0),c(0,1),c(1,0));if(ok) termEnv$v<-lapply(1:3,function(i) eval(parse(text=struct$del.marks.gen)));termEnv$a<-c(0,0,0);termEnv$ta<-0;termEnv$tp<-0;termEnv$c<-c(0,0);termEnv$r2<-0;termEnv$r<-0;termEnv$sa<-0;termEnv$ga<-0},
-      All2={termEnv$id<-c(1L,2L);termEnv$x<-list(c(0,0),c(1,1));if(ok) termEnv$v<-lapply(1:2,function(i) eval(parse(text=struct$del.marks.gen)));termEnv$l2<-0;termEnv$l<-0},
-      NNG={termEnv$id<-c(1L,2L);termEnv$x<-list(c(0,0),c(1,1));if(ok) termEnv$v<-lapply(1:2,function(i) eval(parse(text=struct$del.marks.gen)));termEnv$l2<-0;termEnv$l<-0}
+      Del1={termEnv$id<-1L;termEnv$x<-c(0,0);if(ok) termEnv$v <- eval(parse(text=interMngr$mark.expr));termEnv$a<-0},
+      Del2={termEnv$id <- c(1L,2L);termEnv$x<-list(c(0,0),c(1,1));if(ok) termEnv$v<-lapply(1:2,function(i) eval(parse(text=interMngr$mark.expr)));termEnv$a<-c(0,0);termEnv$l2<-0;termEnv$l<-0;termEnv$ol2<-0;termEnv$ol<-0;termEnv$da<-0},
+      Del3={termEnv$id<-c(1L,2L,3L);termEnv$x<-list(c(0,0),c(0,1),c(1,0));if(ok) termEnv$v<-lapply(1:3,function(i) eval(parse(text=interMngr$mark.expr)));termEnv$a<-c(0,0,0);termEnv$ta<-0;termEnv$tp<-0;termEnv$c<-c(0,0);termEnv$r2<-0;termEnv$r<-0;termEnv$sa<-0;termEnv$ga<-0},
+      All2={termEnv$id<-c(1L,2L);termEnv$x<-list(c(0,0),c(1,1));if(ok) termEnv$v<-lapply(1:2,function(i) eval(parse(text=interMngr$mark.expr)));termEnv$l2<-0;termEnv$l<-0},
+      NNG={termEnv$id<-c(1L,2L);termEnv$x<-list(c(0,0),c(1,1));if(ok) termEnv$v<-lapply(1:2,function(i) eval(parse(text=interMngr$mark.expr)));termEnv$l2<-0;termEnv$l<-0}
     )
     return(invisible())
   }
