@@ -1,10 +1,10 @@
 ##update toDebug to your needs
 
-source("../../R/formMngr.R")
+#source("../../R/formMngr.R")
 
-cleanDebug <- function() {
-	rm(.TermTypes,TermTypes,ComponentFunctionalFormulaManager,formula.ComponentFunctionalFormulaManager,autoCaracFormula,cleanDebug,envir=globalenv())
-}
+#cleanDebug <- function() {
+#	rm(.TermTypes,TermTypes,ComponentFunctionalFormulaManager,formula.ComponentFunctionalFormulaManager,autoCaracFormula,cleanDebug,envir=globalenv())
+#}
 
 formMngr <- ComponentFunctionalFormulaManager()
 

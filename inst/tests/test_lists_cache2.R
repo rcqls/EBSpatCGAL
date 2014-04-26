@@ -29,10 +29,10 @@ del2Term2$exprs.size <- c(1)
 
 new(Interaction,list(del2Term,del2Term2)) -> inter
 
-dom2 <- new(DomainDel2D,c(-350,-350),c(350,350)) 
+dom2 <- new(Domain,c(-350,-350),c(350,350)) 
 
 
-cache2 <- new(ListsCacheDel2D,del2$rcpp(),dom2,inter)
+cache2 <- new(ListsCacheCpp,inter,dom2)
 
 cache2$set_mode(2)
 

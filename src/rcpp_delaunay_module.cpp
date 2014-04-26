@@ -2,6 +2,32 @@
 
 
 RCPP_MODULE(delaunay_module) {
+    class_<Del1TermType2D>( "Del1TermType2D" )
+    .constructor()
+    .field( "locBefore", &Del1TermType2D::locBefore, "local list before" )
+    .field( "locAfter", &Del1TermType2D::locAfter, "local list after" )
+    .field( "exprs.size", &Del1TermType2D::exprs_size, "exprs size" )
+    .field( "cexprs.size", &Del1TermType2D::cexprs_size, "cexprs size" )
+    //.property( "graph", &Del1TermType2D::get_struct, &Del1TermType2D::set_struct,"graph structure" )
+    .property( "mode", &Del1TermType2D::get_mode, &Del1TermType2D::set_mode,
+    "mode " )
+    .property( "exprs", &Del1TermType2D::get_exprs, &Del1TermType2D::set_exprs,
+    "exprs list" )
+    .property( "cexprs", &Del1TermType2D::get_cexprs, &Del1TermType2D::set_cexprs,
+    "common exprs list" )
+    .property( "infos", &Del1TermType2D::get_infos, &Del1TermType2D::set_infos,
+    "infos list" )
+    .property( "params", &Del1TermType2D::get_params, &Del1TermType2D::set_params,
+    "params list" )
+    .method("get_envir",&Del1TermType2D::get_envir,"get envir")
+    .method("set_struct",&Del1TermType2D::set_struct,"set struct")
+    .method("get_struct",&Del1TermType2D::get_struct,"get struct")
+    .method("set_current",&Del1TermType2D::set_current,"set point by coordinates (insertion) or index (suppression)")
+    .method("get_current",&Del1TermType2D::get_current,"get point")
+    .method("eval_first_expr",&Del1TermType2D::eval_first_expr,"eval first expr")
+    .method("eval_exprs",&Del1TermType2D::eval_exprs,"eval exprs")
+    ;
+
 	class_<Del2TermType2D>( "Del2TermType2D" )
 	.constructor()
     .field( "locBefore", &Del2TermType2D::locBefore, "local list before" )
@@ -62,11 +88,17 @@ RCPP_MODULE(delaunay_module) {
     .method("local_energy",&Interaction::local_energy,"local energy")
     ;
 
-    class_<ListsCacheDel2D>("ListsCacheDel2D")
-    .constructor<Delaunay2*,Domain*,Interaction*>()
-    .method("set_mode",&ListsCacheDel2D::set_mode,"set mode")
-    .method("make_lists",&ListsCacheDel2D::make_lists,"make lists cache")
-    .method("get_lists",&ListsCacheDel2D::get_lists,"get lists cache")
+    class_<ListsCache>("ListsCacheCpp")
+    .constructor()
+    .constructor<Interaction*,Domain*>()
+    .constructor< List,std::vector<double>,std::vector<double> >()
+    .field( "nb_runs", &ListsCache::nb_runs, "nb_runs" )
+    .method("set_mode",&ListsCache::set_mode,"set mode")
+    .method("mark_expr",&ListsCache::set_mark_expr,"set mark expr")
+    .method("marked",&ListsCache::set_marked,"set marked")
+    .method("new_mark",&ListsCache::new_mark,"new mark")
+    .method("make_lists",&ListsCache::make_lists,"make lists cache")
+    .method("get_lists",&ListsCache::get_lists,"get lists cache")
     ;
 
     class_<Domain>("Domain")

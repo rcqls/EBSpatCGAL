@@ -1,5 +1,41 @@
 #include "cgal_spatstat_triangulation.h"
 
+
+
+std::vector<Delaunay2::Vertex_handle> CGAL_Delaunay2_incident_vertices(Delaunay2* obj, Delaunay2::Vertex_handle v) {
+	std::vector<Delaunay2::Vertex_handle> incidentVertices;
+
+	Delaunay2::Vertex_circulator vc=obj->incident_vertices(v),done(vc);
+	incidentVertices.reserve(circulator_size(vc));
+	//DEBUG: std::cout << "incident0" << std::endl;
+	if (vc != 0) {	 
+		do {
+			//DEBUG: std::cout << "incident" << std::endl;
+			incidentVertices.push_back(vc);   	 
+		} while(++vc != done);
+	}
+	return incidentVertices;
+}
+
+std::vector<Delaunay2::Vertex_handle> CGAL_Delaunay2_conflicted_vertices(Delaunay2* obj, Point_2 p) {
+
+	std::vector<Delaunay2::Edge> edges;
+ 	obj->get_boundary_of_conflicts(p,std::back_inserter(edges));
+
+ 	int i=0; 
+
+	std::vector<Delaunay2::Vertex_handle> conflictedVertices;
+	conflictedVertices.reserve(edges.size()); 
+
+	for(std::vector<Delaunay2::Edge>::iterator eit = edges.begin();
+       eit != edges.end();
+       ++eit,++i){
+		Delaunay2::Vertex_handle v0=((*eit).first->vertex(((*eit).second+1)%3));
+		conflictedVertices.push_back(v0); 
+	}
+	return conflictedVertices;
+}
+
 //2D Delaunay edges components: all needed for edges when inserting a point
 
 std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> CGAL_Delaunay2_conflicted_and_boundary_edges(Delaunay2* obj, Point_2 p) {

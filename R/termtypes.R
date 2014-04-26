@@ -62,7 +62,7 @@
 #        Interaction Manager 
 ########################################## 
 
-InteractionMngr <- function(form,mode="default") {
+InteractionMngr <- function(form,mode="default",check.params=TRUE) {
   # auto initialize .TermTypes global variable!
   if(!exists(".TermTypes",envir=globalenv())) .TermTypesInit() 
 
@@ -99,7 +99,7 @@ InteractionMngr <- function(form,mode="default") {
   # })
   ###############################################################
 
-  check.params.in.terms(self)
+  if(check.params) check.params.in.terms(self)
 
   self
 }
@@ -274,6 +274,8 @@ TermType <- function(id,...) {
     ## self$mngr$local (TODO: maybe no need of difference between local and global expressions)
     rcpp$exprs <- self$mngr$local$exprs$term
     rcpp$exprs.size <- self$mngr$local$exprs$size
+    rcpp$cexprs <- self$mngr$local$cexprs$term
+    rcpp$cexprs.size <- self$mngr$local$cexprs$size
     rcpp
   })
 

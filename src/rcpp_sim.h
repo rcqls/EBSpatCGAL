@@ -34,7 +34,7 @@ public:
     List new_mark() {return inter->new_mark();}
 
 
-    void set_domain(Domain* domain_ ) {
+    void set_domain(Domain* domain_) {
         domain=domain_;
     }
 
@@ -42,14 +42,17 @@ public:
         domain=new Domain(left_,right_);
     }
 
-    void set_single(double single_) {inter->single=single_;}
-
-    double get_single() {return inter->single;}
-
     Domain* get_domain() {return domain;}
 
     //TODO: not adapted to a real domain
-    void init_inside_number() {inside_number=inter->inside_number(domain);};
+    void init_inside_number() {
+        inside_number=inter->inside_number(domain);
+    };
+
+
+    void set_single(double single_) {inter->single=single_;}
+
+    double get_single() {return inter->single;}
 
     void run() {
         init();

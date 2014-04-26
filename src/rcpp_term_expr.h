@@ -48,6 +48,8 @@ public:
     virtual List make_before_list()=0;
     virtual List get_after_list()=0;
     virtual List get_before_list()=0;
+    virtual List get_after_cexprs()=0;
+    virtual List get_before_cexprs()=0;
 
 };
 
@@ -231,10 +233,34 @@ public:
 
     }
 
-    //TODO if interesting: saving intermediate computation instead of infos only.
-    //Could improve performance.
-    //List export_cexprs() {
-    //}
+    List get_cexprs() {
+
+        make_local_lists_last_apply = true;
+
+        List res(term_list.size()); 
+
+        // prepare local lists before evaluating first expr
+        make_local_lists();
+
+        int i=0;
+        for(
+            std::list<TermBase*>::iterator lit=term_list.begin();
+            lit != term_list.end();
+            ++lit,++i
+        ) {
+            //DEBUG: 
+            std::cout << "ici" << std::endl;
+            //DEBUG: double res2=(*lit)->eval_first_expr();
+            //DEBUG: std::cout << "res2["<< i << "]=" << res2 << std::endl;
+            List ret;
+            ret["before"] = (*lit)->get_before_cexprs();
+            ret["after"] = (*lit)->get_after_cexprs();
+            res[i]=ret;
+        }
+
+        return res;
+
+    }
 
     //Weird: but I guess it is because does not know how to manage inheritance yet!
     //TODO: to delete when Rcpp would fix that
@@ -458,6 +484,8 @@ public:
 
     };
 
+    List update_infos(std::vector<Handle> set);
+
     List update_infos(HandleSet_Set set);
 
     List update_infos(std::pair< HandleSet_Set,HandleSet_Set > sets);
@@ -474,6 +502,38 @@ public:
     List get_after_list() {return locAfter;};
     List get_before_list() {return locBefore;};
 
+    // compute List of values from a list of cexprs and vars List 
+    List eval_cexprs(List infos_list) {
+        List ret(infos_list.size());
+        int i=0;
+        for(
+            List::iterator it=infos_list.begin();
+            it != infos_list.end();
+            ++it,++i
+
+        ) {
+            List res(cexprs.size());
+            int ii=0;
+            import_vars(*it);
+            for(
+                List::iterator lit=cexprs.begin();
+                lit != cexprs.end();
+                ++lit,++ii
+            ) {
+                res[ii]=Rf_eval(cexprs[ii],envir);
+            }
+            res.names() = cexprs.names();
+
+            ret[i]=res;
+        }
+        
+        return ret;
+
+    }
+
+    List get_after_cexprs() {return eval_cexprs(locAfter);};
+    List get_before_cexprs() {return eval_cexprs(locBefore);};
+
     List locBefore,locAfter,glob;
 
     IntegerVector exprs_size,cexprs_size;
@@ -489,11 +549,9 @@ private:
     int current_index; //Index of the current element
 
 	//exprs: list of Language
-	List exprs;	
-	//cexprs : named list of Language
-	// cexprs stand for common exprs which are repeated several times
-	// cexprs is the information to save for each point 
-	List cexprs;
+	List exprs;
+    //cexprs: List of Language
+    List cexprs;
 	//infos: Vector of infos
 	// an info is a predefined quantity depending on the TermEnergyType
 	std::vector< std::string > infos;
