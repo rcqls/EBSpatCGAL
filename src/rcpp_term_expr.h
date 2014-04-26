@@ -249,7 +249,7 @@ public:
             ++lit,++i
         ) {
             //DEBUG: 
-            std::cout << "ici" << std::endl;
+            //std::cout << "ici" << std::endl;
             //DEBUG: double res2=(*lit)->eval_first_expr();
             //DEBUG: std::cout << "res2["<< i << "]=" << res2 << std::endl;
             List ret;

@@ -86,6 +86,12 @@ public:
     		lists[0]=NumericVector::create(3);
     		break; 
     	case Random:
+            lists=List(nb_runs);
+            for(int i=0;i<nb_runs;i++) {
+                pick_new();
+                //inter->make_local_lists();  
+                lists[i]=inter->get_cexprs();
+            }
     		break;
     	case Existing: //No stress there is no optimization consideration!
             init_inside_number();
@@ -93,7 +99,7 @@ public:
     		for(int i=0;i<inside_number;i++) {//TODO: inside_list_index
     			//std::cout << "i=" << i << std::endl;
     			inter->set_current(NumericVector::create(i));//TODO
-    			inter->make_local_lists();	
+    			//inter->make_local_lists();	
     			lists[i]=inter->get_cexprs();
     		};
     		//lists["test"]=NumericVector::create(i);
@@ -132,6 +138,12 @@ protected:
             SEXP name = Rf_install(Rf_translateChar(STRING_ELT(names, i)));
             Rf_defineVar(name, VECTOR_ELT(vars_, i), envir);
         }
+    }
+
+
+    void pick_new() { //equivalent of propose_INSERTION() for SimGibbs
+        inter -> set_current(domain->pick());
+        if(marked) inter->set_current_mark();
     }
 
     
