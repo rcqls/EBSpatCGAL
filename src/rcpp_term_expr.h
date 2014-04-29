@@ -50,7 +50,8 @@ public:
     virtual List get_before_list()=0;
     virtual List get_after_cexprs()=0;
     virtual List get_before_cexprs()=0;
-
+    virtual void set_cexprs_caches(List cexprs_cache_)=0;
+    virtual List eval_exprs_from_cexprs_caches()=0;
 };
 
 RCPP_EXPOSED_AS(TermBase);
@@ -259,6 +260,46 @@ public:
         }
 
         return res;
+
+    }
+
+    void set_exprs_cexprs_caches(List cexprs_cache) {
+
+        int i=0;
+        for(
+            std::list<TermBase*>::iterator lit=term_list.begin();
+            lit != term_list.end();
+            ++lit,++i
+        ) {
+            List first=cexprs_cache["first"],second=cexprs_cache["second"];
+            (*lit)->set_cexprs_caches(List::create(_["first"]=first[i],_["second"]=second[i]));
+        }        
+
+    }
+
+    List eval_exprs_from_cexprs_caches() {
+        //set param is supposed  to be applied just before
+        List resFirst,resSecond;
+        int i=0;
+        for(
+            std::list<TermBase*>::iterator lit=term_list.begin();
+            lit != term_list.end();
+            ++lit,++i
+        ) {
+            List resCaches=(*lit)->eval_exprs_from_cexprs_caches();
+            List resFirstCache=resCaches["first"],resSecondCache=resCaches["second"];
+            std::vector<std::string> varnames=resFirstCache.names();
+            for(
+                std::vector<std::string>::iterator vit=varnames.begin();
+                vit != varnames.end();
+                ++vit
+            ) {
+                resFirst[*vit]=resFirstCache[*vit];
+                resSecond[*vit]=resSecondCache[*vit];
+            }
+        }        
+
+        return List::create(_["first"]=resFirst,_["second"]=resSecond);
 
     }
 
@@ -534,6 +575,78 @@ public:
     List get_after_cexprs() {return eval_cexprs(locAfter);};
     List get_before_cexprs() {return eval_cexprs(locBefore);};
 
+    void set_cexprs_caches(List cexprs_caches_) {
+        cexprs_caches=cexprs_caches_;
+    }
+
+    List get_cexprs_caches() {
+        return cexprs_caches;
+    }
+
+    void eval_before_exprs_results_from_cexprs_caches() {
+        int i,ii;
+        List beforeCache=cexprs_caches[current_cache]["before"];
+        for(
+            List::iterator lit=beforeCache.begin();
+            lit != beforeCache.end();
+            ++lit
+        ) {
+            import_vars(*lit);
+            //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
+            i=0;
+            for(
+                std::list< std::vector<double> >::iterator rit=exprs_results.begin();
+                rit != exprs_results.end();
+                ++rit,++i
+            ) {
+                std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
+                for(ii=0;ii<exprs_size[i];ii++) (*rit)[ii] -=  tmp[ii];
+            }
+
+        }
+
+    };
+
+    void eval_after_exprs_results_from_cexprs_caches() {
+        int i,ii;
+        List afterCache=cexprs_caches[current_cache]["after"];
+        for(
+            List::iterator lit=afterCache.begin();
+            lit != afterCache.end();
+            ++lit
+        ) {
+            import_vars(*lit);
+            //DEBUG: std::cout << "before: " << as<double>(Rf_eval( exprs[0],envir)) << std::endl;
+            i=0;
+            for(
+                std::list< std::vector<double> >::iterator rit=exprs_results.begin();
+                rit != exprs_results.end();
+                ++rit,++i
+            ) {
+                std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
+                for(ii=0;ii<exprs_size[i];ii++) (*rit)[ii] += tmp[ii];
+            }
+
+        }
+        
+    };
+
+    List eval_exprs_from_cexprs_caches() {
+        //First
+        current_cache="first";
+        init_exprs_results();
+        eval_before_exprs_results();
+        eval_after_exprs_results();
+        List firstResult=exprs_results_as_List();
+        //Second
+        current_cache="second";
+        init_exprs_results();
+        eval_before_exprs_results();
+        eval_after_exprs_results();
+        List secondResult=exprs_results_as_List();
+        return List::create(_["first"]=firstResult,_["second"]=secondResult);
+    }
+
     List locBefore,locAfter,glob;
 
     IntegerVector exprs_size,cexprs_size;
@@ -552,6 +665,8 @@ private:
 	List exprs;
     //cexprs: List of Language
     List cexprs;
+    List cexprs_caches;
+    std::string current_cache;
 	//infos: Vector of infos
 	// an info is a predefined quantity depending on the TermEnergyType
 	std::vector< std::string > infos;

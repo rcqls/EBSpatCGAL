@@ -5,25 +5,25 @@
 
 using namespace Rcpp ;
 
-enum CacheMode {Systematic=0,Random,Existing};
+enum CacheMode {Systematic=0,Random};
 
 //TODO: remove the dependency on STRUCT since Interaction via first TermType knows everything about STRUCT (like SimGibbs)
 //template <typename STRUCT> //, typename ELEMENT = typename STRUCT::Point, typename HANDLE = typename STRUCT::Vertex_handle>
 class ListsCache {
 public: 
-    ListsCache() {set_envir();nb_runs=10000;}; //needed by rcpp_delaunay_module.cpp
+    ListsCache() {set_mode(1);nb_runs=1000;}; //needed by rcpp_delaunay_module.cpp
     ListsCache(Interaction* inter_,Domain* domain_) {
         domain=domain_;
         inter=inter_;
-        set_envir();
-        nb_runs=10000; //MC approach
+        set_mode(1);
+        nb_runs=1000; //MC approach
     };
 
     ListsCache(List inter_,std::vector<double> left_,std::vector<double> right_) {
         set_interaction(inter_);
         set_domain(left_,right_);
-        set_envir();
-        nb_runs=10000; //MC approach
+        set_mode(1);
+        nb_runs=1000; //MC approach
     }
 
     void set_interaction(List inter_) {
@@ -61,60 +61,68 @@ public:
 
     int get_mode() {return static_cast<int>(mode);};
 
-    // void set_size(NumericVector size_) {//user is in charge of the proper dimension
-    // 	int i=0;
-    // 	size=size_;
-    // 	delta.reserve(size.size());
-
-    // 	for(
-    // 		std::vector<int>::iterator it=size.begin();
-    // 		it!=size.end();
-    // 		++it,++i
-    // 	) {
-    // 		delta[i]=(domain->right[i]-domain->left[i])/size[i];
-    // 	}
-    // } 
-
-    void init() {
-    	lists.erase(lists.begin(),lists.end());
-    };
-
     void make_lists() {
+        //First list
     	switch(mode) {
     	case Systematic:
-    		lists=List::create(1);
-    		lists[0]=NumericVector::create(3);
+    		first_list=List::create(1);
+    		first_list[0]=NumericVector::create(3);
     		break; 
     	case Random:
-            lists=List(nb_runs);
+            first_list=List(nb_runs);
             for(int i=0;i<nb_runs;i++) {
                 pick_new();
                 //inter->make_local_lists();  
-                lists[i]=inter->get_cexprs();
+                first_list[i]=inter->get_cexprs();
             }
-    		break;
-    	case Existing: //No stress there is no optimization consideration!
-            init_inside_number();
-    		lists=List(inside_number);
-    		for(int i=0;i<inside_number;i++) {//TODO: inside_list_index
-    			//std::cout << "i=" << i << std::endl;
-    			inter->set_current(NumericVector::create(i));//TODO
-    			//inter->make_local_lists();	
-    			lists[i]=inter->get_cexprs();
-    		};
-    		//lists["test"]=NumericVector::create(i);
     	};
+
+        // Second list
+    	//No stress there is no optimization consideration!
+        init_inside_number();
+		second_list=List(inside_number);
+		for(int i=0;i<inside_number;i++) {//TODO: inside_list_index
+			//std::cout << "i=" << i << std::endl;
+			inter->set_current(NumericVector::create(i));//TODO
+			//inter->make_local_lists();	
+			second_list[i]=inter->get_cexprs();
+		};
+		//lists["test"]=NumericVector::create(i);
+    	 
     	//std::cout << "end" << std::endl;
+        inter->set_exprs_cexprs_caches(get_lists_to_send());
     };
 
-    List get_lists() {return lists;};
-
-    // 
-    void set_envir() {
-        envir=Environment::global_env().new_child(true);
+    List eval_exprs() {
+        return inter->eval_exprs_from_cexprs_caches();
     }
 
-    Environment get_envir() {return envir;}
+    List get_lists() {return List::create(_["first"]=first_list,_["second"]=second_list);};
+
+    List get_lists_to_send() {return List::create(_["first"]=prepare_list_to_send(first_list),_["second"]=prepare_list_to_send(second_list));};
+
+    //prepare lists to be used in Interaction
+    List prepare_list_to_send(List cl) {
+        //This can be done directly in c++
+        List res;
+        if(cl.size()>0) {
+            List cl0=cl[0];
+            res=List(cl0.size());
+            for(int term=0;term < cl0.size();term++) {
+                List resBefore,resAfter;
+                
+                for(int i=0;i<cl.size();i++) {
+                    List clTerm=as<List>(cl[i])[term];
+                    List clBefore=clTerm["before"],clAfter=clTerm["after"];
+                    for(int j=0;j<clBefore.size();j++) resBefore.push_back(clBefore[j]);
+                    for(int j=0;j<clAfter.size();j++) resAfter.push_back(clAfter[j]);
+                }
+                res[term]=List::create(_["before"]=resBefore,_["after"]=resAfter);
+            }
+
+          }  
+          return res;
+    }
 
     int nb_runs;
 
@@ -123,23 +131,10 @@ protected:
 	//STRUCT* structure;
 	std::vector<int> size,delta;
 	Interaction* inter;
-	List lists; //
+	List first_list,second_list; //
 	CacheMode mode;
     bool marked;
     int inside_number;
-
-    Environment envir;
-
-    void import_vars(List vars_) {
-        CharacterVector names=vars_.names();
-        int l=vars_.size();
-
-        for(int i = 0; i < l ; i++) {
-            SEXP name = Rf_install(Rf_translateChar(STRING_ELT(names, i)));
-            Rf_defineVar(name, VECTOR_ELT(vars_, i), envir);
-        }
-    }
-
 
     void pick_new() { //equivalent of propose_INSERTION() for SimGibbs
         inter -> set_current(domain->pick());

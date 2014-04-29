@@ -3,8 +3,10 @@
 # => params(lc,th=c(2,4)) and update(lc,current=del2)
 
 
-ListsCache <-function(forms,runs=10000,domain=c(-350,-350,350,350)) {
+ListsCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
 	formMngr <- ComponentFunctionalFormulaManager()
+	formula(formMngr,model,local=TRUE)
+	forms <- as.list(substitute(c(...)))[-1]
 	for(f in forms) formula(formMngr,f,local=TRUE) # First consider only the main case 
 	print(formula(formMngr))
 	self <- newEnv(ListsCache,forms=forms,formMngr=formMngr,interMngr=InteractionMngr(formMngr$func,check.params=FALSE),runs=runs,domain=domain)
@@ -40,6 +42,7 @@ ListsCache <-function(forms,runs=10000,domain=c(-350,-350,350,350)) {
 	self
 }
 
+## This delegates change of parameter value to InteractionManager 
 params.ListsCache <- function(self,...) params(self$interMngr,...)
 
 ##########################################################################
@@ -60,16 +63,37 @@ update.ListsCache <- function(self,current) {
 	}
 }
 
-get.ListsCache <- function(self,mode=2) {
+
+## RMK: If you have a single configuration of point you need to complete 
+## this data with an implicit Simulable object! => TODO!!!
+run.ListsCache <- function(self,current,...) {
+	params(self,...)
+	if(!missing(current)) {
+		if(inherits(current,"Simulable")) update(self,current) 
+		else cat("WARNING: object not of class Simulable!\n")
+	}
+	if(!is.null(self$struct)) {
+		self$rcpp()$eval_exprs()
+	}
+}
+
+
+### NOT VERY USEFUL NOW sine everything is done in C++
+### Maybe, can help for debugging
+get.ListsCache <- function(self,mode=1,runs,transform="nothing") {
 
 	rcpp <- self$rcpp()
+	if(!missing(runs)) {
+		self$runs <- runs
+		rcpp$nb_runs <- self$runs
+	} 
 	rcpp$set_mode(mode)
 	rcpp$make_lists()
-	cl <- rcpp$get_lists()
+	cachelists <- rcpp$get_lists()
 
-	transform <- function(cl,nms) {
+	transform.as.data.frame <- function(cl,nms) {
 		res <- list()
-		for(term in 1:length(cl[[1]])) {
+		if(length(cl>0)) for(term in 1:length(cl[[1]])) {
 			res[[term]] <-list(before=list(),after=list())
 			for(nm in nms[[term]]) {
 				res[[term]]$before[[nm]] <- c()
@@ -84,9 +108,29 @@ get.ListsCache <- function(self,mode=2) {
 		res
 	}
 
+	#This can be done directly in c++
+	transform.as.list <- function(cl,nms) {
+		res <- list()
+		if(length(cl>0)) for(term in 1:length(cl[[1]])) {
+			res[[term]] <-list(before=list(),after=list())
+			 
+			for(pt in 1:length(cl)) {
+				if(length(cl[[pt]][[term]]$before)>0) for(j in 1:length(cl[[pt]][[term]]$before)) res[[term]]$before <- c(res[[term]]$before,cl[[pt]][[term]]$before[j])
+				if(length(cl[[pt]][[term]]$after)>0) for(j in 1:length(cl[[pt]][[term]]$after)) res[[term]]$after <- c(res[[term]]$after,cl[[pt]][[term]]$after[j])
+			}
+			
+		}
+		res
+	}
+
 	names.cexprs <- lapply(self$interMngr$terms,function(term) names(term$mngr$local$cexprs$term))
 
-	self$cexprs.cachelist <- transform(cl,names.cexprs)
+	self$cexprs.cachelists <- switch(transform,
+	nothing= cachelists,
+	as.data.frame=list(first=transform.as.data.frame(cachelists$first,names.cexprs),second=transform.as.data.frame(cachelists$second,names.cexprs)),
+	as.list=list(first=transform.as.list(cachelists$first,names.cexprs),second=transform.as.list(cachelists$second,names.cexprs))
+	)
 
-	self$cexprs.cachelist
+	self$cexprs.cachelists
+
 }
