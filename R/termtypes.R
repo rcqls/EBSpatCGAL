@@ -147,7 +147,7 @@ check.params.in.terms <- function(interMngr) {
 params.InteractionMngr <- function(interMngr,...) {
   params <- list(...)
   if(length(params)==0) {
-    if(any(!interMngr$params.completed)) {
+    if(!is.null(interMngr$params.completed) && any(!interMngr$params.completed)) {
       cat("WARNING: Some value of parameter needs to be provided!!!\n")
     } else c(list(single=interMngr$single),lapply(interMngr$terms,params))
   } else {

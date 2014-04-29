@@ -286,14 +286,18 @@ public:
             lit != term_list.end();
             ++lit,++i
         ) {
+            //std::cout << "i: " << i << std::endl;
             List resCaches=(*lit)->eval_exprs_from_cexprs_caches();
             List resFirstCache=resCaches["first"],resSecondCache=resCaches["second"];
+            //std::cout << "i: " << i << std::endl;
             std::vector<std::string> varnames=resFirstCache.names();
+            //std::cout << "i: " << i << std::endl;
             for(
                 std::vector<std::string>::iterator vit=varnames.begin();
                 vit != varnames.end();
                 ++vit
             ) {
+                //std::cout << "var: " << *vit << std::endl; 
                 resFirst[*vit]=resFirstCache[*vit];
                 resSecond[*vit]=resSecondCache[*vit];
             }
@@ -585,7 +589,8 @@ public:
 
     void eval_before_exprs_results_from_cexprs_caches() {
         int i,ii;
-        List beforeCache=cexprs_caches[current_cache]["before"];
+        List currentCache=cexprs_caches[current_cache];
+        List beforeCache=currentCache["before"];
         for(
             List::iterator lit=beforeCache.begin();
             lit != beforeCache.end();
@@ -609,7 +614,8 @@ public:
 
     void eval_after_exprs_results_from_cexprs_caches() {
         int i,ii;
-        List afterCache=cexprs_caches[current_cache]["after"];
+        List currentCache=cexprs_caches[current_cache];
+        List afterCache=currentCache["after"];
         for(
             List::iterator lit=afterCache.begin();
             lit != afterCache.end();
@@ -634,15 +640,20 @@ public:
     List eval_exprs_from_cexprs_caches() {
         //First
         current_cache="first";
+        //std::cout << current_cache << std::endl;
         init_exprs_results();
-        eval_before_exprs_results();
-        eval_after_exprs_results();
+        //std::cout << current_cache << std::endl;
+        eval_before_exprs_results_from_cexprs_caches();
+        //std::cout << current_cache << std::endl;
+        eval_after_exprs_results_from_cexprs_caches();
+        //std::cout << current_cache << std::endl;
         List firstResult=exprs_results_as_List();
         //Second
         current_cache="second";
+        //std::cout << current_cache << std::endl;
         init_exprs_results();
-        eval_before_exprs_results();
-        eval_after_exprs_results();
+        eval_before_exprs_results_from_cexprs_caches();
+        eval_after_exprs_results_from_cexprs_caches();
         List secondResult=exprs_results_as_List();
         return List::create(_["first"]=firstResult,_["second"]=secondResult);
     }

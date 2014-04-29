@@ -52,7 +52,7 @@ RCPP_MODULE(delaunay_module) {
     .method("get_current",&Del2TermType2D::get_current,"get point")
 	.method("eval_first_expr",&Del2TermType2D::eval_first_expr,"eval first expr")
     .method("eval_exprs",&Del2TermType2D::eval_exprs,"eval exprs")
-	//.method("get_cexprs_caches",&Del2TermType2D::get_cexprs_caches,"get cexprs caches") //for debugging
+	.method("get_cexprs_caches",&Del2TermType2D::get_cexprs_caches,"get cexprs caches") //for debugging
     ;
 	
 	class_<Del2TermType3D>( "Del2TermType3D" )
