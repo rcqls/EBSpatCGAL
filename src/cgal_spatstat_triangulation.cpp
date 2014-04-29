@@ -11,7 +11,9 @@ std::vector<Delaunay2::Vertex_handle> CGAL_Delaunay2_incident_vertices(Delaunay2
 	if (vc != 0) {	 
 		do {
 			//DEBUG: std::cout << "incident" << std::endl;
-			incidentVertices.push_back(vc);   	 
+			if(!obj->is_infinite(vc)) {
+				incidentVertices.push_back(vc); 
+			}  	 
 		} while(++vc != done);
 	}
 	return incidentVertices;
@@ -31,7 +33,9 @@ std::vector<Delaunay2::Vertex_handle> CGAL_Delaunay2_conflicted_vertices(Delauna
        eit != edges.end();
        ++eit,++i){
 		Delaunay2::Vertex_handle v0=((*eit).first->vertex(((*eit).second+1)%3));
-		conflictedVertices.push_back(v0); 
+		if(!obj->is_infinite(v0)) {
+			conflictedVertices.push_back(v0); 
+		}
 	}
 	return conflictedVertices;
 }
@@ -53,9 +57,10 @@ std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> CGAL_Delaunay2_confli
        ++eit,++i){
 		//Delaunay2::Vertex_handle v0=((*eit).first->vertex((*eit).first->cw((*eit).second))),v1=((*eit).first->vertex((*eit).first->ccw((*eit).second)));
 		Delaunay2::Vertex_handle v0=((*eit).first->vertex(((*eit).second+1)%3)),v1=((*eit).first->vertex(((*eit).second+2)%3));
-		
-		Delaunay2_VertexSet e0;
-		e0.insert(v0);e0.insert(v1);boundaryEdges.insert(e0);
+		if(!obj->is_infinite(v0) && !obj->is_infinite(v1)) {
+			Delaunay2_VertexSet e0;
+			e0.insert(v0);e0.insert(v1);boundaryEdges.insert(e0);
+		}
 	}
 
 	//DEBUG: std::cout << "Number of boundary edges=" << i << std::endl;
@@ -67,15 +72,21 @@ std::pair<Delaunay2_VertexSet_Set,Delaunay2_VertexSet_Set> CGAL_Delaunay2_confli
        fit != faces.end();
        ++fit,++i){
 		Delaunay2::Vertex_handle v0=static_cast<Delaunay2::Face_handle>(*fit)->vertex(0),v1=static_cast<Delaunay2::Face_handle>(*fit)->vertex(1),v2=static_cast<Delaunay2::Face_handle>(*fit)->vertex(2);
-		Delaunay2_VertexSet e0;
-		e0.insert(v0);e0.insert(v1);
-		if(boundaryEdges.find(e0) == boundaryEdges.end()) conflictedEdges.insert(e0);
-		Delaunay2_VertexSet e1;
-		e1.insert(v0);e1.insert(v2);
-		if(boundaryEdges.find(e1) == boundaryEdges.end()) conflictedEdges.insert(e1);
-		Delaunay2_VertexSet e2;
-		e2.insert(v1);e2.insert(v2);
-		if(boundaryEdges.find(e2) == boundaryEdges.end()) conflictedEdges.insert(e2);
+		if(!obj->is_infinite(v0) && !obj->is_infinite(v1)) {
+			Delaunay2_VertexSet e0;
+			e0.insert(v0);e0.insert(v1);
+			if(boundaryEdges.find(e0) == boundaryEdges.end()) conflictedEdges.insert(e0);
+		}
+		if(!obj->is_infinite(v0) && !obj->is_infinite(v2)) {
+			Delaunay2_VertexSet e1;
+			e1.insert(v0);e1.insert(v2);
+			if(boundaryEdges.find(e1) == boundaryEdges.end()) conflictedEdges.insert(e1);
+		}
+		if(!obj->is_infinite(v1) && !obj->is_infinite(v2)) {
+			Delaunay2_VertexSet e2;
+			e2.insert(v1);e2.insert(v2);
+			if(boundaryEdges.find(e2) == boundaryEdges.end()) conflictedEdges.insert(e2);
+		}
 	}
 
 	//DEBUG: std::cout << "Number of conflicted edges=" << 3*i << " (amoung " << faces.size() << " faces)" << std::endl;
@@ -94,9 +105,11 @@ Delaunay2_VertexSet_Set CGAL_Delaunay2_incident_edges(Delaunay2* obj, Delaunay2:
 	if (vc != 0) {	 
 		do {
 			//DEBUG: std::cout << "incident" << std::endl;
-			Delaunay2_VertexSet e;
-			e.insert(v);e.insert(vc);
-			incidentEdges.insert(e);   	 
+			if(!obj->is_infinite(vc)) {
+				Delaunay2_VertexSet e;
+				e.insert(v);e.insert(vc);
+				incidentEdges.insert(e);
+			}  	 
 		} while(++vc != done);
 	}
 	return incidentEdges;
@@ -155,24 +168,36 @@ std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> CGAL_Delaunay3_confli
        	++cit,++i)
 	{
 		Delaunay3::Vertex_handle v0=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(0),v1=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(1),v2=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(2),v3=static_cast<Delaunay3::Cell_handle>(*cit)->vertex(3);
-		Delaunay3_VertexSet e0;
-		e0.insert(v0);e0.insert(v1);
-		if(boundaryEdges.find(e0) == boundaryEdges.end()) conflictedEdges.insert(e0);
-		Delaunay3_VertexSet e1;
-		e1.insert(v0);e1.insert(v2);
-		if(boundaryEdges.find(e1) == boundaryEdges.end()) conflictedEdges.insert(e1);
-		Delaunay3_VertexSet e2;
-		e2.insert(v0);e2.insert(v3);
-		if(boundaryEdges.find(e2) == boundaryEdges.end()) conflictedEdges.insert(e2);
-		Delaunay3_VertexSet e3;
-		e3.insert(v1);e3.insert(v2);
-		if(boundaryEdges.find(e3) == boundaryEdges.end()) conflictedEdges.insert(e3);
-		Delaunay3_VertexSet e4;
-		e4.insert(v1);e4.insert(v3);
-		if(boundaryEdges.find(e4) == boundaryEdges.end()) conflictedEdges.insert(e4);
-		Delaunay3_VertexSet e5;
-		e5.insert(v2);e5.insert(v3);
-		if(boundaryEdges.find(e5) == boundaryEdges.end()) conflictedEdges.insert(e5);
+		if(!obj->is_infinite(v0) && !obj->is_infinite(v1)) {
+			Delaunay3_VertexSet e0;
+			e0.insert(v0);e0.insert(v1);
+			if(boundaryEdges.find(e0) == boundaryEdges.end()) conflictedEdges.insert(e0);
+		}
+		if(!obj->is_infinite(v0) && !obj->is_infinite(v2)) {
+			Delaunay3_VertexSet e1;
+			e1.insert(v0);e1.insert(v2);
+			if(boundaryEdges.find(e1) == boundaryEdges.end()) conflictedEdges.insert(e1);
+		}
+		if(!obj->is_infinite(v0) && !obj->is_infinite(v3)) {
+			Delaunay3_VertexSet e2;
+			e2.insert(v0);e2.insert(v3);
+			if(boundaryEdges.find(e2) == boundaryEdges.end()) conflictedEdges.insert(e2);
+		}
+		if(!obj->is_infinite(v1) && !obj->is_infinite(v2)) {
+			Delaunay3_VertexSet e3;
+			e3.insert(v1);e3.insert(v2);
+			if(boundaryEdges.find(e3) == boundaryEdges.end()) conflictedEdges.insert(e3);
+		}
+		if(!obj->is_infinite(v1) && !obj->is_infinite(v3)) {
+			Delaunay3_VertexSet e4;
+			e4.insert(v1);e4.insert(v3);
+			if(boundaryEdges.find(e4) == boundaryEdges.end()) conflictedEdges.insert(e4);
+		}
+		if(!obj->is_infinite(v2) && !obj->is_infinite(v3)) {
+			Delaunay3_VertexSet e5;
+			e5.insert(v2);e5.insert(v3);
+			if(boundaryEdges.find(e5) == boundaryEdges.end()) conflictedEdges.insert(e5);
+		}
 	}
 
 	//DEBUG: std::cout << "Number of conflicted edges=" << 6*i << " (amoung " << V.size() << " cells)" << std::endl;
@@ -192,9 +217,11 @@ Delaunay3_VertexSet_Set CGAL_Delaunay3_incident_edges(Delaunay3* obj, Delaunay3:
 		vit != V.end();
 		++vit) 
 	{
-		Delaunay3_VertexSet e;
-		e.insert(v);e.insert(*vit);
-		incidentEdges.insert(e);
+		if(!obj->is_infinite(*vit)) {
+			Delaunay3_VertexSet e;
+			e.insert(v);e.insert(*vit);
+			incidentEdges.insert(e);
+		}
 	}
 
 	return incidentEdges;

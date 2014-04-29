@@ -90,7 +90,7 @@ public:
 		//lists["test"]=NumericVector::create(i);
     	 
     	//std::cout << "end" << std::endl;
-        inter->set_exprs_cexprs_caches(get_lists_to_send());
+        inter->set_cexprs_caches(get_lists_to_send());
     };
 
     List eval_exprs() {
@@ -99,6 +99,29 @@ public:
 
     List get_lists() {return List::create(_["first"]=first_list,_["second"]=second_list);};
 
+    List get_lists_to_send() {return List::create(_["first"]=prepare_list_to_send(first_list),_["second"]=prepare_list_to_send(second_list));};
+
+    //prepare lists to be used in Interaction
+    List prepare_list_to_send(List cl) {
+        //This can be done directly in c++
+        List res;
+        if(cl.size()>0) {
+            List cl0=cl[0];
+            res=List(cl0.size());
+            for(int term=0;term < cl0.size();term++) {
+                List resTerm(cl.size());
+                
+                for(int i=0;i<cl.size();i++) {
+                    resTerm[i]=as<List>(cl[i])[term];     
+                }
+                res[term]=resTerm;
+            }
+
+        }  
+        return res;
+    }
+
+    /*************
     List get_lists_to_send() {return List::create(_["first"]=prepare_list_to_send(first_list),_["second"]=prepare_list_to_send(second_list));};
 
     //prepare lists to be used in Interaction
@@ -122,7 +145,7 @@ public:
 
           }  
           return res;
-    }
+    } ******************/
 
     int nb_runs;
 
