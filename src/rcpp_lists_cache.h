@@ -93,11 +93,21 @@ public:
         inter->set_cexprs_caches(get_lists_to_send());
     };
 
+    void set_exprs_for_interaction(List caches_exprs) {
+        inter->set_exprs_for_caches(caches_exprs ); 
+    }
+
+    void set_sizes_for_interaction(IntegerVector caches_sizes) {
+        inter->set_sizes_for_caches(caches_sizes); 
+    }
+
     List eval_exprs() {
         return inter->eval_exprs_from_cexprs_caches();
     }
 
     List get_lists() {return List::create(_["first"]=first_list,_["second"]=second_list);};
+
+    List get_exprs_lists() {return inter->get_exprs_from_cexprs_caches();}
 
     List get_lists_to_send() {return List::create(_["first"]=prepare_list_to_send(first_list),_["second"]=prepare_list_to_send(second_list));};
 

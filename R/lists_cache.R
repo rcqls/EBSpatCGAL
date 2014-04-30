@@ -8,8 +8,8 @@ ListsCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
 	formula(formMngr,model,local=TRUE)
 	forms <- as.list(substitute(c(...)))[-1]
 	for(f in forms) formula(formMngr,f,local=TRUE) # First consider only the main case 
-	print(formula(formMngr))
-	self <- newEnv(ListsCache,forms=forms,formMngr=formMngr,interMngr=InteractionMngr(formMngr$func,check.params=FALSE),runs=runs,domain=domain)
+	#print(formula(formMngr))
+	self <- newEnv(ListsCache,forms=forms,formMngr=formMngr,interMngr=InteractionMngr(formMngr$func,check.params=FALSE),runs=runs,domain=domain,mode=1) #mode=0 or 1
 	# the first formula is supposed to model formula with response in the left part of the formula
 	self$response <- if(formMngr$formulas[[1]][[1]]==as.name("~") && length(formMngr$formulas[[1]])==3) formMngr$formulas[[1]][[2]] else NULL
 	if(!is.null(self$response)) {
@@ -26,7 +26,10 @@ ListsCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
 			## Maybe create one! 
 		} else {	
 			rcpp <- new(ListsCacheCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
+			
 			rcpp$nb_runs <- self$runs
+			rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(seq(self$struct)))))
+			
 			if(!is.null(self$interMngr$mark.name)) {
 				rcpp$marked(TRUE)
 				rcpp$mark_expr(self$interMngr$mark.expr)
@@ -36,9 +39,11 @@ ListsCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
 			} else rcpp$marked(FALSE)
 			# important for renew process!
 			if(!is.null(self$struct)) update(self$interMngr,self$struct)
+			self$to_make_lists <- TRUE
 			rcpp
 		} 
 	})
+	terms(self,exp(-(.V))*.form)
 	self
 }
 
@@ -66,15 +71,56 @@ update.ListsCache <- function(self,current) {
 
 ## RMK: If you have a single configuration of point you need to complete 
 ## this data with an implicit Simulable object! => TODO!!!
-run.ListsCache <- function(self,current,...) {
+run.ListsCache <- function(self,current,...,runs,mode) {
 	params(self,...)
-	if(!missing(current)) {
+	rcpp <- self$rcpp()
+	
+	if(!missing(runs) && self$runs != runs) {
+		self$runs <- runs
+		rcpp$nb_runs <- self$runs
+		rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(seq(self$struct)))))
+		# make_lists needed if change of runs
+		self$to_make_lists <- TRUE
+	}
+
+	if(!missing(mode) && self$mode != mode) {
+		self$mode <- mode
+		rcpp$set_mode(mode)
+		# make_lists needed if change of mode
+		self$to_make_lists <- TRUE
+	}
+	
+
+	if(!missing(current) && (is.null(self$struct) || self$struct != current)) {
 		if(inherits(current,"Simulable")) update(self,current) 
 		else cat("WARNING: object not of class Simulable!\n")
 	}
-	if(!is.null(self$struct)) {
-		self$rcpp()$eval_exprs()
+
+	if(self$to_make_lists) {
+		cat("Please be patient: update of caches -> ")
+		self$rcpp()$make_lists()
+		self$to_make_lists <- FALSE
+		cat("done! \n")
 	}
+
+	if(!is.null(self$struct)) {
+		rcpp$eval_exprs()
+	}
+}
+
+terms.ListsCache <- function(self,expr=exp(-(.V))*.form) {
+	expr <- deparse(substitute(expr))
+	exprs<-list(
+		first=sapply(self$formMngr$formulas[-1],
+			function(form) {
+				expr2 <- gsub("\\.V",deparse(self$formMngr$formulas[[1]][[3]]),expr)
+				expr2 <- gsub("\\.form",deparse(form),expr2)
+				parse(text=expr2)
+			}),
+		second=self$formMngr$formulas[-1]
+	)
+	self$rcpp()$set_exprs_for_interaction(exprs)
+	exprs
 }
 
 

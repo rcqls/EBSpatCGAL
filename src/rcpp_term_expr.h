@@ -51,8 +51,8 @@ public:
     virtual List get_after_cexprs()=0;
     virtual List get_before_cexprs()=0;
     virtual void set_cexprs_caches(List cexprs_cache_)=0;
-    virtual void get_first_exprs_at(int i,Environment envir)=0;
-    virtual void get_exprs_from_cache_at(int i,std::string cache,Environment envir)=0;
+    virtual void put_exprs_from_cache_at(int i,std::string cache,Environment envir)=0;
+    virtual List get_exprs_from_cache_at(int i,std::string cache)=0;
 };
 
 RCPP_EXPOSED_AS(TermBase);
@@ -279,18 +279,24 @@ public:
 
     }
 
+    
     //exprs for caches
     List first_cache_exprs,second_cache_exprs;
     //and sizes of caches
-    List first_cache_size,second_cache_size;
+    int first_cache_size,second_cache_size;
     //and envir for computing exprs from caches
     Environment envir;
 
-    void set_infos_for_caches(List caches_exprs,List caches_sizes) {
+    void set_exprs_for_caches(List caches_exprs) {
         first_cache_exprs=caches_exprs["first"];
         second_cache_exprs=caches_exprs["second"];
-        first_cache_size=caches_sizes["first"];
-        second_cache_size=caches_sizes["second"];
+    }
+
+    void set_sizes_for_caches(IntegerVector caches_sizes) {
+        first_cache_size=caches_sizes[0];
+        second_cache_size=caches_sizes[1];
+        std::cout << "first size=" << first_cache_size << std::endl;
+        std::cout << "second size=" << second_cache_size << std::endl;
     }
 
     void get_first_terms_exprs_at(int i) {
@@ -299,7 +305,7 @@ public:
             lit != term_list.end();
             ++lit
         ) {
-            (*lit)->get_exprs_from_cache_at(i,"first",envir);
+            (*lit)->put_exprs_from_cache_at(i,"first",envir);
         }
     }
 
@@ -309,9 +315,51 @@ public:
             lit != term_list.end();
             ++lit
         ) {
-            (*lit)->get_exprs_from_cache_at(i,"second",envir);
+            (*lit)->put_exprs_from_cache_at(i,"second",envir);
         }
     }
+
+    //get exprs .f as a list from cexprs caches
+    List get_exprs_from_cexprs_caches() {
+        List resFirst(first_cache_size),resSecond(second_cache_size);
+        int i;
+        for(i=0;i<first_cache_size;i++) {
+            List res;
+            for(
+                std::list<TermBase*>::iterator lit=term_list.begin();
+                lit != term_list.end();
+                ++lit
+            ) {
+                List ret=(*lit)->get_exprs_from_cache_at(i,"first");
+                std::vector<std::string> names=ret.names();
+                for(std::vector<std::string>::iterator nit=names.begin();nit!=names.end();++nit) {
+                    res[*nit]=ret[*nit];
+                }
+            }
+            resFirst[i]=res;
+        }
+
+        for(i=0;i<second_cache_size;i++) {
+            List res;
+            for(
+                std::list<TermBase*>::iterator lit=term_list.begin();
+                lit != term_list.end();
+                ++lit
+            ) {
+                List ret=(*lit)->get_exprs_from_cache_at(i,"second");
+                std::vector<std::string> names=ret.names();
+                for(std::vector<std::string>::iterator nit=names.begin();nit!=names.end();++nit) {
+                    res[*nit]=ret[*nit];
+                }
+            }
+            resSecond[i]=res;
+        }
+
+        return List::create(_["first"]=resFirst,_["second"]=resSecond);
+        
+    } 
+
+
 
     List eval_exprs_from_cexprs_caches() {
         std::vector<double> resFirst(first_cache_exprs.size()),resSecond(second_cache_exprs.size());
@@ -319,16 +367,18 @@ public:
         for(i=0;i<first_cache_size;i++) {
             get_first_terms_exprs_at(i); //put .f exprs inside envir
             for(j=0;j<first_cache_exprs.size();j++)
-                resFirst[j] += as<double>(Rf_eval(first_cache_exprs,envir)); //eval jth expr form .f exprs
+                resFirst[j] += as<double>(Rf_eval(first_cache_exprs[j],envir)); //eval jth expr form .f exprs
         }
 
         for(i=0;i<second_cache_size;i++) {
             get_first_terms_exprs_at(i); //put .f exprs inside envir
             for(j=0;j<first_cache_exprs.size();j++)
-                resSecond[j] += as<double>(Rf_eval(first_cache_exprs,envir)); //eval jth expr form .f exprs
+                resSecond[j] += as<double>(Rf_eval(first_cache_exprs[j],envir)); //eval jth expr form .f exprs
         }
 
-        return List::create(_["first"]=as<NumericVector>(resFirst),_["second"]=as<NumericVector>(resSecond));
+        NumericVector firstResult(resFirst.begin(),resFirst.end()),secondResult(resSecond.begin(),resSecond.end());
+
+        return List::create(_["first"]=firstResult,_["second"]=secondResult);
         
         //set param is supposed  to be applied just before
         // List resFirst,resSecond;
@@ -691,7 +741,7 @@ public:
         return cexprs_caches;
     }
 
-    void get_exprs_from_cache_at(int i,std::string cacheName,Environment envir) {
+    void put_exprs_from_cache_at(int i,std::string cacheName,Environment envir) {
         List cache=as<List>(cexprs_caches[cacheName])[i];
         //std::cout << current_cache << std::endl;
         init_exprs_results();
@@ -704,8 +754,35 @@ public:
 
     }
 
+    List get_exprs_from_cache_at(int i,std::string cacheName) {
+        List cache=as<List>(cexprs_caches[cacheName])[i];
+        //std::cout << current_cache << std::endl;
+        init_exprs_results();
+        //std::cout << current_cache << std::endl;
+        eval_before_exprs_results_from_cexprs_cache(cache["before"]);
+        //std::cout << current_cache << std::endl;
+        eval_after_exprs_results_from_cexprs_cache(cache["after"]);
+        //std::cout << current_cache << std::endl;
+        return exprs_results_as_List();
+
+    }
+
+    void exprs_results_to_envir(Environment envir_) {
+
+        List res=wrap(exprs_results);
+        CharacterVector names=exprs.names();
+
+        for(int i = 0; i < names.size() ; i++) {
+            //std::cout << "var:" << names[i] << std::endl;
+            SEXP name = Rf_install(Rf_translateChar(STRING_ELT(names, i)));
+            Rf_defineVar(name, VECTOR_ELT(res, i), envir_);
+            //Rf_defineVar(name,  wrap(exprs_results(i), envir);
+        }
+    }
+
 
     void eval_before_exprs_results_from_cexprs_cache(List beforeCache) {
+        int i,ii;
         for(
             List::iterator lit=beforeCache.begin();
             lit != beforeCache.end();
@@ -729,8 +806,6 @@ public:
 
     void eval_after_exprs_results_from_cexprs_cache(List afterCache) {
         int i,ii;
-        List currentCache=cexprs_caches[current_cache];
-        List afterCache=currentCache["after"];
         for(
             List::iterator lit=afterCache.begin();
             lit != afterCache.end();
