@@ -108,16 +108,26 @@ run.ListsCache <- function(self,current,...,runs,mode) {
 	}
 }
 
-terms.ListsCache <- function(self,expr=exp(-(.V))*.form) {
-	expr <- deparse(substitute(expr))
+##################################################
+# pretty flexible!!
+# other example: terms(self,.form,exp(.V)*.form)
+##################################################
+terms.ListsCache <- function(self,expr1=exp(-(.V))*.form,expr2=.form) {
+	expr1 <- deparse(substitute(expr1))
+	expr2 <- deparse(substitute(expr2))
 	exprs<-list(
 		first=sapply(self$formMngr$formulas[-1],
 			function(form) {
-				expr2 <- gsub("\\.V",deparse(self$formMngr$formulas[[1]][[3]]),expr)
-				expr2 <- gsub("\\.form",deparse(form),expr2)
-				parse(text=expr2)
+				expr <- gsub("\\.V",deparse(self$formMngr$formulas[[1]][[3]]),expr1)
+				expr <- gsub("\\.form",deparse(form),expr)
+				parse(text=expr)
 			}),
-		second=self$formMngr$formulas[-1]
+		second=sapply(self$formMngr$formulas[-1],
+			function(form) {
+				expr <- gsub("\\.V",deparse(self$formMngr$formulas[[1]][[3]]),expr2)
+				expr <- gsub("\\.form",deparse(form),expr)
+				parse(text=expr)
+			})
 	)
 	self$rcpp()$set_exprs_for_interaction(exprs)
 	exprs
