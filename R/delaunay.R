@@ -134,3 +134,5 @@ edges.Delaunay <- function(obj,mode=c("default","incident","conflicted","dual"),
 }
 
 seq.Delaunay <- function(obj) 1:NROW(vertices(obj))
+
+length.Delaunay <- function(obj) NROW(vertices(obj))

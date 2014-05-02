@@ -101,8 +101,18 @@ public:
         inter->set_sizes_for_caches(caches_sizes); 
     }
 
+    void set_single(NumericVector single) {inter-> set_single(single);}
+
+    NumericVector eval_first_exprs(std::vector<int> indexes) {
+        return inter->eval_first_exprs_from_cexprs_caches(indexes);
+    }
+
+    NumericVector eval_second_exprs(std::vector<int> indexes) {
+        return inter->eval_second_exprs_from_cexprs_caches(indexes);
+    }
+
     List eval_exprs() {
-        return inter->eval_exprs_from_cexprs_caches();
+        return  inter->eval_exprs_from_cexprs_caches();
     }
 
     List get_lists() {return List::create(_["first"]=first_list,_["second"]=second_list);};

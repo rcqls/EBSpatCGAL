@@ -99,10 +99,13 @@ RCPP_MODULE(delaunay_module) {
     .method("marked",&ListsCache::set_marked,"set marked")
     .method("new_mark",&ListsCache::new_mark,"new mark")
     .method("make_lists",&ListsCache::make_lists,"make lists cache")
+    .method("set_single",&ListsCache::set_single,"set single")
     .method("set_exprs_for_interaction",&ListsCache::set_exprs_for_interaction,"set caches exprs for interaction")
     .method("set_sizes_for_interaction",&ListsCache::set_sizes_for_interaction,"set caches sizes for interaction")
     .method("get_lists",&ListsCache::get_lists,"get lists cache")
     .method("get_exprs_lists",&ListsCache::get_exprs_lists,"get exprs lists")
+    .method("eval_first_exprs",&ListsCache::eval_first_exprs,"eval first exprs")
+    .method("eval_second_exprs",&ListsCache::eval_second_exprs,"eval second exprs")
     .method("eval_exprs",&ListsCache::eval_exprs,"eval exprs")
     ;
 

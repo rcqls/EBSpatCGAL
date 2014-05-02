@@ -16,7 +16,7 @@
 
 
 ####################################################################################################################
-##class PseudoExpo
+## class PseudoExpo
 PseudoExpo<-function(model,nbPts,domainSize,marks=NULL,mode=c("random","systematic"),weighted=FALSE) {
   Func.mode("PseudoExpo") #used for conversion of formula
   ### debugMode: cat("formula -> Func")

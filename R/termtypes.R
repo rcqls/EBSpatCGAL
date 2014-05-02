@@ -146,6 +146,8 @@ check.params.in.terms <- function(interMngr) {
 
 params.InteractionMngr <- function(interMngr,...) {
   params <- list(...)
+  #cat("params->");print(params)
+  if(length(params)==1 && names(params)=="params" && is.list(params[[1]])) params <- params[[1]]
   if(length(params)==0) {
     if(!is.null(interMngr$params.completed) && any(!interMngr$params.completed)) {
       cat("WARNING: Some value of parameter needs to be provided!!!\n")
@@ -521,6 +523,9 @@ parse.TermTypeMngr<-function(termMngr,skip=2) {
       names(compFuncLoc.size)[iL]<-v[1]
     }
   }
+
+  ## remove varname starting with "." 
+  varsList <- varsList[sapply(varsList,function(e) length(grep("^\\.",e))==0)]
   
   termMngr$form<-paste(deparse(form),collapse="") #the first string without name is the formula
   termMngr$vars<-varsEnv #envir (for dynamic trick) containing variables which are numeric named parameters (see param.EBGibbs and run.EBGibbs for the use),

@@ -28,7 +28,7 @@ ListsCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
 			rcpp <- new(ListsCacheCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
 			
 			rcpp$nb_runs <- self$runs
-			rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(seq(self$struct)))))
+			rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(self$struct))))
 			
 			if(!is.null(self$interMngr$mark.name)) {
 				rcpp$marked(TRUE)
@@ -43,12 +43,14 @@ ListsCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
 			rcpp
 		} 
 	})
-	terms(self,exp(-(.V))*.form)
+	formula(self,exp(-(.V))*.form ~ .form)
 	self
 }
 
 ## This delegates change of parameter value to InteractionManager 
-params.ListsCache <- function(self,...) params(self$interMngr,...)
+params.ListsCache <- function(self,...) {
+	params(self$interMngr,...)
+}
 
 ##########################################################################
 # RMK: Interaction C++ object knows about STRUCT class via its first term 
@@ -73,7 +75,12 @@ update.ListsCache <- function(self,current) {
 ## this data with an implicit Simulable object! => TODO!!!
 run.ListsCache <- function(self,current,...,runs,mode) {
 	params(self,...)
+
 	rcpp <- self$rcpp()
+
+	if("single" %in% names(list(...))) { 
+		rcpp$set_single(list(...)$single)
+	}
 	
 	if(!missing(runs) && self$runs != runs) {
 		self$runs <- runs
@@ -91,7 +98,7 @@ run.ListsCache <- function(self,current,...,runs,mode) {
 	}
 	
 
-	if(!missing(current) && (is.null(self$struct) || self$struct != current)) {
+	if(!missing(current) && (is.null(self$struct) || identical(self$struct,current))) {
 		if(inherits(current,"Simulable")) update(self,current) 
 		else cat("WARNING: object not of class Simulable!\n")
 	}
@@ -104,89 +111,118 @@ run.ListsCache <- function(self,current,...,runs,mode) {
 	}
 
 	if(!is.null(self$struct)) {
-		rcpp$eval_exprs()
+		tmp <- rcpp$eval_exprs()
+		list(first=tmp$first/self$runs,second=tmp$second/(self$domain[3]-self$domain[1])/(self$domain[4]-self$domain[2]))
 	}
 }
 
 ##################################################
 # pretty flexible!!
-# other example: terms(self,.form,exp(.V)*.form)
+# other example: formula(self,.form,exp(.V)*.form)
 ##################################################
-terms.ListsCache <- function(self,expr1=exp(-(.V))*.form,expr2=.form) {
-	expr1 <- deparse(substitute(expr1))
-	expr2 <- deparse(substitute(expr2))
-	exprs<-list(
-		first=sapply(self$formMngr$formulas[-1],
-			function(form) {
-				expr <- gsub("\\.V",deparse(self$formMngr$formulas[[1]][[3]]),expr1)
-				expr <- gsub("\\.form",deparse(form),expr)
-				parse(text=expr)
-			}),
-		second=sapply(self$formMngr$formulas[-1],
-			function(form) {
-				expr <- gsub("\\.V",deparse(self$formMngr$formulas[[1]][[3]]),expr2)
-				expr <- gsub("\\.form",deparse(form),expr)
-				parse(text=expr)
-			})
-	)
-	self$rcpp()$set_exprs_for_interaction(exprs)
-	exprs
+formula.ListsCache <- function(self,form=exp(-(.V))*.form ~ .form) {
+	if(form=="resid") form <- exp(-(.V))*.form ~ .form
+	else if(form=="inverse") form <- .form ~ exp(.V) * .form
+	else if(form=="clean") self$exprs <- list(first=NULL,second=NULL)
+	if(inherits(form,"formula")) {# formula mode!
+		if(length(form)==2) stop("sorry: left and right terms are required")
+		expr1 <- deparse(form[[2]])
+		expr2 <- deparse(form[[3]])
+		exprs<-list(
+			first=sapply(self$formMngr$formulas[-1],
+				function(form) {
+					expr <- gsub("\\.V",paste("single+",deparse(self$formMngr$formulas[[1]][[3]]),sep=""),expr1)
+					expr <- gsub("\\.form",deparse(form),expr)
+					parse(text=expr)
+				}),
+			second=sapply(self$formMngr$formulas[-1],
+				function(form) {
+					expr <- gsub("\\.V",paste("single + ",deparse(self$formMngr$formulas[[1]][[3]]),sep=""),expr2)
+					expr <- gsub("\\.form",deparse(form),expr)
+					parse(text=expr)
+				})
+		)
+		self$exprs$first  <- c(self$exprs$first,exprs$first)
+		self$exprs$second <- c(self$exprs$second,exprs$second)
+	} else if(is.list(form) && length(form)==1 && names(form) %in% c("first","second")) {
+		expr <- gsub("\\.V",paste("single + ",deparse(self$formMngr$formulas[[1]][[3]]),sep=""),form)
+		gregexpr("\\.form([[:digit:]]*)",expr) -> tmp
+		for(i in rev(1:length(tmp[[1]]))) {
+			if(tmp[[1]][i]>0) {
+				tmp2 <- attr(tmp[[1]],"match.length")[i]
+				name <- substring(expr,tmp[[1]][i],tmp[[1]][i]+tmp2-1)
+				ii <- as.integer(substring(name,6)) + 1
+				if(!is.na(ii)) {
+					expr <- paste(substring(expr,1,tmp[[1]][i]-1),
+					deparse(self$formMngr$formulas[[ii]]),
+					substring(expr,tmp[[1]][i]+tmp2),sep="")
+				}
+			}
+		}
+		expr <- parse(text=expr)
+		if(names(form)=="first") self$exprs$first <- c(self$exprs$first,expr)
+		else self$exprs$second <- c(self$exprs$second,expr)
+	} else if(is.list(form) && length(form)>1 && all(names(form) %in% c("first","second"))) {
+		for(i in seq(form)) formula(self,form[i])
+	}
+	self$rcpp()$set_exprs_for_interaction(self$exprs)
+	self$exprs
 }
 
 
 ### NOT VERY USEFUL NOW sine everything is done in C++
 ### Maybe, can help for debugging
-get.ListsCache <- function(self,mode=1,runs,transform="nothing") {
+# get.ListsCache <- function(self,mode=1,runs,transform="nothing") {
 
-	rcpp <- self$rcpp()
-	if(!missing(runs)) {
-		self$runs <- runs
-		rcpp$nb_runs <- self$runs
-	} 
-	rcpp$set_mode(mode)
-	rcpp$make_lists()
-	cachelists <- rcpp$get_lists()
+# 	rcpp <- self$rcpp()
+# 	if(!missing(runs)) {
+# 		self$runs <- runs
+# 		rcpp$nb_runs <- self$runs
+# 	} 
+# 	rcpp$set_mode(mode)
+# 	rcpp$make_lists()
+# 	cachelists <- rcpp$get_lists()
 
-	transform.as.data.frame <- function(cl,nms) {
-		res <- list()
-		if(length(cl>0)) for(term in 1:length(cl[[1]])) {
-			res[[term]] <-list(before=list(),after=list())
-			for(nm in nms[[term]]) {
-				res[[term]]$before[[nm]] <- c()
-				for(pt in 1:length(cl)) {
-					if(length(cl[[pt]][[term]]$before)>0) for(j in 1:length(cl[[pt]][[term]]$before)) res[[term]]$before[[nm]] <- c(res[[term]]$before[[nm]],cl[[pt]][[term]]$before[[j]][[nm]])
-					if(length(cl[[pt]][[term]]$after)>0) for(j in 1:length(cl[[pt]][[term]]$after)) res[[term]]$after[[nm]] <- c(res[[term]]$after[[nm]],cl[[pt]][[term]]$after[[j]][[nm]])
-				}
-			}
-			res[[term]]$before <- as.data.frame(res[[term]]$before)
-			res[[term]]$after <- as.data.frame(res[[term]]$after)
-		}
-		res
-	}
+# 	transform.as.data.frame <- function(cl,nms) {
+# 		res <- list()
+# 		if(length(cl>0)) for(term in 1:length(cl[[1]])) {
+# 			res[[term]] <-list(before=list(),after=list())
+# 			for(nm in nms[[term]]) {
+# 				res[[term]]$before[[nm]] <- c()
+# 				for(pt in 1:length(cl)) {
+# 					if(length(cl[[pt]][[term]]$before)>0) for(j in 1:length(cl[[pt]][[term]]$before)) res[[term]]$before[[nm]] <- c(res[[term]]$before[[nm]],cl[[pt]][[term]]$before[[j]][[nm]])
+# 					if(length(cl[[pt]][[term]]$after)>0) for(j in 1:length(cl[[pt]][[term]]$after)) res[[term]]$after[[nm]] <- c(res[[term]]$after[[nm]],cl[[pt]][[term]]$after[[j]][[nm]])
+# 				}
+# 			}
+# 			res[[term]]$before <- as.data.frame(res[[term]]$before)
+# 			res[[term]]$after <- as.data.frame(res[[term]]$after)
+# 		}
+# 		res
+# 	}
 
-	#This can be done directly in c++
-	transform.as.list <- function(cl,nms) {
-		res <- list()
-		if(length(cl>0)) for(term in 1:length(cl[[1]])) {
-			res[[term]] <-list(before=list(),after=list())
+# 	#This can be done directly in c++
+# 	transform.as.list <- function(cl,nms) {
+# 		res <- list()
+# 		if(length(cl>0)) for(term in 1:length(cl[[1]])) {
+# 			res[[term]] <-list(before=list(),after=list())
 			 
-			for(pt in 1:length(cl)) {
-				if(length(cl[[pt]][[term]]$before)>0) for(j in 1:length(cl[[pt]][[term]]$before)) res[[term]]$before <- c(res[[term]]$before,cl[[pt]][[term]]$before[j])
-				if(length(cl[[pt]][[term]]$after)>0) for(j in 1:length(cl[[pt]][[term]]$after)) res[[term]]$after <- c(res[[term]]$after,cl[[pt]][[term]]$after[j])
-			}
+# 			for(pt in 1:length(cl)) {
+# 				if(length(cl[[pt]][[term]]$before)>0) for(j in 1:length(cl[[pt]][[term]]$before)) res[[term]]$before <- c(res[[term]]$before,cl[[pt]][[term]]$before[j])
+# 				if(length(cl[[pt]][[term]]$after)>0) for(j in 1:length(cl[[pt]][[term]]$after)) res[[term]]$after <- c(res[[term]]$after,cl[[pt]][[term]]$after[j])
+# 			}
 			
-		}
-		res
-	}
+# 		}
+# 		res
+# 	}
 
-	names.cexprs <- lapply(self$interMngr$terms,function(term) names(term$mngr$local$cexprs$term))
+# 	names.cexprs <- lapply(self$interMngr$terms,function(term) names(term$mngr$local$cexprs$term))
 
-	self$cexprs.cachelists <- switch(transform,
-	nothing= cachelists,
-	as.data.frame=list(first=transform.as.data.frame(cachelists$first,names.cexprs),second=transform.as.data.frame(cachelists$second,names.cexprs)),
-	as.list=list(first=transform.as.list(cachelists$first,names.cexprs),second=transform.as.list(cachelists$second,names.cexprs))
-	)
+# 	self$cexprs.cachelists <- switch(transform,
+# 	nothing= cachelists,
+# 	as.data.frame=list(first=transform.as.data.frame(cachelists$first,names.cexprs),second=transform.as.data.frame(cachelists$second,names.cexprs)),
+# 	as.list=list(first=transform.as.list(cachelists$first,names.cexprs),second=transform.as.list(cachelists$second,names.cexprs))
+# 	)
 
-	self$cexprs.cachelists
+# 	self$cexprs.cachelists
 
-}
+# }

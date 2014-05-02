@@ -20,6 +20,8 @@ public:
         //Modifier when creating local lists
         auto_make_list=true; //Rmk, this has to be false for Interaction
     }
+
+    virtual ~TermBase() {};
  
     virtual double eval_first_expr(void) = 0;
 
@@ -299,6 +301,10 @@ public:
         std::cout << "second size=" << second_cache_size << std::endl;
     }
 
+    void set_single(NumericVector single) {
+        Rf_defineVar(Rf_install("single"), single, envir);
+    }
+
     void get_first_terms_exprs_at(int i) {
         for(
             std::list<TermBase*>::iterator lit=term_list.begin();
@@ -359,7 +365,40 @@ public:
         
     } 
 
+    //eval first exprs for indexes
 
+    NumericVector eval_first_exprs_from_cexprs_caches(std::vector<int> indexes) {
+        std::vector<double> resFirst(indexes.size());
+
+        for(int i=0;i<first_cache_size;i++) {
+            get_first_terms_exprs_at(i); //put .f exprs inside envir
+            for(std::vector<int>::iterator it=indexes.begin();it!=indexes.end();++it)
+                resFirst[*it] += as<double>(Rf_eval(first_cache_exprs[*it],envir)); //eval jth expr form .f exprs
+        }
+
+        NumericVector firstResult(resFirst.begin(),resFirst.end());
+
+        return firstResult;
+        
+    }
+
+    //eval second exprs for indexes
+
+    NumericVector eval_second_exprs_from_cexprs_caches(std::vector<int> indexes) {
+        std::vector<double> resSecond(indexes.size());
+
+        for(int i=0;i<second_cache_size;i++) {
+            get_second_terms_exprs_at(i); //put .f exprs inside envir
+            for(std::vector<int>::iterator it=indexes.begin();it!=indexes.end();++it)
+                resSecond[*it] += as<double>(Rf_eval(second_cache_exprs[*it],envir)); //eval jth expr form .f exprs
+        }
+
+        NumericVector secondResult(resSecond.begin(),resSecond.end());
+
+        return secondResult;
+    }
+
+    //eval all exprs
 
     List eval_exprs_from_cexprs_caches() {
         std::vector<double> resFirst(first_cache_exprs.size()),resSecond(second_cache_exprs.size());
@@ -371,48 +410,14 @@ public:
         }
 
         for(i=0;i<second_cache_size;i++) {
-            get_first_terms_exprs_at(i); //put .f exprs inside envir
-            for(j=0;j<first_cache_exprs.size();j++)
-                resSecond[j] += as<double>(Rf_eval(first_cache_exprs[j],envir)); //eval jth expr form .f exprs
+            get_second_terms_exprs_at(i); //put .f exprs inside envir
+            for(j=0;j<second_cache_exprs.size();j++)
+                resSecond[j] += as<double>(Rf_eval(second_cache_exprs[j],envir)); //eval jth expr form .f exprs
         }
 
         NumericVector firstResult(resFirst.begin(),resFirst.end()),secondResult(resSecond.begin(),resSecond.end());
-
         return List::create(_["first"]=firstResult,_["second"]=secondResult);
-        
-        //set param is supposed  to be applied just before
-        // List resFirst,resSecond;
-        // int i=0;
-        // for(
-        //     std::list<TermBase*>::iterator lit=term_list.begin();
-        //     lit != term_list.end();
-        //     ++lit,++i
-        // ) {
-        //     //std::cout << "i: " << i << std::endl;
-        //     List resCaches=(*lit)->eval_exprs_from_cexprs_caches();
-        //     List resFirstCache=resCaches["first"],resSecondCache=resCaches["second"];
-        //     //std::cout << "i: " << i << std::endl;
-        //     std::vector<std::string> varnames=resFirstCache.names();
-        //     //std::cout << "i: " << i << std::endl;
-        //     for(
-        //         std::vector<std::string>::iterator vit=varnames.begin();
-        //         vit != varnames.end();
-        //         ++vit
-        //     ) {
-        //         //std::cout << "var: " << *vit << std::endl; 
-        //         resFirst[*vit]=resFirstCache[*vit];
-        //         resSecond[*vit]=resSecondCache[*vit];
-        //     }
-        // }        
-
-        // return List::create(_["first"]=resFirst,_["second"]=resSecond);
-
-    } 
-
-
-
-
-
+    }
 /*************************************************************/
 /* I made a mistake! This is not what I want mathematically! */
 /*************************************************************
