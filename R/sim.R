@@ -20,8 +20,8 @@
 
 ## TODO: domain would be included later in Domain object embedding Struct 
 ## playing the role of response in formula
-SimGibbs <-function(form,runs=10000,domain=c(-350,-350,350,350)) {
-	self <- newEnv(SimGibbs,interMngr=InteractionMngr(form),runs=runs,domain=domain)
+SimGibbs <-function(model,runs=10000,domain=c(-350,-350,350,350)) {
+	self <- newEnv(SimGibbs,interMngr=InteractionMngr(model),runs=runs,domain=domain)
 	self$response <- self$interMngr$response
 	if(!is.null(self$response)) {
 		current <- try(eval.parent(self$response))
@@ -60,7 +60,8 @@ params.SimGibbs <- function(self,...) params(self$interMngr,...)
 
 
 ##########################################################################
-# RMK: Interaction C++ object knows about STRUCT class via its first term 
+# RMK: VERY IMPORTANT TRICK! 
+# Interaction C++ object knows about STRUCT class via its first term 
 # so no need to communicate the graph structure to SimGibbs.
 # This method is in charge to communicate the struct to all the terms of 
 # the interaction manager.

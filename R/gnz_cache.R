@@ -3,10 +3,13 @@
 # => params(lc,th=c(2,4)) and update(lc,current=del2)
 
 
-GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
+
+## ... or forms
+
+GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350),forms) {
 	formMngr <- ComponentFunctionalFormulaManager()
 	formula(formMngr,model,local=TRUE)
-	forms <- as.list(substitute(c(...)))[-1]
+	if(missing(forms)) forms <- as.list(substitute(c(...)))[-1]
 	for(f in forms) formula(formMngr,f,local=TRUE) # First consider only the main case 
 	#print(formula(formMngr))
 	self <- newEnv(GNZCache,forms=forms,formMngr=formMngr,interMngr=InteractionMngr(formMngr$func,check.params=FALSE),runs=runs,domain=domain,mode=1) #mode=0 or 1
@@ -43,7 +46,7 @@ GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
 			rcpp
 		} 
 	})
-	formula(self,exp(-(.V))*.form ~ .form)
+	formula(self,"default")  #or exp(-(.V))*.form ~ .form
 	self
 }
 
@@ -117,55 +120,91 @@ run.GNZCache <- function(self,current,...,runs,mode) {
 }
 
 ##################################################
-# pretty flexible!!
-# other example: formula(self,.form,exp(.V)*.form)
+# Pretty flexible!!
+# 0) formula(self) show the formula
+# 1) apply all the forms a the same template with .V representing the energy term and .form the functional term
+# formula(self, exp(-(.V))*.form ~ .form) or formula(self,"default") or formula(self,"resid")
+# formula(self,.form ~ exp(.V)*.form) or formula(self,"inverse")
+# Another choice is to mix the different functionals (.form? with ? representing the rank of the functional to be used) 
+# formula(self,expression(first=exp(-(.V))*.form1,second=.form1,first=.form1,second=exp(.V)*.form1))
+# or formula(self,list(first="exp(-(.V))*.form1",second=".form1",first=".form1",second="exp(.V)*.form1"))
 ##################################################
-formula.GNZCache <- function(self,form=exp(-(.V))*.form ~ .form) {
-	if(form=="resid") form <- exp(-(.V))*.form ~ .form
-	else if(form=="inverse") form <- .form ~ exp(.V) * .form
-	else if(form=="clean") self$exprs <- list(first=NULL,second=NULL)
-	if(inherits(form,"formula")) {# formula mode!
-		if(length(form)==2) stop("sorry: left and right terms are required")
-		expr1 <- deparse(form[[2]])
-		expr2 <- deparse(form[[3]])
-		exprs<-list(
-			first=sapply(self$formMngr$formulas[-1],
-				function(form) {
-					expr <- gsub("\\.V",paste("single+",deparse(self$formMngr$formulas[[1]][[3]]),sep=""),expr1)
-					expr <- gsub("\\.form",deparse(form),expr)
-					parse(text=expr)
-				}),
-			second=sapply(self$formMngr$formulas[-1],
-				function(form) {
-					expr <- gsub("\\.V",paste("single + ",deparse(self$formMngr$formulas[[1]][[3]]),sep=""),expr2)
-					expr <- gsub("\\.form",deparse(form),expr)
-					parse(text=expr)
-				})
-		)
-		self$exprs$first  <- c(self$exprs$first,exprs$first)
-		self$exprs$second <- c(self$exprs$second,exprs$second)
-	} else if(is.list(form) && length(form)==1 && names(form) %in% c("first","second")) {
-		expr <- gsub("\\.V",paste("single + ",deparse(self$formMngr$formulas[[1]][[3]]),sep=""),form)
-		gregexpr("\\.form([[:digit:]]*)",expr) -> tmp
-		for(i in rev(1:length(tmp[[1]]))) {
-			if(tmp[[1]][i]>0) {
-				tmp2 <- attr(tmp[[1]],"match.length")[i]
-				name <- substring(expr,tmp[[1]][i],tmp[[1]][i]+tmp2-1)
-				ii <- as.integer(substring(name,6)) + 1
-				if(!is.na(ii)) {
-					expr <- paste(substring(expr,1,tmp[[1]][i]-1),
-					deparse(self$formMngr$formulas[[ii]]),
-					substring(expr,tmp[[1]][i]+tmp2),sep="")
-				}
-			}
+formula.GNZCache <- function(self,form=NULL,add=FALSE) {
+
+	if(!is.null(form)) { 
+		#  reinit unless add=TRUE
+		if(!add) self$exprs <- list(first=NULL,second=NULL)
+
+		# form is character (and then transformed into formula object)
+		if(is.character(form) && form %in% c("default","resid","inverse")) {
+			form <- switch(form,
+				inverse=.form ~ exp(.V) * .form,
+				exp(-(.V))*.form ~ .form)
 		}
-		expr <- parse(text=expr)
-		if(names(form)=="first") self$exprs$first <- c(self$exprs$first,expr)
-		else self$exprs$second <- c(self$exprs$second,expr)
-	} else if(is.list(form) && length(form)>1 && all(names(form) %in% c("first","second"))) {
-		for(i in seq(form)) formula(self,form[i])
+
+		# form is a formula
+		if(inherits(form,"formula")) {# formula mode!
+			if(length(form)==2) stop("sorry: left and right terms are required")
+			expr1 <- deparse(form[[2]])
+			expr2 <- deparse(form[[3]])
+			exprs<-list(
+				first=sapply(self$formMngr$formulas[-1],
+					function(form) {
+						expr <- gsub("\\.V",paste("single+",deparse(self$formMngr$formulas[[1]][[3]]),sep=""),expr1)
+						expr <- gsub("\\.form",deparse(form),expr)
+						parse(text=expr)
+					}),
+				second=sapply(self$formMngr$formulas[-1],
+					function(form) {
+						expr <- gsub("\\.V",paste("single + ",deparse(self$formMngr$formulas[[1]][[3]]),sep=""),expr2)
+						expr <- gsub("\\.form",deparse(form),expr)
+						parse(text=expr)
+					})
+			)
+			self$exprs$first  <- c(self$exprs$first,exprs$first)
+			self$exprs$second <- c(self$exprs$second,exprs$second)
+		} else {
+			# form is a named expression or a named list of character
+			
+			# function to convert a list of single character formula to call
+			convert <- function(form) {
+				expr <- gsub("\\.V",paste("single + ",deparse(self$formMngr$formulas[[1]][[3]]),sep=""),form)
+				gregexpr("\\.form([[:digit:]]*)",expr) -> tmp
+				for(i in rev(1:length(tmp[[1]]))) {
+					if(tmp[[1]][i]>0) {
+						tmp2 <- attr(tmp[[1]],"match.length")[i]
+						name <- substring(expr,tmp[[1]][i],tmp[[1]][i]+tmp2-1)
+						ii <- as.integer(substring(name,6)) + 1
+						if(!is.na(ii)) {
+							expr <- paste(substring(expr,1,tmp[[1]][i]-1),
+							deparse(self$formMngr$formulas[[ii]]),
+							substring(expr,tmp[[1]][i]+tmp2),sep="")
+						}
+					}
+				}
+				parse(text=expr)
+			}
+
+			# a named list of single character
+			if(is.list(form) && length(form)==1 && names(form) %in% c("first","second")) {
+				expr <- convert(form)
+				if(names(form)=="first") self$exprs$first <- c(self$exprs$first,expr)
+				else self$exprs$second <- c(self$exprs$second,expr)
+			} else # a named list of character
+			if(is.list(form) && length(form)>1 && all(names(form) %in% c("first","second"))) {
+				for(i in seq(form)) formula(self,form[i],add=add)
+			} else # a named expression
+			if(is.expression(form) && names(form) %in% c("first","second")) {
+				formula(self,lapply(form,deparse),add=add)
+			}
+
+		}
+
+		# inform the Interaction object
+		self$rcpp()$set_exprs_for_interaction(self$exprs)
 	}
-	self$rcpp()$set_exprs_for_interaction(self$exprs)
+
+	# echo the exprs
 	self$exprs
 }
 

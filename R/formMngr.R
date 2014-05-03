@@ -25,8 +25,8 @@ ComponentFunctionalFormulaManager <- function() {
 ## 2) formula(formMngr) prints the result
 
 formula.ComponentFunctionalFormulaManager <- function(formMngr,form=NULL,struct=NULL,local=NULL) {
-  ## convert code in substitute(code) (.e. a call) except if code is already a call!
-  form.is.call <- try(is.call(form),TRUE)
+  ## convert code in substitute(code) (i.e. a call) except if code is already a call!
+  form.is.call <- try(is.call(form)||is.numeric(form),TRUE)
   if(inherits(form.is.call,"try-error") || !form.is.call) form <- substitute(form)
 
   if(is.null(form)) {
@@ -51,6 +51,7 @@ formula.ComponentFunctionalFormulaManager <- function(formMngr,form=NULL,struct=
     }
 
     convertCompFunc<-function(e) {
+      #cat("start>");print(e)
       if(length(e)>1) {
         if(as.character(e[[1]])[1] %in% compFuncTypes ) {
           key <- paste(substring(e[[1]],1,1),tolower(substring(e[[1]],nchar(e[[1]]))),sep="")
@@ -64,7 +65,10 @@ formula.ComponentFunctionalFormulaManager <- function(formMngr,form=NULL,struct=
           return(as.name(attr(e,"name")))
         }
         return(as.call(lapply(e,convertCompFunc)))
-      } else return(e) 
+      } else {
+        #cat("end>");print(e)
+        return(e) 
+      }
     }
 
     convertTermType <- function(e) {
