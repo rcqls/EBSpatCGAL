@@ -1,5 +1,5 @@
-#ifndef RCPP_LISTS_CACHE_H
-#define RCPP_LISTS_CACHE_H
+#ifndef RCPP_GNZ_CACHE_H
+#define RCPP_GNZ_CACHE_H
 #include <Rcpp.h>
 #include "rcpp_term_expr.h"
 
@@ -9,17 +9,17 @@ enum CacheMode {Systematic=0,Random};
 
 //TODO: remove the dependency on STRUCT since Interaction via first TermType knows everything about STRUCT (like SimGibbs)
 //template <typename STRUCT> //, typename ELEMENT = typename STRUCT::Point, typename HANDLE = typename STRUCT::Vertex_handle>
-class ListsCache {
+class GNZCache {
 public: 
-    ListsCache() {set_mode(1);nb_runs=1000;}; //needed by rcpp_delaunay_module.cpp
-    ListsCache(Interaction* inter_,Domain* domain_) {
+    GNZCache() {set_mode(1);nb_runs=1000;}; //needed by rcpp_delaunay_module.cpp
+    GNZCache(Interaction* inter_,Domain* domain_) {
         domain=domain_;
         inter=inter_;
         set_mode(1);
         nb_runs=1000; //MC approach
     };
 
-    ListsCache(List inter_,std::vector<double> left_,std::vector<double> right_) {
+    GNZCache(List inter_,std::vector<double> left_,std::vector<double> right_) {
         set_interaction(inter_);
         set_domain(left_,right_);
         set_mode(1);
@@ -189,4 +189,4 @@ protected:
 
 };
 
-#endif //RCPP_LISTS_CACHE_H
+#endif //RCPP_GNZ_CACHE_H

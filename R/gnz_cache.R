@@ -1,31 +1,31 @@
 # Example:
-# lc <- ListsCache(del2 ~ 2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4)))
+# lc <- GNZCache(del2 ~ 2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4)))
 # => params(lc,th=c(2,4)) and update(lc,current=del2)
 
 
-ListsCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
+GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
 	formMngr <- ComponentFunctionalFormulaManager()
 	formula(formMngr,model,local=TRUE)
 	forms <- as.list(substitute(c(...)))[-1]
 	for(f in forms) formula(formMngr,f,local=TRUE) # First consider only the main case 
 	#print(formula(formMngr))
-	self <- newEnv(ListsCache,forms=forms,formMngr=formMngr,interMngr=InteractionMngr(formMngr$func,check.params=FALSE),runs=runs,domain=domain,mode=1) #mode=0 or 1
+	self <- newEnv(GNZCache,forms=forms,formMngr=formMngr,interMngr=InteractionMngr(formMngr$func,check.params=FALSE),runs=runs,domain=domain,mode=1) #mode=0 or 1
 	# the first formula is supposed to model formula with response in the left part of the formula
 	self$response <- if(formMngr$formulas[[1]][[1]]==as.name("~") && length(formMngr$formulas[[1]])==3) formMngr$formulas[[1]][[2]] else NULL
 	if(!is.null(self$response)) {
 		current <- try(eval.parent(self$response))
 		if(inherits(current,"try-error")) {
-			warning("No proper response in ListsCache!")
+			warning("No proper response in GNZCache!")
 			self$struct <- NULL
 		} else update(self,current)
 	} else self$dim <- 2 # default value if no answer updatable if struct changed
 
 	RcppPersistentObject(self,new = { 
 		if(is.null(self$struct)) {
-			## TODO: initialilize ListsCache without del2
+			## TODO: initialilize GNZCache without del2
 			## Maybe create one! 
 		} else {	
-			rcpp <- new(ListsCacheCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
+			rcpp <- new(GNZCacheCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
 			
 			rcpp$nb_runs <- self$runs
 			rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(self$struct))))
@@ -48,17 +48,17 @@ ListsCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350)) {
 }
 
 ## This delegates change of parameter value to InteractionManager 
-params.ListsCache <- function(self,...) {
+params.GNZCache <- function(self,...) {
 	params(self$interMngr,...)
 }
 
 ##########################################################################
 # RMK: Interaction C++ object knows about STRUCT class via its first term 
-# so no need to communicate the graph structure to ListsCache.
+# so no need to communicate the graph structure to GNZCache.
 # This method is in charge to communicate the struct to all the terms of 
 # the interaction manager.
 ##########################################################################
-update.ListsCache <- function(self,current) {
+update.GNZCache <- function(self,current) {
 	self$struct <- current
 	# force renew of TermType taking into account of the new dimension of struct if necessary
 	update(self$interMngr,self$struct)
@@ -71,9 +71,9 @@ update.ListsCache <- function(self,current) {
 }
 
 
-## RMK: If you have a single configuration of point you need to complete 
+## RMK: If you have a single configuration of points you need to complete 
 ## this data with an implicit Simulable object! => TODO!!!
-run.ListsCache <- function(self,current,...,runs,mode) {
+run.GNZCache <- function(self,current,...,runs,mode) {
 	params(self,...)
 
 	rcpp <- self$rcpp()
@@ -120,7 +120,7 @@ run.ListsCache <- function(self,current,...,runs,mode) {
 # pretty flexible!!
 # other example: formula(self,.form,exp(.V)*.form)
 ##################################################
-formula.ListsCache <- function(self,form=exp(-(.V))*.form ~ .form) {
+formula.GNZCache <- function(self,form=exp(-(.V))*.form ~ .form) {
 	if(form=="resid") form <- exp(-(.V))*.form ~ .form
 	else if(form=="inverse") form <- .form ~ exp(.V) * .form
 	else if(form=="clean") self$exprs <- list(first=NULL,second=NULL)
@@ -172,7 +172,7 @@ formula.ListsCache <- function(self,form=exp(-(.V))*.form ~ .form) {
 
 ### NOT VERY USEFUL NOW sine everything is done in C++
 ### Maybe, can help for debugging
-# get.ListsCache <- function(self,mode=1,runs,transform="nothing") {
+# get.GNZCache <- function(self,mode=1,runs,transform="nothing") {
 
 # 	rcpp <- self$rcpp()
 # 	if(!missing(runs)) {

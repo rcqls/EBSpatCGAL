@@ -32,7 +32,7 @@ new(Interaction,list(del2Term,del2Term2)) -> inter
 dom2 <- new(Domain,c(-350,-350),c(350,350)) 
 
 
-cache2 <- new(ListsCacheCpp,inter,dom2)
+cache2 <- new(GNZCacheCpp,inter,dom2)
 
 cache2$set_mode(2)
 
