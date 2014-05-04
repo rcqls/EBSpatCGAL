@@ -89,11 +89,17 @@ RCPP_MODULE(delaunay_module) {
     .method("local_energy",&Interaction::local_energy,"local energy")
     ;
 
+    class_<Domain>("Domain")
+    .constructor<std::vector<double>,std::vector<double> >()
+    .method("pick",&Domain::pick,"")
+    ;
+
     class_<GNZCache>("GNZCacheCpp")
     .constructor()
     .constructor<Interaction*,Domain*>()
     .constructor< List,std::vector<double>,std::vector<double> >()
     .field( "nb_runs", &GNZCache::nb_runs, "nb_runs" )
+    .method("get_envir",&GNZCache::get_envir,"get envir")
     .method("set_mode",&GNZCache::set_mode,"set mode")
     .method("mark_expr",&GNZCache::set_mark_expr,"set mark expr")
     .method("marked",&GNZCache::set_marked,"set marked")
@@ -102,16 +108,13 @@ RCPP_MODULE(delaunay_module) {
     .method("set_single",&GNZCache::set_single,"set single")
     .method("set_exprs_for_interaction",&GNZCache::set_exprs_for_interaction,"set caches exprs for interaction")
     .method("set_sizes_for_interaction",&GNZCache::set_sizes_for_interaction,"set caches sizes for interaction")
+    .method("set_domain",&GNZCache::set_domain_double,"set domain")
+    .method("get_domain",&GNZCache::get_domain,"get domain")
     .method("get_lists",&GNZCache::get_lists,"get lists cache")
     .method("get_exprs_lists",&GNZCache::get_exprs_lists,"get exprs lists")
     .method("eval_first_exprs",&GNZCache::eval_first_exprs,"eval first exprs")
     .method("eval_second_exprs",&GNZCache::eval_second_exprs,"eval second exprs")
     .method("eval_exprs",&GNZCache::eval_exprs,"eval exprs")
-    ;
-
-    class_<Domain>("Domain")
-    .constructor<std::vector<double>,std::vector<double> >()
-    .method("pick",&Domain::pick,"")
     ;
 
     class_<SimGibbs>( "SimGibbsCpp" )
@@ -123,6 +126,7 @@ RCPP_MODULE(delaunay_module) {
     .method("marked",&SimGibbs::set_marked,"set marked")
     .method("new_mark",&SimGibbs::new_mark,"new mark")
     .method("run",&SimGibbs::run,"run")
+    .method("set_domain",&SimGibbs::set_domain_double,"set domain")
     .method("get_domain",&SimGibbs::get_domain,"get domain")
     ;
 

@@ -78,12 +78,24 @@ update.SimGibbs <- function(self,current) {
 	}
 }
 
-run.SimGibbs <- function(self,current,...) {
+run.SimGibbs <- function(self,current,...,runs,domain) {
 	params(self,...)
 	if(!missing(current)) {
 		if(inherits(current,"Simulable")) update(self,current) 
 		else cat("WARNING: object not of class Simulable!\n")
 	}
+
+	if(!missing(domain) && !identical(domain,self$domain)) {
+		self$domain <- domain
+		self$rcpp()$set_domain(domain)
+		
+	}
+
+	if(!missing(runs) && self$runs != runs) {
+		self$runs <- runs
+		rcpp$nb_runs <- self$runs
+	}
+
 	if(!is.null(self$struct)) {
 		self$rcpp()$run()
 		self$struct$save()

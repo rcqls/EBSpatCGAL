@@ -1,25 +1,13 @@
 ## The only interface to optimize a contrast
 # add the class ContrastOptim 
 # object has to respond to the method update, contrast.optim (and gradient.optim)
+ContrastOptim <- function(contrast) {
+  self <- newEnv(ContrastOptim,contrast=contrast)
+  self
+}
 
 
-run.ContrastOptim<-function(self,par0,method=NULL,update=FALSE,verbose=TRUE,fixed,...) {
-  ####  selfname<-object.name() #save the name of the object
-  ## update stuff (autodetection + action)!
-  if(!("updated" %in% names(self))) update<-TRUE
-  else {
-    ###tmp<-.funcEnv$eventMngr[[parent=as.character(self$func$response),child=selfname]]
-    ###if(!is.null(tmp) && length(tmp) && tmp) update<-TRUE
-    if(exists("runs",envir=self$response) && self$response$runs != self$response_runs) update<-TRUE
-  }
-  if(update) {
-    update(self,verbose)
-    ###tmp<-.funcEnv$eventMngr[[parent=as.character(self$func$response),child=selfname]]
-    ###if(is.null(tmp) || length(tmp)==0) .funcEnv$eventMngr[[parent=as.character(self$func$response),child=selfname]]
-    ###.funcEnv$eventMngr[[parent=as.character(self$func$response),child=selfname]]<-FALSE #now updated
-    self$response_runs <- self$response$runs
-  }
-
+run.ContrastOptim<-function(self,par0,fixed,method=NULL,verbose=TRUE,...) {
   ## parameters stuff!
   if(missing(par0))  {
     if("par" %in% names(self)) param <- self$par #not the first run 
@@ -41,14 +29,14 @@ run.ContrastOptim<-function(self,par0,method=NULL,update=FALSE,verbose=TRUE,fixe
     ##print(par);print(param[!fixed])
     param[!fixed]<-par
     ##cat("param->");print(param)
-    contrast.optim(self,param)
+    self$contrast$optim.function(param)
   }
 
-  gr <- NULL #gradient to appproximate except
-  if(has.gradient.optim(self)) { 
+  gr <- NULL #gradient to approximate except
+  if(!is.null(self$contrast$optim.gradient)) { 
     gr <- function(par) {
         param[!fixed]<-par
-        gradient.optim(self,param)[!fixed]
+        self$contrast$optim.gradient(self,param)[!fixed]
     }
   }
   
@@ -67,25 +55,24 @@ run.ContrastOptim<-function(self,par0,method=NULL,update=FALSE,verbose=TRUE,fixe
   ## save stuff
   self$optim<-res
   self$par<-res$par
-  param(self) <- res$par
-  res$par
+  res$par #do not forget to save the results in Interaction object!
 }
 
 ## to be called first to specify the structure of the 
 ## maybe investigate a default param.converter behavior param[1] -> Single, param[2] -> ???, .... 
 ##  Rmk: not used in PseudoExpo but in TackacsFiksel (and Pseudo I guess)
-param.ContrastOptim <- function(self,...,lengths) {
-  if(missing(lengths)) {
-    vars <- list(...)
-    if(length(vars)==0) return(self$par)
-    if(length(vars)==1 && is.list(vars[[1]])) vars <- vars[[1]]
-    lengths <- sapply(vars,length)
-    names(lengths) <- names(vars)
-    self$par0 <- self$par <- unlist(vars) 
-  }
-  self$param.converter <- Vector2ListConverter(lengths)
-  return(invisible())
-}
+# params.ContrastOptim <- function(self,...,lengths) {
+#   if(missing(lengths)) {
+#     vars <- list(...)
+#     if(length(vars)==0) return(self$par)
+#     if(length(vars)==1 && is.list(vars[[1]])) vars <- vars[[1]]
+#     lengths <- sapply(vars,length)
+#     names(lengths) <- names(vars)
+#     self$par0 <- self$par <- unlist(vars) 
+#   }
+#   self$param.converter <- Vector2ListConverter(lengths)
+#   return(invisible())
+# }
 
 summary.ContrastOptim<-function(self) {
   self$optim
@@ -119,4 +106,3 @@ by.Vector2ListConverter <- function(obj,...,envir=NULL) {
 }
 
 "[.Vector2ListConverter" <- function(obj,key) by(obj,key)
-

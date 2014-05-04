@@ -14,7 +14,7 @@ public:
 
     SimGibbs(List inter_,std::vector<double> left_,std::vector<double> right_) {
         set_interaction(inter_);
-        set_domain(left_,right_);
+        set_domain_double(left_,right_);
         nb_runs=10000;
     }
 
@@ -38,7 +38,8 @@ public:
         domain=domain_;
     }
 
-    void set_domain(std::vector<double> left_,std::vector<double> right_) {
+    //_double added because Rcpp does not deal with different signatures yet!
+    void set_domain_double(std::vector<double> left_,std::vector<double> right_) {
         domain=new Domain(left_,right_);
     }
 

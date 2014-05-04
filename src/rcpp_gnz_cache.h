@@ -21,7 +21,7 @@ public:
 
     GNZCache(List inter_,std::vector<double> left_,std::vector<double> right_) {
         set_interaction(inter_);
-        set_domain(left_,right_);
+        set_domain_double(left_,right_);
         set_mode(1);
         nb_runs=1000; //MC approach
     }
@@ -46,7 +46,7 @@ public:
         domain=domain_;
     }
 
-    void set_domain(std::vector<double> left_,std::vector<double> right_) {
+    void set_domain_double(std::vector<double> left_,std::vector<double> right_) {
         domain=new Domain(left_,right_);
     }
 
@@ -114,6 +114,8 @@ public:
     List eval_exprs() {
         return  inter->eval_exprs_from_cexprs_caches();
     }
+
+    Environment get_envir() {return inter->envir;}
 
     List get_lists() {return List::create(_["first"]=first_list,_["second"]=second_list);};
 

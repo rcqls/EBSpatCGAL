@@ -52,6 +52,12 @@ GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350),forms) {
 
 ## This delegates change of parameter value to InteractionManager 
 params.GNZCache <- function(self,...) {
+ 	# initialization of single can only be done here 
+ 	# and not in the following call: params(self$interMngr,...)
+ 	# since Interaction in R is not a Rcpp object as TermType objects are.
+	if("single" %in% names(list(...))) { 
+		self$rcpp()$set_single(list(...)$single)
+	}
 	params(self$interMngr,...)
 }
 
@@ -76,13 +82,15 @@ update.GNZCache <- function(self,current) {
 
 ## RMK: If you have a single configuration of points you need to complete 
 ## this data with an implicit Simulable object! => TODO!!!
-run.GNZCache <- function(self,current,...,runs,mode) {
+run.GNZCache <- function(self,current,...,runs,mode,domain) {
 	params(self,...)
 
 	rcpp <- self$rcpp()
 
-	if("single" %in% names(list(...))) { 
-		rcpp$set_single(list(...)$single)
+	if(!missing(domain) && !identical(domain,self$domain)) {
+		self$domain <- domain
+		rcpp$set_domain(domain)
+		self$to_make_lists <- TRUE
 	}
 	
 	if(!missing(runs) && self$runs != runs) {
@@ -125,7 +133,7 @@ run.GNZCache <- function(self,current,...,runs,mode) {
 # 1) apply all the forms a the same template with .V representing the energy term and .form the functional term
 # formula(self, exp(-(.V))*.form ~ .form) or formula(self,"default") or formula(self,"resid")
 # formula(self,.form ~ exp(.V)*.form) or formula(self,"inverse")
-# Another choice is to mix the different functionals (.form? with ? representing the rank of the functional to be used) 
+# 2) another choice is to mix the different functionals (.form? with ? representing the rank of the functional to be used) 
 # formula(self,expression(first=exp(-(.V))*.form1,second=.form1,first=.form1,second=exp(.V)*.form1))
 # or formula(self,list(first="exp(-(.V))*.form1",second=".form1",first=".form1",second="exp(.V)*.form1"))
 ##################################################
@@ -182,6 +190,7 @@ formula.GNZCache <- function(self,form=NULL,add=FALSE) {
 						}
 					}
 				}
+				#cat("expr>");print(expr)
 				parse(text=expr)
 			}
 
@@ -192,9 +201,9 @@ formula.GNZCache <- function(self,form=NULL,add=FALSE) {
 				else self$exprs$second <- c(self$exprs$second,expr)
 			} else # a named list of character
 			if(is.list(form) && length(form)>1 && all(names(form) %in% c("first","second"))) {
-				for(i in seq(form)) formula(self,form[i],add=add)
+				for(i in seq(form)) formula(self,form[i],add=ifelse(i==1,add,TRUE))
 			} else # a named expression
-			if(is.expression(form) && names(form) %in% c("first","second")) {
+			if(is.expression(form) && all(names(form) %in% c("first","second"))) {
 				formula(self,lapply(form,deparse),add=add)
 			}
 
