@@ -27,7 +27,7 @@ print(del2Term$eval_exprs())
 
 insert(del2,matrix(c(.5,.5),ncol=2))
 
-del2Term$set_index( 101 )
+del2Term$set_current( 101 )
 
 print(del2Term$eval_first_expr())
 

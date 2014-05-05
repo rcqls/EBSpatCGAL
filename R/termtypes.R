@@ -70,6 +70,7 @@ InteractionMngr <- function(form,mode="default",check.params=TRUE) {
 
   # complete the intialisation
   parseMarksFormula(self)
+
   self$termtypes <- parseTermTypes(self$formula)
 
   if(length(attr(self$termtypes,"response"))) {
@@ -78,17 +79,15 @@ InteractionMngr <- function(form,mode="default",check.params=TRUE) {
     try.response <- try(eval.parent(self$response)) 
     if(!inherits(try.response,"try-error") && !is.null(try.response$dim)) self$dim <- try.response$dim
   }
-
   # to temporarily communicate with TermType about marks
   # Rmk: not a perfect solution but speed is not required!
+  if(any(single_terms <- sapply(self$termtypes,is.numeric) )) {
+    self$single <- sum(unlist(self$termtypes[single_terms]))
+    self$termtypes <- self$termtypes[!single_terms] 
+  } else self$single <- 0
   assign(".tmp.interactionMngr",self,envir=globalenv())
   self$terms <- sapply(self$termtypes,eval)
   remove(".tmp.interactionMngr",envir=globalenv())
-
-  if(any(single_terms <- sapply(self$terms,is.numeric) )) {
-    self$single <- sum(unlist(self$terms[single_terms]))
-    self$terms <- self$terms[!single_terms] 
-  } else self$single <- 0
 
   ###############################################################
   # IMPORTANT: the use of Interaction is not very useful in R!!!
@@ -98,9 +97,7 @@ InteractionMngr <- function(form,mode="default",check.params=TRUE) {
   #   new(Interaction,terms(self))
   # })
   ###############################################################
-
   if(check.params) check.params.in.terms(self)
-
   self
 }
 
@@ -277,9 +274,10 @@ TermType <- function(id,...) {
     rcpp$exprs <- self$mngr$local$exprs$term
     rcpp$exprs.size <- self$mngr$local$exprs$size
     rcpp$cexprs <- self$mngr$local$cexprs$term
-    rcpp$cexprs.size <- self$mngr$local$cexprs$size
+    rcpp$cexprs.size <- if(is.null(self$mngr$local$cexprs$size)) 0 else self$mngr$local$cexprs$size
     rcpp
   })
+  
 
   self
 }
@@ -422,8 +420,10 @@ parse.TermTypeMngr<-function(termMngr,skip=2) {
   ### => infos are definitely determined! ##cat("infos ->");print(infos)
   
   #named formulas => not an info no more marks
-  
-  varsList<-sapply(namesList,function(vars) setdiff(vars,c(infos,.tmp.interactionMngr$mark.name)))
+  if(exists(".tmp.interactionMngr",envir=globalenv())) 
+    varsList<-sapply(namesList,function(vars) setdiff(vars,c(infos,.tmp.interactionMngr$mark.name)))
+  else
+    varsList<-sapply(namesList,function(vars) setdiff(vars,infos))
   ### debugMode: cat("varsList->");print(varsList);print(infos)
   isFunc<-sapply(varsList,function(vars) length(vars)>0)
   ### => isFunc definitely determined! ##cat("isFunc ->");print(isFunc)
@@ -433,7 +433,9 @@ parse.TermTypeMngr<-function(termMngr,skip=2) {
   varsList<-setdiff(varsList,sapply(comps2,function(e) names(comps2)[!is.null(find.names.in.expression(e))]))
   
   # TODO: MARKS! cat(".tmp.inter->");print(.tmp.interactionMngr$mark.name)
-  varsList<-setdiff(varsList,.tmp.interactionMngr$mark.name)
+  if(exists(".tmp.interactionMngr",envir=globalenv()))
+    varsList<-setdiff(varsList,.tmp.interactionMngr$mark.name)
+
   ### cat("varsList (last) ->");print(varsList)
   
   isVar<- names(comps2) %in% varsList 
