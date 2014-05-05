@@ -30,9 +30,7 @@ Pseudo <- function(model,runs=1000,domain=c(-350,-350,350,350),exponential=FALSE
 				}
 				dimnames(res[[type]]) <- list(1:nrow(res[[type]]),paste("s",1:ncol(res[[type]]),sep=""))
 			}
-			res$second <- apply(res$second,2,sum)
-			if(self$dim==2) res$second <- res$second/(self$domain[3]-self$domain[1])/(self$domain[4]-self$domain[2])
-			if(self$dim==3) res$second <- res$second/(self$domain[4]-self$domain[1])/(self$domain[5]-self$domain[2])/(self$domain[6]-self$domain[3])
+			res$second <- apply(res$second,2,sum)/self$domain.volume
 			self$optim.statex <- res
 		}
 
@@ -90,7 +88,7 @@ run.Pseudo <- function(self,...,fixed,optim.options=list()) {
 	else do.call("run",c(list(self$contrast,par0,fixed=fixed),optim.options))
 
 	# return the result
-	by(self$param.vect2list,unname(self$contrast$par)) #params(self)
+	by(self$param.vect2list,unlist(self$contrast$par)) #params(self)
 }
 
 

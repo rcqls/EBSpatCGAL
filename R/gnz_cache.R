@@ -23,6 +23,10 @@ GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350),forms) {
 		} else update(self,current)
 	} else self$dim <- 2 # default value if no answer updatable if struct changed
 
+	self$domain.volume <- if(self$dim==2) (self$domain[3]-self$domain[1])*(self$domain[4]-self$domain[2])
+							else (self$domain[4]-self$domain[1])*(self$domain[5]-self$domain[2])*(self$domain[6]-self$domain[3])
+			
+
 	RcppPersistentObject(self,new = { 
 		if(is.null(self$struct)) {
 			## TODO: initialilize GNZCache without del2
@@ -89,6 +93,9 @@ run.GNZCache <- function(self,current,...,runs,mode,domain) {
 
 	if(!missing(domain) && !identical(domain,self$domain)) {
 		self$domain <- domain
+		self$domain.volume <- if(self$dim==2) (self$domain[3]-self$domain[1])*(self$domain[4]-self$domain[2])
+							else (self$domain[4]-self$domain[1])*(self$domain[5]-self$domain[2])*(self$domain[6]-self$domain[3])
+	
 		rcpp$set_domain(domain)
 		self$to_make_lists <- TRUE
 	}

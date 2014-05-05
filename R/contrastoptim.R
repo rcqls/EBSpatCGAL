@@ -94,6 +94,7 @@ Vector2ListConverter <- function(.list,...) {
 by.Vector2ListConverter <- function(obj,...,envir=NULL) {
   tmp <- list(...)
   if(length(tmp)==1) vect <- tmp[[1]] else vect <- unlist(tmp)
+  vect <- unname(vect)
   # cat("obj=");print(obj);print(vect);print(length(vect));print(sum(obj))
   if(length(vect)!=sum(obj)) warning("Lengths differ!")
   deb <- cumsum(c(0,unclass(obj)[-length(obj)]))+1
