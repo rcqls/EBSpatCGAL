@@ -36,7 +36,7 @@ run.ContrastOptim<-function(self,par0,fixed,method=NULL,verbose=TRUE,...) {
   if(!is.null(self$contrast$optim.gradient)) { 
     gr <- function(par) {
         param[!fixed]<-par
-        self$contrast$optim.gradient(self,param)[!fixed]
+        self$contrast$optim.gradient(param)[!fixed]
     }
   }
   

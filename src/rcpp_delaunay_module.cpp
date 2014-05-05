@@ -110,7 +110,7 @@ RCPP_MODULE(delaunay_module) {
     .method("set_sizes_for_interaction",&GNZCache::set_sizes_for_interaction,"set caches sizes for interaction")
     .method("set_domain",&GNZCache::set_domain_double,"set domain")
     .method("get_domain",&GNZCache::get_domain,"get domain")
-    .method("get_lists",&GNZCache::get_lists,"get lists cache")
+    .method("get_cexprs_lists",&GNZCache::get_cexprs_lists,"get cexprs lists cache")
     .method("get_exprs_lists",&GNZCache::get_exprs_lists,"get exprs lists")
     .method("eval_first_exprs",&GNZCache::eval_first_exprs,"eval first exprs")
     .method("eval_second_exprs",&GNZCache::eval_second_exprs,"eval second exprs")

@@ -117,7 +117,7 @@ public:
 
     Environment get_envir() {return inter->envir;}
 
-    List get_lists() {return List::create(_["first"]=first_list,_["second"]=second_list);};
+    List get_cexprs_lists() {return List::create(_["first"]=first_list,_["second"]=second_list);};
 
     List get_exprs_lists() {return inter->get_exprs_from_cexprs_caches();}
 

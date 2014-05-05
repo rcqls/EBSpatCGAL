@@ -110,8 +110,10 @@ run.GNZCache <- function(self,current,...,runs,mode,domain) {
 	
 
 	if(!missing(current) && (is.null(self$struct) || identical(self$struct,current))) {
-		if(inherits(current,"Simulable")) update(self,current) 
-		else cat("WARNING: object not of class Simulable!\n")
+		if(inherits(current,"Simulable")) {
+			update(self,current)
+			self$to_make_lists <- TRUE
+		} else cat("WARNING: object not of class Simulable!\n")
 	}
 
 	if(self$to_make_lists) {
