@@ -18,4 +18,4 @@ if(FALSE) {
 }
 
 # method with horizon
-run(tk,single=-log(1/3600),Th=c(0,0,0),fixed=4)
+run(tk,Single=2,Th=c(2,4,0),fixed=4)

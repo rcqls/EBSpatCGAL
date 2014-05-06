@@ -1,3 +1,55 @@
+# optim.options=list(method=,verbose=,...) (see run.ContrastOptim below)
+run.Contrast <- function(self,...,fixed,optim.options=list()) {
+
+  # structure of the converter parameter for the ContrastOptim  
+  if(is.null(self$param.vect2list)) {
+    if(length(list(...))==0) stop("Need to initialize parameters values first!")
+    params(self,...)
+    self$param.vect2list<- Vector2ListConverter(sapply(params(self),function(e) sapply(e,length)))
+  }
+
+  # par0 update
+  par0 <- if(length(list(...))==0) {
+    do.call("params",c(list(self),by(self$param.vect2list,self$contrast$par)))
+    self$contrast$par
+  } else {
+    if(!is.null(self$param.vect2list)) {
+      params(self,...)
+    }
+    unlist(params(self))
+  }
+  
+  if(!is.null(attr(self,"statex")) && attr(self,"statex")) {
+    # test if uid of struct changed
+    if(is.null(self$struct.uid) || self$struct$uid != self$struct.uid) {
+      self$struct.uid <- self$struct$uid
+      self$to_make_lists <- TRUE
+    }
+    
+    # test if cacheLists need to be updated and do it if so
+    if(self$to_make_lists) {
+      cat("Please be patient: update of caches -> ")
+      self$rcpp()$make_lists()
+      
+      self$optim.statex_update() #update self$optim.statex
+
+      self$to_make_lists <- FALSE
+      cat("done! \n")
+    }
+  }
+  
+  # delegate the run method to self$contrast 
+  if(missing(fixed)) do.call("run",c(list(self$contrast,par0),optim.options))
+  else do.call("run",c(list(self$contrast,par0,fixed=fixed),optim.options))
+
+  # save the result
+  params(self,params=by(self$param.vect2list,unlist(self$contrast$par)))
+  # return the result
+  params(self)
+
+}
+
+########################################################################
 ## The only interface to optimize a contrast
 # add the class ContrastOptim 
 # object has to respond to the method update, contrast.optim (and gradient.optim)

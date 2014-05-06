@@ -7,7 +7,7 @@ del2 <- Delaunay()
 
 
 # init gibbs 
-gd <- SimGibbs(del2 ~ -2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4))) 
+gd <- SimGibbs(del2 ~ 2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4))) 
 
 run(gd)
 

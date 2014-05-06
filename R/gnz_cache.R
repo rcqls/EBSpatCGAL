@@ -135,7 +135,7 @@ run.GNZCache <- function(self,current,...,runs,mode,domain,form) {
 	if(!is.null(self$struct)) {
 		tmp <- rcpp$eval_exprs()
 		res <- list(first=tmp$first/self$runs,second=tmp$second/self$domain.volume)
-		if(!identical(self$exprs,exprs.save)) {# restore self
+		if(!missing(form) && !identical(self$exprs,exprs.save)) {# restore self
 			rcpp$set_exprs_for_interaction(exprs.save)
 		}
 		return(res)
@@ -231,51 +231,6 @@ formula.GNZCache <- function(self,form=NULL,add=FALSE) {
 	# echo the exprs
 	self$exprs
 }
-
-##########################################################
-# These plugins are only reusable code
-# Used in pseudo.R (exponential mode) and tkinv.R
-##########################################################
-update_statex.GNZCachePlugin <- function(self) {
-	# test if uid of struct changed
-	if(is.null(self$struct.uid) || self$struct$uid != self$struct.uid) {
-		self$struct.uid <- self$struct$uid
-		self$to_make_lists <- TRUE
-	}
-	
-	# test if cacheLists need to be updated and do it if so
-	if(self$to_make_lists) {
-		cat("Please be patient: update of caches -> ")
-		self$rcpp()$make_lists()
-		
-		self$optim.update() #update self$optim.statex
-
-		self$to_make_lists <- FALSE
-		cat("done! \n")
-	}
-}
-##########################################################
-require_param_vect2list.GNZCachePlugin <- function(self,...) {
-	if(is.null(self$param.vect2list)) {
-		if(length(list(...))==0) stop("Need to initialize parameters values first!")
-		params(self,...)
-		self$param.vect2list<- Vector2ListConverter(sapply(params(self),function(e) sapply(e,length)))
-	}
-}
-
-##########################################################
-update_par0.GNZCachePlugin <- function(self,...) {
-	if(length(list(...))==0) {
-		do.call("params",c(list(self),by(self$param.vect2list,self$contrast$par)))
-		self$contrast$par
-	} else {
-		if(!is.null(self$param.vect2list)) {
-			params(self,...)
-		}
-		unlist(params(self))
-	}
-}
-##########################################################
 
 ### NOT VERY USEFUL NOW since everything is done in C++
 ### Maybe, can help for debugging

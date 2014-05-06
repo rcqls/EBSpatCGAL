@@ -3,12 +3,12 @@
 TKInverse <- function(model,runs=1000,domain=c(-350,-350,350,350)) {
 	# almost everything is made in GNZCache
 	self <-  GNZCache(model,runs=runs,domain=domain)
-	class(self) <- c("TKInverse",class(self))
-	
+	class(self) <- c("TKInverse","Contrast",class(self))
+	attr(self,"statex") <- TRUE
 	self$contrast <- ContrastOptim(self)
 
 	 
-	self$optim.update <- function(check=FALSE) {
+	self$optim.statex_update <- function(check=FALSE) {
 		self$rcpp()$get_cexprs_lists() -> cexprs
 		# first
 		res <- list(first=NULL,second=NULL)
@@ -53,24 +53,4 @@ TKInverse <- function(model,runs=1000,domain=c(-350,-350,350,350)) {
 
 
 	self
-}
-
-# optim.options=list(method=,verbose=,...) (see run.ContrastOptim)
-run.TKInverse <- function(self,...,fixed,optim.options=list()) {
-	# structure of the converter parameter for the ContrastOptim  
-	require_param_vect2list.GNZCachePlugin(self,...)
-
-	par0 <- update_par0.GNZCachePlugin(self,...)
-
-	# exponential mode: update cache is not managed with run.GNZCache
-	 
-	update_statex.GNZCachePlugin(self)
-	
-
-	# delegate the run method to self$contrast 
-	if(missing(fixed)) do.call("run",c(list(self$contrast,par0),optim.options))
-	else do.call("run",c(list(self$contrast,par0,fixed=fixed),optim.options))
-
-	# return the result
-	by(self$param.vect2list,unlist(self$contrast$par)) #params(self)
 }

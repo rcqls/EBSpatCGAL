@@ -2,13 +2,13 @@
 Pseudo <- function(model,runs=1000,domain=c(-350,-350,350,350),exponential=FALSE) {
 	# almost everything is made in GNZCache
 	self <-  GNZCache(model,runs=runs,domain=domain)
-	attr(self,"expo") <- exponential
-	class(self) <- c("Pseudo",class(self))
+	attr(self,"statex") <- exponential
+	class(self) <- c("Pseudo","Contrast",class(self))
 	if(!exponential) formula(self,expression(first=exp(-(.V)),second=-(.V)))
 	self$contrast <- ContrastOptim(self)
 
 	if(exponential) {
-		self$optim.update <- function() {
+		self$optim.statex_update <- function() {
 			self$rcpp()$get_cexprs_lists() -> cexprs
 			# first
 			res <- list(first=NULL,second=NULL)
@@ -59,27 +59,6 @@ Pseudo <- function(model,runs=1000,domain=c(-350,-350,350,350),exponential=FALSE
 
 	self
 }
-
-# optim.options=list(method=,verbose=,...) (see run.ContrastOptim)
-run.Pseudo <- function(self,...,fixed,optim.options=list()) {
-	# structure of the converter parameter for the ContrastOptim  
-	require_param_vect2list.GNZCachePlugin(self,...)
-
-	par0 <- update_par0.GNZCachePlugin(self,...)
-
-	# exponential mode: update cache is not managed with run.GNZCache
-	if(attr(self,"expo")) {
-		update_statex.GNZCachePlugin(self)
-	}
-
-	# delegate the run method to self$contrast 
-	if(missing(fixed)) do.call("run",c(list(self$contrast,par0),optim.options))
-	else do.call("run",c(list(self$contrast,par0,fixed=fixed),optim.options))
-
-	# return the result
-	by(self$param.vect2list,unlist(self$contrast$par)) #params(self)
-}
-
 
 
 
