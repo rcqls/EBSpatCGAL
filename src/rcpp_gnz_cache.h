@@ -103,6 +103,8 @@ public:
 
     void set_single(NumericVector single) {inter-> set_single(single);}
 
+    NumericVector get_single() {return inter->get_single();}
+
     NumericVector eval_first_exprs(std::vector<int> indexes) {
         return inter->eval_first_exprs_from_cexprs_caches(indexes);
     }

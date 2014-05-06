@@ -9,6 +9,9 @@ cells <- function(obj,...) UseMethod("cells")
 params <- function(obj,...) UseMethod("params")
 run <- function(obj,...) UseMethod("run")
 
+Single <-function(obj,...) UseMethod("Single")
+"Single<-" <-function(obj,...) UseMethod("Single<-")
+
 
 newEnv <- function (...,class.as.character) 
 {

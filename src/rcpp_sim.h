@@ -120,7 +120,7 @@ private:
 
     double value_DELETION() {
         //Rmk: inter->local_energy returns insertion local energy only
-        return (inside_number)/(domain->get_size())*exp(-(inter->local_energy()));
+        return (inside_number)/(domain->get_size())*exp((inter->local_energy()));
     } 
 
     void run_once() {
@@ -128,7 +128,7 @@ private:
         double g = as<double>(runif(1,0,1)),val;
         if( inside_number == 0 ) {
             propose_INSERTION();
-            if(g < (domain->get_size())*exp(inter->single)) {
+            if(g < (domain->get_size())*exp(-inter->single)) {
                 inter->apply_INSERTION();
                 (inside_number)++;
             }

@@ -21,7 +21,7 @@
 ## TODO: domain would be included later in Domain object embedding Struct 
 ## playing the role of response in formula
 SimGibbs <-function(model,runs=10000,domain=c(-350,-350,350,350)) {
-	self <- newEnv(SimGibbs,interMngr=InteractionMngr(model),runs=runs,domain=domain)
+	self <- newEnv(SimGibbs,ParameterMngr,interMngr=InteractionMngr(model),runs=runs,domain=domain)
 	self$response <- self$interMngr$response
 	if(!is.null(self$response)) {
 		current <- try(eval.parent(self$response))
@@ -55,9 +55,6 @@ SimGibbs <-function(model,runs=10000,domain=c(-350,-350,350,350)) {
 	})
 	self
 }
-
-params.SimGibbs <- function(self,...) params(self$interMngr,...)
-
 
 ##########################################################################
 # RMK: VERY IMPORTANT TRICK! 

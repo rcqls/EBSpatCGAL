@@ -3,11 +3,11 @@ require(EBSpatCGAL)
 # init del2
 del2 <- Delaunay()
 
-insert(del2,matrix(runif(200,-350,350),ncol=2))
+#insert(del2,matrix(runif(200,-350,350),ncol=2))
 
 
 # init gibbs 
-gd <- SimGibbs(del2 ~ 10 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4))) 
+gd <- SimGibbs(del2 ~ -2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4))) 
 
 run(gd)
 
@@ -19,10 +19,10 @@ sc %<<% lines(del2)
 plot(sc)
 
 # delete some part
-delete(del2,inside=c(-300,-300,300,300))
+# delete(del2,inside=c(-300,-300,300,300))
 
-plot(sc)
+# plot(sc)
 
-run(gd)
+# run(gd)
 
-plot(sc)
+# plot(sc)

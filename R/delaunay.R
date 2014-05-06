@@ -24,6 +24,7 @@ Delaunay <- function(dim=2) {
 		},
 		save = { # this optional method has to be called whenever you need to update data used in the renew process
 			self$.last.points=vertices(self,"save") #self$rcpp()$vertices()
+			self$uid <- runif(1) #random number to identify an update of self (likewise uuid)
 			cat("Delaunay object Rcpp-saved!\n")
 		}
 	)

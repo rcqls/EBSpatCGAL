@@ -1,6 +1,6 @@
 require(EBSpatCGAL)
 
-interMngr <- InteractionMngr(~2+Del2(Th*(l<30),Th=2))
+interMngr <- InteractionMngr(~ -2+Del2(Th*(l<30),Th=2))
 
 
 interMngr2 <- InteractionMngr(~2+Del2(Th*(l<30),Th=2)| m ~ unif(0,1))

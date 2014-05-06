@@ -81,13 +81,16 @@ InteractionMngr <- function(form,mode="default",check.params=TRUE) {
   }
   # to temporarily communicate with TermType about marks
   # Rmk: not a perfect solution but speed is not required!
-  if(any(single_terms <- sapply(self$termtypes,is.numeric) )) {
-    self$single <- sum(unlist(self$termtypes[single_terms]))
-    self$termtypes <- self$termtypes[!single_terms] 
-  } else self$single <- 0
+
   assign(".tmp.interactionMngr",self,envir=globalenv())
   self$terms <- sapply(self$termtypes,eval)
   remove(".tmp.interactionMngr",envir=globalenv())
+
+  if(any(single_terms <- sapply(self$terms,is.numeric) )) {
+    self$single <- sum(unlist(self$terms[single_terms]))
+    self$terms <- self$terms[!single_terms] 
+  } else self$single <- 0
+
 
   ###############################################################
   # IMPORTANT: the use of Interaction is not very useful in R!!!
@@ -148,7 +151,7 @@ params.InteractionMngr <- function(interMngr,...) {
   if(length(params)==0) {
     if(!is.null(interMngr$params.completed) && any(!interMngr$params.completed)) {
       cat("WARNING: Some value of parameter needs to be provided!!!\n")
-    } else c(list(single=interMngr$single),lapply(interMngr$terms,params))
+    } else c(list(Single=interMngr$single),lapply(interMngr$terms,params))
   } else {
     if(length(interMngr$params.duplicated.names)>0) {
       cat("WARNING: Many parameters have the same name!!!\n")
@@ -274,6 +277,7 @@ TermType <- function(id,...) {
     rcpp$exprs <- self$mngr$local$exprs$term
     rcpp$exprs.size <- self$mngr$local$exprs$size
     rcpp$cexprs <- self$mngr$local$cexprs$term
+    # added to avoid error (could be changed in 0 before!)
     rcpp$cexprs.size <- if(is.null(self$mngr$local$cexprs$size)) 0 else self$mngr$local$cexprs$size
     rcpp
   })

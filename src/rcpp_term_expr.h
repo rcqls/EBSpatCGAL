@@ -305,6 +305,10 @@ public:
         Rf_defineVar(Rf_install("single"), single, envir);
     }
 
+    NumericVector get_single() {
+        return envir.get("single");
+    }
+
     void get_first_terms_exprs_at(int i) {
         for(
             std::list<TermBase*>::iterator lit=term_list.begin();

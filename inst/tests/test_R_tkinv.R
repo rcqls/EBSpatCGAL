@@ -1,8 +1,8 @@
 require(EBSpatCGAL)
 
-del2 <- Delaunay()
+# del2 <- Delaunay()
 
-insert(del2,matrix(runif(200,-350,350),ncol=2))
+# insert(del2,matrix(runif(200,-350,350),ncol=2))
 
 
 if(FALSE) {

@@ -1,4 +1,5 @@
 # Model exponential family required here!
+# WARNING: no redefinition of formula and params inherited from GNZCache required!
 TKInverse <- function(model,runs=1000,domain=c(-350,-350,350,350)) {
 	# almost everything is made in GNZCache
 	self <-  GNZCache(model,runs=runs,domain=domain)
@@ -7,7 +8,7 @@ TKInverse <- function(model,runs=1000,domain=c(-350,-350,350,350)) {
 	self$contrast <- ContrastOptim(self)
 
 	 
-	self$optim.update <- function() {
+	self$optim.update <- function(check=FALSE) {
 		self$rcpp()$get_cexprs_lists() -> cexprs
 		# first
 		res <- list(first=NULL,second=NULL)
@@ -30,8 +31,10 @@ TKInverse <- function(model,runs=1000,domain=c(-350,-350,350,350)) {
 			}
 			dimnames(res[[type]]) <- list(1:nrow(res[[type]]),paste("s",1:ncol(res[[type]]),sep=""))
 		}
+		if(check) res2 <- res
 		res$first <- apply(res$first,2,mean)
 		self$optim.statex <- res
+		if(check) return(res2)
 	}
 
 	# define the optim.function method
@@ -55,25 +58,13 @@ TKInverse <- function(model,runs=1000,domain=c(-350,-350,350,350)) {
 # optim.options=list(method=,verbose=,...) (see run.ContrastOptim)
 run.TKInverse <- function(self,...,fixed,optim.options=list()) {
 	# structure of the converter parameter for the ContrastOptim  
-	if(is.null(self$param.vect2list)) {
-		if(length(list(...))==0) stop("Need to initialize parameters values first!")
-		params(self,...)
-		self$param.vect2list<- Vector2ListConverter(sapply(params(self),function(e) sapply(e,length)))
-	}
+	require_param_vect2list.GNZCachePlugin(self,...)
 
-	par0 <- if(length(list(...))==0) self$contrast$par else unlist(params(self))
+	par0 <- update_par0.GNZCachePlugin(self,...)
 
 	# exponential mode: update cache is not managed with run.GNZCache
 	 
-	if(self$to_make_lists) {
-		cat("Please be patient: update of caches -> ")
-		self$rcpp()$make_lists()
-		
-		self$optim.update() #update self$optim.statex
-
-		self$to_make_lists <- FALSE
-		cat("done! \n")
-	}
+	update_statex.GNZCachePlugin(self)
 	
 
 	# delegate the run method to self$contrast 

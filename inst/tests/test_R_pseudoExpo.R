@@ -1,8 +1,8 @@
 require(EBSpatCGAL)
 
-del2 <- Delaunay()
+#del2 <- Delaunay()
 
-insert(del2,matrix(runif(200,-350,350),ncol=2))
+#insert(del2,matrix(runif(200,-350,350),ncol=2))
 
 # lc <- GNZCache(del2~Del2(Th[1]*(l<=20)+Th[2]*(20<l & l<=80))+Del1(Th2*(a<20)),
 # 			runs=10000L,
@@ -26,5 +26,5 @@ if(FALSE) {
 		expo=TRUE
 	)
 
-	run(pseudo,Th=c(0,0,0),single=-log(1/3600),fixed=4)
+	run(pseudo,Th=c(4,2,0),single=1,fixed=4)
 }

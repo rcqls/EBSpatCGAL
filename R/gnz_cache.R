@@ -12,7 +12,7 @@ GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350),forms) {
 	if(missing(forms)) forms <- as.list(substitute(c(...)))[-1]
 	for(f in forms) formula(formMngr,f,local=TRUE) # First consider only the main case 
 	#print(formula(formMngr))
-	self <- newEnv(GNZCache,forms=forms,formMngr=formMngr,interMngr=InteractionMngr(formMngr$func,check.params=FALSE),runs=runs,domain=domain,mode=1) #mode=0 or 1
+	self <- newEnv(GNZCache,ParameterMngr,forms=forms,formMngr=formMngr,interMngr=InteractionMngr(formMngr$func,check.params=FALSE),runs=runs,domain=domain,mode=1) #mode=0 or 1
 	# the first formula is supposed to model formula with response in the left part of the formula
 	self$response <- if(formMngr$formulas[[1]][[1]]==as.name("~") && length(formMngr$formulas[[1]])==3) formMngr$formulas[[1]][[2]] else NULL
 	if(!is.null(self$response)) {
@@ -33,7 +33,7 @@ GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350),forms) {
 			## Maybe create one! 
 		} else {	
 			rcpp <- new(GNZCacheCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
-			
+			rcpp$single <- self$interMngr$single
 			rcpp$nb_runs <- self$runs
 			rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(self$struct))))
 			
@@ -54,16 +54,7 @@ GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350),forms) {
 	self
 }
 
-## This delegates change of parameter value to InteractionManager 
-params.GNZCache <- function(self,...) {
- 	# initialization of single can only be done here 
- 	# and not in the following call: params(self$interMngr,...)
- 	# since Interaction in R is not a Rcpp object as TermType objects are.
-	if("single" %in% names(list(...))) { 
-		self$rcpp()$set_single(list(...)$single)
-	}
-	params(self$interMngr,...)
-}
+# params, single and single<- dealt with ParameterMngr class
 
 ##########################################################################
 # RMK: Interaction C++ object knows about STRUCT class via its first term 
@@ -86,7 +77,7 @@ update.GNZCache <- function(self,current) {
 
 ## RMK: If you have a single configuration of points you need to complete 
 ## this data with an implicit Simulable object! => TODO!!!
-run.GNZCache <- function(self,current,...,runs,mode,domain) {
+run.GNZCache <- function(self,current,...,runs,mode,domain,form) {
 	params(self,...)
 
 	rcpp <- self$rcpp()
@@ -123,6 +114,12 @@ run.GNZCache <- function(self,current,...,runs,mode,domain) {
 		} else cat("WARNING: object not of class Simulable!\n")
 	}
 
+	# to update caches when struct has been udated too
+	if(!is.null(self$struct.uid) && self$struct$uid != self$struct.uid) {
+		self$struct.uid <- self$struct$uid
+		self$to_make_lists <- TRUE
+	}
+
 	if(self$to_make_lists) {
 		cat("Please be patient: update of caches -> ")
 		self$rcpp()$make_lists()
@@ -130,9 +127,18 @@ run.GNZCache <- function(self,current,...,runs,mode,domain) {
 		cat("done! \n")
 	}
 
+	if(!missing(form)) {
+		exprs.save <- self$exprs
+		formula(self,form) #self$exprs updated
+	} else exprs.save <- NULL
+
 	if(!is.null(self$struct)) {
 		tmp <- rcpp$eval_exprs()
-		list(first=tmp$first/self$runs,second=tmp$second/(self$domain[3]-self$domain[1])/(self$domain[4]-self$domain[2]))
+		res <- list(first=tmp$first/self$runs,second=tmp$second/self$domain.volume)
+		if(!identical(self$exprs,exprs.save)) {# restore self
+			rcpp$set_exprs_for_interaction(exprs.save)
+		}
+		return(res)
 	}
 }
 
@@ -226,8 +232,52 @@ formula.GNZCache <- function(self,form=NULL,add=FALSE) {
 	self$exprs
 }
 
+##########################################################
+# These plugins are only reusable code
+# Used in pseudo.R (exponential mode) and tkinv.R
+##########################################################
+update_statex.GNZCachePlugin <- function(self) {
+	# test if uid of struct changed
+	if(is.null(self$struct.uid) || self$struct$uid != self$struct.uid) {
+		self$struct.uid <- self$struct$uid
+		self$to_make_lists <- TRUE
+	}
+	
+	# test if cacheLists need to be updated and do it if so
+	if(self$to_make_lists) {
+		cat("Please be patient: update of caches -> ")
+		self$rcpp()$make_lists()
+		
+		self$optim.update() #update self$optim.statex
 
-### NOT VERY USEFUL NOW sine everything is done in C++
+		self$to_make_lists <- FALSE
+		cat("done! \n")
+	}
+}
+##########################################################
+require_param_vect2list.GNZCachePlugin <- function(self,...) {
+	if(is.null(self$param.vect2list)) {
+		if(length(list(...))==0) stop("Need to initialize parameters values first!")
+		params(self,...)
+		self$param.vect2list<- Vector2ListConverter(sapply(params(self),function(e) sapply(e,length)))
+	}
+}
+
+##########################################################
+update_par0.GNZCachePlugin <- function(self,...) {
+	if(length(list(...))==0) {
+		do.call("params",c(list(self),by(self$param.vect2list,self$contrast$par)))
+		self$contrast$par
+	} else {
+		if(!is.null(self$param.vect2list)) {
+			params(self,...)
+		}
+		unlist(params(self))
+	}
+}
+##########################################################
+
+### NOT VERY USEFUL NOW since everything is done in C++
 ### Maybe, can help for debugging
 # get.GNZCache <- function(self,mode=1,runs,transform="nothing") {
 
