@@ -8,6 +8,8 @@ export(
   "[<-","[<-.Scene",
   "[.TermType",
 
+  "%with%","%with%.Vertex2d","%with%.Vertex3d","%with%.Segment2d","%with%.Segment3d","%with%.Facet3d",
+
   .TermTypesInit,
   InteractionMngr,
   ComponentFunctionalFormulaManager

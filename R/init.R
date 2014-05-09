@@ -1,6 +1,9 @@
 insert <- function(obj,...) UseMethod("insert")
 delete <- function(obj,...) UseMethod("delete")
 "%<<%" <- function(obj,...) UseMethod("%<<%")
+"%with%" <- function(obj,...) UseMethod("%with%")
+elements <- function(obj,...) UseMethod("elements")
+
 vertices <- function(obj,...) UseMethod("vertices")
 edges <- function(obj,...) UseMethod("edges")
 facets <- function(obj,...) UseMethod("facets")

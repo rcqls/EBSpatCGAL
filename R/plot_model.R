@@ -33,29 +33,59 @@ facets.Delaunay <- function(obj,...) {
 	res
 }
 
-plot.Vertex2d <- function(obj) {
-	switch(obj$type,
+"%with%.Vertex2d" <- "%with%.Vertex3d" <-
+"%with%.Segment2d" <- "%with%.Segment3d" <- 
+"%with%.Facet3d" <-function(obj,expr) {
+	expr <- substitute(expr)
+	obj$expr <- expr
+	obj
+}
+
+elements.Vertex2d <- function(obj) {
+	points <- switch(obj$type,
 		delaunay= {
 			if(is.null(obj$pt)) pts <- vertices(obj$parent)
 			else pts <- vertices(obj$parent,"incident",obj$pt)
 		},
 		voronoi= pts <- vertices(obj$parent,"dual")[,1:2],
-		return()
 	)
+	if(!is.null(obj$expr)) {
+		points[apply(points,1,function(e) 
+			eval(obj$expr,list(
+				length=0 # TODO
+				)
+			)
+		),]
+	} else points
+}
+
+plot.Vertex2d <- function(obj) {
+	
 	#print(pts);print(c(list(pts),obj$attr))
 	do.call("points",c(list(pts),obj$attr))
 }
 
-plot.Segment2d <- function(obj) {
-	switch(obj$type,
+elements.Segment2d <- function(obj) {
+	edges <- switch(obj$type,
 		delaunay= {
-			if(is.null(obj$pt)) edges <- edges(obj$parent)
-			else if(length(obj$pt)==1) edges <- edges(obj$parent,"incident",as.integer(obj$pt))
-			else if(length(obj$pt)==2)  edges <- edges(obj$parent,"conflicted",obj$pt)
+			if(is.null(obj$pt)) edges(obj$parent)
+			else if(length(obj$pt)==1)  edges(obj$parent,"incident",as.integer(obj$pt))
+			else if(length(obj$pt)==2)   edges(obj$parent,"conflicted",obj$pt)
 		},
-		voronoi= edges <- edges(obj$parent),
-		return()
+		voronoi= edges(obj$parent,"dual")
 	)
+	if(!is.null(obj$expr)) {
+		edges[apply(edges,1,function(e) 
+			eval(obj$expr,list(
+				length=sqrt((e[3]-e[1])^2 + (e[4]-e[2])^2))
+			)
+		),]
+	} else edges
+	
+}
+
+plot.Segment2d <- function(obj) {
+	edges <- elements(obj)
 	#print(pts);print(c(list(pts),obj$attr))
 	do.call("segments",c(list(edges[,1],edges[,2],edges[,3],edges[,4]),obj$attr))
 }
@@ -69,15 +99,37 @@ plot.Vertex3d <- function(obj) {
 	do.call(cmd,c(list(pts),obj$attr))
 }
 
+elements.Segment3d <- function(obj) {
+	# TODO: not in the same format as Segment2d
+	if(obj$type=="delaunay") edges <- obj$parent$rcpp()$edges()
+	else if(obj$type=="voronoi") edges <- obj$parent$rcpp()$dual_edges()
+	if(!is.null(obj$expr)) {
+		edges[apply(edges,1,function(e) 
+			eval(obj$expr,list(length=sqrt((e[4]-e[1])^2 + (e[5]-e[2])^2 + (e[6]-e[3])^2)))
+		),]
+	} else edges
+	
+}
+
 plot.Segment3d <- function(obj) {
-	if(obj$type=="delaunay") edges <- t(matrix(t(obj$parent$rcpp()$edges()),nr=3))
-	else if(obj$type=="voronoi") edges <- t(matrix(t(obj$parent$rcpp()$dual_edges()),nr=3))
-	else return()
+	edges <- t(matrix(t(elements(obj)),nr=3)) #treatment specific to rgl
 	#print(pts);print(c(list(pts),obj$attr))
 	do.call("segments3d",c(list(edges),obj$attr))
 }
 
-plot.Facet3d <- function(obj) {
+elements.Facet3d <- function(obj) {
 	facets <- t(matrix(t(obj$parent$rcpp()$facets()),nr=3))
+	if(!is.null(obj$expr)) {
+		facets[apply(facets,1,function(e) 
+			eval(obj$expr,list(
+				area=0 #TODO
+				)
+			)
+		),]
+	} else facets
+}
+
+plot.Facet3d <- function(obj) {
+	facets <- elements(obj)
 	do.call("triangles3d",c(list(facets),obj$attr))
 }

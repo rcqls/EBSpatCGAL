@@ -1,7 +1,7 @@
 #include "cgal_spatstat_triangulation.h"
 
-
-
+//2D Delaunay vertices components: all needed for edges when inserting a point
+ 
 std::vector<Delaunay2::Vertex_handle> CGAL_Delaunay2_incident_vertices(Delaunay2* obj, Delaunay2::Vertex_handle v) {
 	std::vector<Delaunay2::Vertex_handle> incidentVertices;
 
@@ -115,6 +115,55 @@ Delaunay2_VertexSet_Set CGAL_Delaunay2_incident_edges(Delaunay2* obj, Delaunay2:
 	return incidentEdges;
 }
 
+
+//2D Delaunay triangles components: all needed for faces when inserting a point
+
+Delaunay2_VertexSet_Set CGAL_Delaunay2_incident_faces(Delaunay2* obj, Delaunay2::Vertex_handle v) {
+	Delaunay2_VertexSet_Set incidentFaces;
+
+	Delaunay2::Face_circulator fc=obj->incident_faces(v),done(fc);
+	//incidentFaces.reserve(circulator_size(fc));
+	//DEBUG: std::cout << "incident0" << std::endl;
+	if (fc != 0) {	 
+		do { 	 
+
+			Delaunay2::Vertex_handle v0=fc->vertex(0),v1=fc->vertex(1),v2=fc->vertex(2);
+			if(!obj->is_infinite(v0) && !obj->is_infinite(v1) && !obj->is_infinite(v2)) {
+				Delaunay2_VertexSet f;
+				f.insert(v0);f.insert(v1);f.insert(v2);
+				incidentFaces.insert(f);
+			}
+		} while(++fc != done);
+	}
+	return incidentFaces;
+}
+
+Delaunay2_VertexSet_Set CGAL_Delaunay2_conflicted_faces(Delaunay2* obj, Point_2 p) {
+
+	std::vector<Delaunay2::Face_handle> faces;
+ 	obj->get_conflicts(p, std::back_inserter(faces));
+
+ 	int i=0;
+
+	//DEBUG: std::cout << "Number of boundary edges=" << i << std::endl;
+
+	std::set<Delaunay2_VertexSet> conflictedFaces;
+
+	i=0;
+	for(std::vector<Delaunay2::Face_handle>::iterator fit = faces.begin();
+       fit != faces.end();
+       ++fit,++i){
+		Delaunay2::Vertex_handle v0=static_cast<Delaunay2::Face_handle>(*fit)->vertex(0),v1=static_cast<Delaunay2::Face_handle>(*fit)->vertex(1),v2=static_cast<Delaunay2::Face_handle>(*fit)->vertex(2);
+		if(!obj->is_infinite(v0) && !obj->is_infinite(v1) && !obj->is_infinite(v2)) {
+			Delaunay2_VertexSet f;
+			f.insert(v0);f.insert(v1);f.insert(v2);
+			conflictedFaces.insert(f);
+		}
+	}
+
+	return conflictedFaces;
+}  
+
 // Delaunay 3D edges components: all needed for edges when inserting a point
 
 std::pair<Delaunay3_VertexSet_Set,Delaunay3_VertexSet_Set> CGAL_Delaunay3_conflicted_and_boundary_edges(Delaunay3* obj, Point_3 p) {
@@ -215,8 +264,8 @@ Delaunay3_VertexSet_Set CGAL_Delaunay3_incident_edges(Delaunay3* obj, Delaunay3:
 	for(
 		std::vector<Delaunay3::Vertex_handle>::iterator vit=V.begin();
 		vit != V.end();
-		++vit) 
-	{
+		++vit
+	) {
 		if(!obj->is_infinite(*vit)) {
 			Delaunay3_VertexSet e;
 			e.insert(v);e.insert(*vit);
@@ -226,3 +275,72 @@ Delaunay3_VertexSet_Set CGAL_Delaunay3_incident_edges(Delaunay3* obj, Delaunay3:
 
 	return incidentEdges;
 }
+
+
+Delaunay2_VertexSet_Set Delaunay2_All2_edges_at_range(Delaunay2* obj, Delaunay2::Vertex_handle v, double range) {
+	Delaunay2_VertexSet_Set incidentEdges;
+	double r2=range*range;
+
+	for(
+		Delaunay2::Finite_vertices_iterator vit=obj->finite_vertices_begin();
+		vit != obj->finite_vertices_end();
+		++vit
+	) {
+		Delaunay2::Vertex_handle vc=vit;
+		if(!obj->is_infinite(vc) && CGAL::squared_distance(v->point(),vc->point()) < r2) {
+			Delaunay2_VertexSet e;
+			e.insert(v);e.insert(vc);
+			incidentEdges.insert(e);
+		}  	 
+	}
+	return incidentEdges;
+}
+
+Delaunay3_VertexSet_Set Delaunay3_All2_edges_at_range(Delaunay3* obj, Delaunay3::Vertex_handle v, double range) {
+	Delaunay3_VertexSet_Set incidentEdges;
+	double r2=range*range;
+
+	for(
+		Delaunay3::Finite_vertices_iterator vit=obj->finite_vertices_begin();
+		vit != obj->finite_vertices_end();
+		++vit
+	) {
+		Delaunay3::Vertex_handle vc=vit;
+		if(!obj->is_infinite(vc) && CGAL::squared_distance(v->point(),vc->point()) < r2) {
+			Delaunay3_VertexSet e;
+			e.insert(v);e.insert(vc);
+			incidentEdges.insert(e);
+		}  	 
+	}
+	return incidentEdges;
+}
+
+//Delaunay2_VertexSet_Set CGAL_All2_edges_at_range(Delaunay2* obj, Delaunay2::Vertex_handle v, double range) {
+//   PT_DV pt_p,pt_v;
+//   PT_LIST pile=NULL,list_dvs_vus=NULL,list_voisins=NULL;
+//   DOUBLE r2=range*range;
+
+//     (*point)->ind=-1;
+//     eblist_ins_tete(&pile,point);
+// //printf("\nNew Point: range r^2=%LF\n",r2);
+//     while(pile!=NULL) {
+//         pt_p=(PT_DV)eblist_recup_tete(&pile);
+//         ebvor_detecte_voisin(self,pt_p,&list_voisins);
+//         while(list_voisins!=NULL) {
+//             pt_v=(PT_DV)eblist_recup_tete(&list_voisins);(*pt_v)->boolean=0; //TODO: IMPORTANT,this is dangerous since if you forget to do it when using detecte_voisin this fails! =>think of a way to do a function ebvor_get_voisin which do that properly!!!
+//             //printf("pt_v[%p]->ind=%d\n",pt_v,(*pt_v)->ind);
+// //if((*pt_v)->ind==1) Rprintf("pt_v[%p]->ind=%d,sqrt(dist)=%LF\n",pt_v,(*pt_v)->ind,(DOUBLE)sqrt(ebcalcul_distance((*pt_v)->point,(*point)->point)));
+//             if( (pt_v - self->tab_dv>=0) && ((*pt_p)->num_s!=-3) && ((*pt_v)->ind==0) ) {
+//               (*pt_v)->ind=1;
+//               eblist_ins_tete(&list_dvs_vus,pt_v);
+//               if(ebcalcul_distance((*pt_v)->point,(*point)->point) < r2) {
+//                 //printf("OK:pt_v[%p]->ind=%d,sqrt(dist)=%LF\n",pt_v,(*pt_v)->ind,(DOUBLE)sqrt(ebcalcul_distance((*pt_v)->point,(*point)->point)));
+//                 eblist_ins_tete(list_dvs,pt_v);
+//                 eblist_ins_tete(&pile,pt_v);
+//               }
+//             }
+//         }
+//     }
+
+//     return ;
+//}

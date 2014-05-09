@@ -47,6 +47,8 @@ plot.Scene <- function(obj,subset) {
 	return(invisible(obj))
 }
 
+elements.Scene <- function(obj,i) elements(obj[[i]])
+
 
 #update.Scene <- function(obj,formula) {#formula allow to change the order of the element
 #

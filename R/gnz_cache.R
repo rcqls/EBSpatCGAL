@@ -27,29 +27,32 @@ GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350),forms) {
 							else (self$domain[4]-self$domain[1])*(self$domain[5]-self$domain[2])*(self$domain[6]-self$domain[3])
 			
 
-	RcppPersistentObject(self,new = { 
-		if(is.null(self$struct)) {
-			## TODO: initialilize GNZCache without del2
-			## Maybe create one! 
-		} else {	
-			rcpp <- new(GNZCacheCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
-			rcpp$single <- self$interMngr$single
-			rcpp$nb_runs <- self$runs
-			rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(self$struct))))
-			
-			if(!is.null(self$interMngr$mark.name)) {
-				rcpp$marked(TRUE)
-				rcpp$mark_expr(self$interMngr$mark.expr)
-				tmp <- as.list(rep(NA,length(self$interMngr$mark.name)))
-				names(tmp) <- self$interMngr$mark.name
-				self$struct$rcpp()$update_infinite_vertex_info(tmp)
-			} else rcpp$marked(FALSE)
-			# important for renew process!
-			if(!is.null(self$struct)) update(self$interMngr,self$struct)
-			self$to_make_lists <- TRUE
-			rcpp
-		} 
-	})
+	RcppPersistentObject(self,
+		new = { 
+			if(is.null(self$struct)) {
+				## TODO: initialilize GNZCache without del2
+				## Maybe create one! 
+			} else {	
+				rcpp <- new(GNZCacheCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
+				rcpp$single <- self$interMngr$single
+				rcpp$nb_runs <- self$runs
+				rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(self$struct))))
+				
+				if(!is.null(self$interMngr$mark.name)) {
+					rcpp$marked(TRUE)
+					rcpp$mark_expr(self$interMngr$mark.expr)
+					tmp <- as.list(rep(NA,length(self$interMngr$mark.name)))
+					names(tmp) <- self$interMngr$mark.name
+					self$struct$rcpp()$update_infinite_vertex_info(tmp)
+				} else rcpp$marked(FALSE)
+				# important for renew process!
+				if(!is.null(self$struct)) update(self$interMngr,self$struct)
+				self$to_make_lists <- TRUE
+				if(!is.null(self$exprs)) rcpp$set_exprs_for_interaction(self$exprs)
+				rcpp
+			}
+		}
+	)
 	formula(self,"default")  #or exp(-(.V))*.form ~ .form
 	self
 }
@@ -106,7 +109,6 @@ run.GNZCache <- function(self,current,...,runs,mode,domain,form) {
 		self$to_make_lists <- TRUE
 	}
 	
-
 	if(!missing(current) && (is.null(self$struct) || identical(self$struct,current))) {
 		if(inherits(current,"Simulable")) {
 			update(self,current)
@@ -115,29 +117,37 @@ run.GNZCache <- function(self,current,...,runs,mode,domain,form) {
 	}
 
 	# to update caches when struct has been udated too
-	if(!is.null(self$struct.uid) && self$struct$uid != self$struct.uid) {
+	if(is.null(self$struct.uid) || self$struct$uid != self$struct.uid) {
 		self$struct.uid <- self$struct$uid
 		self$to_make_lists <- TRUE
 	}
 
 	if(self$to_make_lists) {
+		rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(seq(self$struct)))))
 		cat("Please be patient: update of caches -> ")
 		self$rcpp()$make_lists()
 		self$to_make_lists <- FALSE
 		cat("done! \n")
 	}
 
-	if(!missing(form)) {
-		exprs.save <- self$exprs
-		formula(self,form) #self$exprs updated
-	} else exprs.save <- NULL
 
 	if(!is.null(self$struct)) {
+
+		if(!missing(form)) {
+			exprs.save <- self$exprs
+			formula(self,form) #self$exprs updated
+		} else exprs.save <- NULL
+
 		tmp <- rcpp$eval_exprs()
+		
+		self$last.eval_exprs <- tmp
+		
 		res <- list(first=tmp$first/self$runs,second=tmp$second/self$domain.volume)
-		if(!missing(form) && !identical(self$exprs,exprs.save)) {# restore self
+		
+		if(!missing(form) && !identical(self$exprs,exprs.save)) {# restore self$exprs
 			rcpp$set_exprs_for_interaction(exprs.save)
 		}
+		
 		return(res)
 	}
 }

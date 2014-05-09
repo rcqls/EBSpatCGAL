@@ -7,7 +7,7 @@ using namespace Rcpp ;
 //Register interaction type here!!!
 enum InterTypeID {
     //Point Process
-    DEL1=0, DEL2, DEL3, DEL4, ALL1, ALL2
+    DEL1=0, DEL2, DEL3, DEL4, ALL2
     //Tesselation here
 };
 
@@ -373,11 +373,12 @@ public:
 
     NumericVector eval_first_exprs_from_cexprs_caches(std::vector<int> indexes) {
         std::vector<double> resFirst(indexes.size());
-
+        int j;
         for(int i=0;i<first_cache_size;i++) {
             get_first_terms_exprs_at(i); //put .f exprs inside envir
-            for(std::vector<int>::iterator it=indexes.begin();it!=indexes.end();++it)
-                resFirst[*it] += as<double>(Rf_eval(first_cache_exprs[*it],envir)); //eval jth expr form .f exprs
+            j=0;
+            for(std::vector<int>::iterator it=indexes.begin();it!=indexes.end();++it,++j)
+                resFirst[j] += as<double>(Rf_eval(first_cache_exprs[*it],envir)); //eval jth expr form .f exprs
         }
 
         NumericVector firstResult(resFirst.begin(),resFirst.end());
@@ -390,11 +391,13 @@ public:
 
     NumericVector eval_second_exprs_from_cexprs_caches(std::vector<int> indexes) {
         std::vector<double> resSecond(indexes.size());
+        int j;
 
         for(int i=0;i<second_cache_size;i++) {
             get_second_terms_exprs_at(i); //put .f exprs inside envir
-            for(std::vector<int>::iterator it=indexes.begin();it!=indexes.end();++it)
-                resSecond[*it] += as<double>(Rf_eval(second_cache_exprs[*it],envir)); //eval jth expr form .f exprs
+            j=0;
+            for(std::vector<int>::iterator it=indexes.begin();it!=indexes.end();++it,++j)
+                resSecond[j] += as<double>(Rf_eval(second_cache_exprs[*it],envir)); //eval jth expr form .f exprs
         }
 
         NumericVector secondResult(resSecond.begin(),resSecond.end());
@@ -422,6 +425,7 @@ public:
         NumericVector firstResult(resFirst.begin(),resFirst.end()),secondResult(resSecond.begin(),resSecond.end());
         return List::create(_["first"]=firstResult,_["second"]=secondResult);
     }
+    
 /*************************************************************/
 /* I made a mistake! This is not what I want mathematically! */
 /*************************************************************
