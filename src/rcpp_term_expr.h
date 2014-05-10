@@ -35,6 +35,8 @@ public:
 
     virtual int inside_number(Domain* domain) = 0;
 
+    virtual IntegerVector inside_indexes(Domain* domain,int number) = 0;
+
     virtual void apply_INSERTION() =0;
 
     virtual void complete_INSERTION(TermBase* term_)=0;
@@ -81,6 +83,10 @@ public:
     int inside_number(Domain* domain) {
         return first_term->inside_number(domain);
     }
+
+    IntegerVector inside_indexes(Domain* domain,int number) {
+        return first_term->inside_indexes(domain,number);
+    };
 
     void apply_INSERTION() {
         first_term->apply_INSERTION();
@@ -557,7 +563,34 @@ public:
 
     List get_mark() {return current_handle->info();}
 
-    int inside_number(Domain* domain) {return structure->number_of_vertices();};
+    int inside_number(Domain* domain) {
+        int cpt=0;
+        for(
+            typename STRUCT::Finite_vertices_iterator vit=structure->finite_vertices_begin();
+            vit != structure->finite_vertices_end();
+            ++vit
+        ) {
+            ELEMENT p=vit->point();
+            if( (p.dimension()==2 && domain->contains(p[0],p[1])) || (p.dimension()==3 && domain->contains(p[0],p[1],p[2]))) cpt++;
+        }
+        return cpt;
+    };
+
+    //number 
+    IntegerVector inside_indexes(Domain* domain,int number) {
+        IntegerVector indexes(number);
+        int i=0,cpt=0;
+        for(
+            typename STRUCT::Finite_vertices_iterator vit=structure->finite_vertices_begin();
+            vit != structure->finite_vertices_end();
+            ++vit,i++
+        ) {
+            ELEMENT p=vit->point();
+            if( (p.dimension()==2 && domain->contains(p[0],p[1])) || (p.dimension()==3 && domain->contains(p[0],p[1],p[2]))) 
+                indexes[cpt++] = i;
+        }
+        return indexes;
+    };
 
     //Maybe to secialize if needed (when trying to embed Kiên stuff)!
     //An alternative is to adapt this part!

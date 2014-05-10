@@ -17,6 +17,7 @@
     Del1="Del1",D1="Del1",DEL1="Del1",d1="Del1",del1="Del1",
     Del2="Del2",D2="Del2",DEL2="Del2",d2="Del2",del2="Del2",
     Del3="Del3",D3="Del3",DEL3="Del3",d3="Del3",del3="Del3",
+    Del4="Del4",D4="Del4",DEL4="Del4",d4="Del4",del4="Del4",
     NNG="NNG",NN="NNG",Nn="NNG",nn="NNG"
   )
 
@@ -24,6 +25,7 @@
     Del1=c("id","x","v","a"),
     Del2=c("id","x","v","a","l2","l","ol2","ol","da"),
     Del3=c("id","x","v","a","ta","tp","c","r2","r","sa","ga"),
+    Del4=c("id","x","v","V","c","r2","r"), # V is volume
     All2=c("id","x","v","l2","l"),
     NNG=c("id","x","v","l2","l")
   )

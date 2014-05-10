@@ -867,6 +867,23 @@ NumericMatrix Triangulation2_incident_edges(TRIANGULATION2* obj, IntegerVector r
 }
 
 template <typename TRIANGULATION2>
+NumericVector Triangulation2_cell_area(TRIANGULATION2* obj, IntegerVector rank) {
+  int n=rank[0]-1;
+
+  //std::cout << "pos of point to remove: " << n << std::endl;
+
+  typedef typename TRIANGULATION2::Vertex_handle Vertex_handle;
+  if(n >=0 && n < obj->number_of_vertices()) {
+    typename TRIANGULATION2::Finite_vertices_iterator vit=obj->finite_vertices_begin();
+    for(int i=0;i<n;++i) ++vit;
+    double area=CGAL_Delaunay2_cell_area(obj,vit);
+    if(area>0) return NumericVector::create(area);
+  }
+  return NumericVector::create(NA_REAL);
+
+}
+
+template <typename TRIANGULATION2>
 NumericMatrix Triangulation2_incident_faces(TRIANGULATION2* obj, IntegerVector rank) {
 	int n=rank[0]-1;
 
@@ -1060,7 +1077,8 @@ RCPP_MODULE(cgal_module) {
 	.method("incident_vertices",&Triangulation2_incident_vertices<Delaunay2>,"incident edges")
 	.method("incident_edges",&Triangulation2_incident_edges<Delaunay2>,"incident edges")
 	.method("incident_faces",&Triangulation2_incident_faces<Delaunay2>,"incident faces")
-	//.method("show_vertices",&Delaunay_show_vertices,"vertices coordinates")
+	.method("cell_area",&Triangulation2_cell_area<Delaunay2>,"cell area")
+  //.method("show_vertices",&Delaunay_show_vertices,"vertices coordinates")
 	;
 	class_<Regular2>( "Regular2" )
 	.constructor()

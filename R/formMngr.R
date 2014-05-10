@@ -170,6 +170,7 @@ autoCaracFormula <- function(form,type="Del2",local=NULL,carac=new.env(),autoLen
     if(length(e)>1) {
       if(e[[1]]==">") {e[[1]] <- as.name('<'); tmp <- e[[2]]; e[[2]]<- e[[3]]; e[[3]] <- tmp}
       if(e[[1]]==">=") {e[[1]] <- as.name('<='); tmp <- e[[2]]; e[[2]]<- e[[3]]; e[[3]] <- tmp}
+      
       ee <- list(e[[1]])
       for(i in seq(e)[-1]) ee <- c(ee,simplified.expr(e[[i]]))
       return(as.call(ee))
@@ -198,7 +199,7 @@ autoCaracFormula <- function(form,type="Del2",local=NULL,carac=new.env(),autoLen
                 caracName <- caracName2 <- paste(".c",carac$Cpt,sep="")
                 if(!is.null(local)) caracName2 <- paste(caracName2,ifelse(local,"l","g"),sep=".")
                 if(autoLength && ((tmp <- .TermTypes$length(e))>1)) caracName2 <- paste(caracName2,tmp,sep=".")
-                carac$List[[caracName2]] <- if(e[[1]]=="(") e[[-1]] else e #no need of parenthesis!
+                carac$List[[caracName2]] <- if(length(e)>1 &&  e[[1]]=="(") e[[-1]] else e #no need of parenthesis!
                 return(as.name(caracName))
               }
               options(warn=ow) #recover initial warning system

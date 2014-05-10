@@ -1,5 +1,23 @@
 #include "cgal_spatstat_triangulation.h"
 
+// 2D voronoi cell area
+double CGAL_Delaunay2_cell_area(Delaunay2* obj, Del2D_Vertex_handle v) {
+	Delaunay2::Edge_circulator ec=obj->incident_edges(v),done(ec);
+      if (ec != 0) {
+        double area=0;
+        Point_2 p=v->point();
+        Segment_2 segment;
+        do {   
+          CGAL::Object o = obj->dual(ec);
+          if(CGAL::assign(segment,o)) 
+            area += sqrt(CGAL::area(p,segment.source(),segment.target()));
+          else return -1;
+        } while(++ec != done);
+        return area;
+      }
+     return -1;
+}
+
 //2D Delaunay vertices components: all needed for edges when inserting a point
  
 std::vector<Delaunay2::Vertex_handle> CGAL_Delaunay2_incident_vertices(Delaunay2* obj, Delaunay2::Vertex_handle v) {
@@ -114,7 +132,6 @@ Delaunay2_VertexSet_Set CGAL_Delaunay2_incident_edges(Delaunay2* obj, Delaunay2:
 	}
 	return incidentEdges;
 }
-
 
 //2D Delaunay triangles components: all needed for faces when inserting a point
 

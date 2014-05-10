@@ -55,6 +55,7 @@ public:
     //TODO: not adapted to a real domain
     void init_inside_number() {
         inside_number=inter->inside_number(domain);
+        inside_indexes=inter->inside_indexes(domain,inside_number)
     };
 
     void set_mode(int mode_) {mode=static_cast<CacheMode>(mode_);};

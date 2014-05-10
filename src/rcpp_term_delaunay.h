@@ -59,7 +59,9 @@ List Del1TermType2D::update_infos(std::vector<Delaunay2::Vertex_handle> set) {
 			    }
 			    res["x"]=x0;
 			} else if (info=="a") {
-				 res["a"]=1.0; //TODO
+				double area=CGAL_Delaunay2_cell_area(structure,v0);
+				std::cout << "area=" << area << std::endl;
+				res["a"]=(area>0 ? NumericVector::create(area) : NumericVector::create(NA_REAL));
 			} else if( info == "v") {
 				res["v"]=v0->info();
 			}
@@ -203,6 +205,13 @@ List Del2TermType2D::update_infos(HandleSet_Set set) {
 
 			}  else if( info == "v") {
 				res["v"]=List::create(v0->info(),v1->info());
+			} else if( info == "a") {
+				NumericVector a(2);
+				double area=CGAL_Delaunay2_cell_area(structure,v0);
+				a[0]=(area>0 ?  area : NA_REAL);
+				area=CGAL_Delaunay2_cell_area(structure,v1);
+				a[1]=(area>0 ? area : NA_REAL);
+				res["a"]=a;
 			}
 			ret[i]=res;
 		}
@@ -368,6 +377,15 @@ List Del3TermType2D::update_infos(HandleSet_Set set) {
 				else
 					res["r"]=sqrt(CGAL::squared_radius(p0,p1,p2));
 
+			} if( info == "a") {
+				NumericVector a(3);
+				double area=CGAL_Delaunay2_cell_area(structure,v0);
+				a[0]=(area>0 ? area : NA_REAL);
+				area=CGAL_Delaunay2_cell_area(structure,v1);
+				a[1]=(area>0 ? area : NA_REAL);
+				area=CGAL_Delaunay2_cell_area(structure,v2);
+				a[2]=(area>0 ? area : NA_REAL);
+				res["a"]=a;
 			}
 			ret[i]=res;
 		}

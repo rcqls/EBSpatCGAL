@@ -31,6 +31,19 @@ public:
         return NumericVector(newPt.begin(),newPt.end());
     };
 
+    // bool contains(std::vector<double> coords) {
+    //     for(int i=0;i<dim;i++) if (left[i] > coords[i]) || (coords[i] > right[i])) return false;
+    //     return true;
+    // }
+
+    bool contains(double x,double y) {
+        return (left[0] <= x) &&  (x <= right[0]) && (left[1] <= y) &&  (y <= right[1]);
+    }
+
+    bool contains(double x,double y,double z) {
+        return (left[0] <= x) &&  (x <= right[0]) && (left[1] <= y) &&  (y <= right[1]) && (left[2] <= z) &&  (z <= right[2]);
+    }
+
 
     double get_size() {return size;} //area or volume
 
