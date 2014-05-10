@@ -417,17 +417,19 @@ public:
         std::vector<double> resFirst(first_cache_exprs.size()),resSecond(second_cache_exprs.size());
         int i,j;
         for(i=0;i<first_cache_size;i++) {
+            //std::cout << "i=" << i << std::endl;
             get_first_terms_exprs_at(i); //put .f exprs inside envir
             for(j=0;j<first_cache_exprs.size();j++)
                 resFirst[j] += as<double>(Rf_eval(first_cache_exprs[j],envir)); //eval jth expr form .f exprs
         }
 
         for(i=0;i<second_cache_size;i++) {
+            //std::cout << "i=" << i << std::endl;
             get_second_terms_exprs_at(i); //put .f exprs inside envir
             for(j=0;j<second_cache_exprs.size();j++)
                 resSecond[j] += as<double>(Rf_eval(second_cache_exprs[j],envir)); //eval jth expr form .f exprs
         }
-
+        //std::cout << "done" << std::endl;
         NumericVector firstResult(resFirst.begin(),resFirst.end()),secondResult(resSecond.begin(),resSecond.end());
         return List::create(_["first"]=firstResult,_["second"]=secondResult);
     }
@@ -579,7 +581,7 @@ public:
     //number 
     IntegerVector inside_indexes(Domain* domain,int number) {
         IntegerVector indexes(number);
-        int i=0,cpt=0;
+        int i=1,cpt=0;
         for(
             typename STRUCT::Finite_vertices_iterator vit=structure->finite_vertices_begin();
             vit != structure->finite_vertices_end();

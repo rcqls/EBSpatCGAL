@@ -15,4 +15,4 @@ lc <- GNZCache(del2~Del2(Th[1]*(l<=20)+Th[2]*(20<l & l<=80))+Del1(a*Th2),1,del2(
 #get.GNZCache(lc)
 #) # result in lc$cexprs.cachelist
 
-run(lc,Th=c(0,0),Th2=3,single=-log(1/3600))
+run(lc,Th=c(0,0),Th2=0,single=-log(1/2500))

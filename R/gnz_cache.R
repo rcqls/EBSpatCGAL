@@ -123,9 +123,9 @@ run.GNZCache <- function(self,current,...,runs,mode,domain,form) {
 	}
 
 	if(self$to_make_lists) {
-		rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(seq(self$struct)))))
 		cat("Please be patient: update of caches -> ")
 		self$rcpp()$make_lists()
+		rcpp$set_sizes_for_interaction(c(as.integer(self$runs),rcpp$get_inside_number()))
 		self$to_make_lists <- FALSE
 		cat("done! \n")
 	}

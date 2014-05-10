@@ -55,8 +55,12 @@ public:
     //TODO: not adapted to a real domain
     void init_inside_number() {
         inside_number=inter->inside_number(domain);
-        inside_indexes=inter->inside_indexes(domain,inside_number)
+        inside_indexes=inter->inside_indexes(domain,inside_number);
     };
+
+    int get_inside_number() {return inside_number;}
+
+    IntegerVector get_inside_indexes() {return inside_indexes;}
 
     void set_mode(int mode_) {mode=static_cast<CacheMode>(mode_);};
 
@@ -82,9 +86,14 @@ public:
     	//No stress there is no optimization consideration!
         init_inside_number();
 		second_list=List(inside_number);
-		for(int i=0;i<inside_number;i++) {//TODO: inside_list_index
-			//std::cout << "i=" << i << std::endl;
-			inter->set_current(NumericVector::create(i));//TODO
+        int i=0;
+		for(
+            IntegerVector::iterator it=inside_indexes.begin();
+            it!= inside_indexes.end();
+            ++it,i++
+        ) {//TODO: inside_list_index
+			//std::cout << "i=" << i  << " & it=" << *it << std::endl;
+			inter->set_current(*it);//TODO
 			//inter->make_local_lists();	
 			second_list[i]=inter->get_cexprs();
 		};
@@ -183,6 +192,7 @@ protected:
 	CacheMode mode;
     bool marked;
     int inside_number;
+    IntegerVector inside_indexes;
 
     void pick_new() { //equivalent of propose_INSERTION() for SimGibbs
         inter -> set_current(domain->pick());

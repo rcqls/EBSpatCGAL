@@ -91,7 +91,7 @@ RCPP_MODULE(delaunay_module) {
 
     class_<Domain>("Domain")
     .constructor<std::vector<double>,std::vector<double> >()
-    .method("pick",&Domain::pick,"")
+    .method("pick",&Domain::pick,"pick a point")
     ;
 
     class_<GNZCache>("GNZCacheCpp")
@@ -101,6 +101,8 @@ RCPP_MODULE(delaunay_module) {
     .property("single",&GNZCache::get_single,&GNZCache::set_single,"single")
     .field( "nb_runs", &GNZCache::nb_runs, "nb_runs" )
     .method("get_envir",&GNZCache::get_envir,"get envir")
+    .method("get_inside_indexes",&GNZCache::get_inside_indexes,"get indexes inside domain")
+    .method("get_inside_number",&GNZCache::get_inside_number,"get number of indexes inside domain")
     .method("set_mode",&GNZCache::set_mode,"set mode")
     .method("mark_expr",&GNZCache::set_mark_expr,"set mark expr")
     .method("marked",&GNZCache::set_marked,"set marked")

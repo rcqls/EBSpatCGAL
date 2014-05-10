@@ -60,7 +60,7 @@ List Del1TermType2D::update_infos(std::vector<Delaunay2::Vertex_handle> set) {
 			    res["x"]=x0;
 			} else if (info=="a") {
 				double area=CGAL_Delaunay2_cell_area(structure,v0);
-				std::cout << "area=" << area << std::endl;
+				//std::cout << "area=" << area << std::endl;
 				res["a"]=(area>0 ? NumericVector::create(area) : NumericVector::create(NA_REAL));
 			} else if( info == "v") {
 				res["v"]=v0->info();
