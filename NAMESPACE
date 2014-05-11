@@ -1,7 +1,7 @@
 useDynLib(EBSpatCGAL)
 exportPattern("^[[:alpha:]]+")
 export(
-  "%<<%","%<<%.Scene",
+  "%<<%","%<<%.Scene","%<<%.Chainable.Scene",
   "[[","[[.Scene",
   "[[<-","[[<-.Scene",
   "[","[.Scene",

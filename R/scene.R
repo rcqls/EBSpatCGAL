@@ -9,6 +9,8 @@ length.Scene <- function(obj) length(obj$list)
 plot.Scene <- function(obj,subset) {
 	l <- if(missing(subset)) obj$list else obj$list[subset]
 	for(comp in l) if(!is.null(comp)) plot(comp)
+	
+	Chainable.Scene()
 }
 
 "[[.Scene" <- function(obj,ref) obj$list[[ref]] #ref is integer or string
@@ -63,6 +65,7 @@ window2d <- function(xrange=c(0,1),yrange=c(0,1),...) {
 
 plot.Window2d <- function(obj) {
 	do.call("plot",c(list(obj$obj[[1]],obj$obj[[2]],type="n",asp=1),obj$attr))
+	Chainable.Scene()
 }
 
 window3d <- function(xrange=c(0,1),yrange=c(0,1),zrange=c(0,1),...) {
@@ -75,4 +78,17 @@ window3d <- function(xrange=c(0,1),yrange=c(0,1),zrange=c(0,1),...) {
 plot.Window3d <- function(obj) {
 	require(rgl)
 	do.call("open3d",obj$attr)
+	Chainable.Scene()
+}
+
+# just an object to offer chainable plot
+Chainable.Scene <- function() {
+	chain <- list()
+	class(chain)<-"Chainable.Scene"
+	return(invisible(chain))
+}
+
+"%<<%.Chainable.Scene" <- function(parent,obj) {
+	plot(obj)
+	Chainable.Scene()
 }

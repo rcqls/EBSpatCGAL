@@ -18,7 +18,7 @@ if(FALSE) {
 		expo=TRUE
 	)
 
-	run(pseudo,Th=c(0,0),single=-log(1/3600))
+	run(pseudo,Single=2,Th=c(2,4))
 } else { # with Horizon fixed to 0
 	pseudo2 <- Pseudo(del2~Del2(Th[1]*(l<=20)+Th[2]*(20<l & l<=80)+Th[3]*(80<l)), 
 		runs=10000L,
@@ -26,5 +26,5 @@ if(FALSE) {
 		expo=TRUE
 	)
 
-	run(pseudo2,Th=c(4,2,0),single=1,fixed=4)
+	run(pseudo2,Single=2,Th=c(2,4,0),fixed=4)
 }

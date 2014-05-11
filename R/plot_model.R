@@ -44,10 +44,10 @@ facets.Delaunay <- function(obj,...) {
 elements.Vertex2d <- function(obj) {
 	points <- switch(obj$type,
 		delaunay= {
-			if(is.null(obj$pt)) pts <- vertices(obj$parent)
-			else pts <- vertices(obj$parent,"incident",obj$pt)
+			if(is.null(obj$pt)) vertices(obj$parent)
+			else vertices(obj$parent,"incident",obj$pt)
 		},
-		voronoi= pts <- vertices(obj$parent,"dual")[,1:2],
+		voronoi= vertices(obj$parent,"dual")[,1:2],
 	)
 	if(!is.null(obj$expr)) {
 		points[apply(points,1,function(e) 
@@ -59,10 +59,11 @@ elements.Vertex2d <- function(obj) {
 	} else points
 }
 
-plot.Vertex2d <- function(obj) {
-	
+print.Vertex2d <- plot.Vertex2d <- function(obj) {
+	pts <- elements(obj)
 	#print(pts);print(c(list(pts),obj$attr))
 	do.call("points",c(list(pts),obj$attr))
+	Chainable.Scene()
 }
 
 elements.Segment2d <- function(obj) {
@@ -84,19 +85,21 @@ elements.Segment2d <- function(obj) {
 	
 }
 
-plot.Segment2d <- function(obj) {
+print.Segment2d <- plot.Segment2d <- function(obj) {
 	edges <- elements(obj)
 	#print(pts);print(c(list(pts),obj$attr))
 	do.call("segments",c(list(edges[,1],edges[,2],edges[,3],edges[,4]),obj$attr))
+	Chainable.Scene()
 }
 
-plot.Vertex3d <- function(obj) {
+print.Vertex3d <- plot.Vertex3d <- function(obj) {
 	if(obj$type=="delaunay") pts <- obj$parent$rcpp()$vertices()
 	else if(obj$type=="voronoi") pts <- obj$parent$rcpp()$dual_vertices()[,1:3]
 	else return()
 	#print(pts);print(c(list(pts),obj$attr))
 	cmd <- if(!is.null(obj$attr$radius)) "spheres3d" else "points3d"  
 	do.call(cmd,c(list(pts),obj$attr))
+	Chainable.Scene()
 }
 
 elements.Segment3d <- function(obj) {
@@ -111,10 +114,11 @@ elements.Segment3d <- function(obj) {
 	
 }
 
-plot.Segment3d <- function(obj) {
+print.Segment3d <- plot.Segment3d <- function(obj) {
 	edges <- t(matrix(t(elements(obj)),nr=3)) #treatment specific to rgl
 	#print(pts);print(c(list(pts),obj$attr))
 	do.call("segments3d",c(list(edges),obj$attr))
+	Chainable.Scene()
 }
 
 elements.Facet3d <- function(obj) {
@@ -129,7 +133,8 @@ elements.Facet3d <- function(obj) {
 	} else facets
 }
 
-plot.Facet3d <- function(obj) {
+print.Facet3d <- plot.Facet3d <- function(obj) {
 	facets <- elements(obj)
 	do.call("triangles3d",c(list(facets),obj$attr))
+	Chainable.Scene()
 }
