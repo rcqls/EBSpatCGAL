@@ -3,11 +3,11 @@ Scene <- function(...) {
 	obj$actors <- new.env()
 	actors <- list(...)
 	for(nm in names(actors)) assign(nm,actors[[nm]],envir=obj$actors)
-	obj$list <- list()
+	obj$script <- list()
 	obj
 }
 
-length.Scene <- function(obj) length(obj$list)
+length.Scene <- function(obj) length(obj$script)
 
 plot.Scene <- function(obj,subset,...) {
 	list(...) -> actors
@@ -18,7 +18,7 @@ plot.Scene <- function(obj,subset,...) {
 	# to extend the range of obj$actors to recognize object 
 	parent.env(obj$actors) <- parent.env(environment())
 
-	l <- if(missing(subset)) obj$list else obj$list[subset]
+	l <- if(missing(subset)) obj$script else obj$script[subset]
 	for(comp in l) if(!is.null(comp)) {
 		plot(eval(comp,envir=actors))
 		#plot(comp)
@@ -30,20 +30,21 @@ plot.Scene <- function(obj,subset,...) {
 	if(eval) {
 		# to extend the range of obj$actors to recognize object 
 		parent.env(obj$actors) <- parent.env(environment())
-		eval(obj$list[[ref]],envir=obj$actors)
-	} else obj$list[[ref]] #ref is integer or string
+		eval(obj$script[[ref]],envir=obj$actors)
+	} else obj$script[[ref]] #ref is integer or string
 }
 
 "[[<-.Scene" <- function(obj,ref,comp) {
- 	obj$list[[ref]] <- comp #ref is integer or string
+	comp <- substitute(comp)
+ 	obj$script[[ref]] <- comp #ref is integer or string
  	obj
 }
 
 # extract some art of the scene
 "[.Scene" <- function(obj,ref) {
 	obj2 <- Scene()
-	if(missing(ref)) obj2$list <- obj$list
- 	else obj2$list <- obj$list[ref]
+	if(missing(ref)) obj2$script <- obj$script
+ 	else obj2$script <- obj$script[ref]
  	obj2
 }
 
@@ -51,24 +52,25 @@ plot.Scene <- function(obj,subset,...) {
 ## to insert components
 "[<-.Scene" <- function(obj,ref,inc,comp) {
 	if(missing(inc)) inc <- 0
-	if(missing(comp)) comp <- inc
-	tmp <- obj$list
-	obj$list <- NULL
+	if(missing(comp)) comp <- substitute(inc)
+	else comp <- substitute(comp)
+	tmp <- obj$script
+	obj$script <- NULL
 	if(is.character(ref)) ref <- which(ref %in% names(tmp))+inc
 	if(ref>length(tmp)) ref <- length(tmp)+1
-	if(ref==1) obj$list <- comp else obj$list <- c(tmp[1:(ref-1)],comp)
-	if(ref<=length(tmp)) obj$list <- c(obj$list,tmp[ref:length(tmp)])
+	if(ref==1) obj$script <- comp else obj$script <- c(tmp[1:(ref-1)],comp)
+	if(ref<=length(tmp)) obj$script <- c(obj$script,tmp[ref:length(tmp)])
 	obj
 }
 
 "%<<%.Scene" <- function(obj,comp) {
 	comp <- substitute(comp)
-	obj$list[[length(obj$list)+1]] <- comp 
+	obj$script[[length(obj$script)+1]] <- comp 
 	return(invisible(obj))
 }
 
 print.Scene <- function(obj,...) {
-	print(list(actors=obj$actors,components=obj$list))
+	print(list(actors=obj$actors,components=obj$script))
 }
 
 elements.Scene <- function(obj,i) elements(obj[[i,TRUE]])
@@ -77,6 +79,10 @@ elements.Scene <- function(obj,i) elements(obj[[i,TRUE]])
 #update.Scene <- function(obj,formula) {#formula allow to change the order of the element
 #
 #}
+
+window.Domain <- function(obj) {
+	
+}
 
 window2d <- function(xrange=c(0,1),yrange=c(0,1),...) {
 	res <- newEnv(Window2d)

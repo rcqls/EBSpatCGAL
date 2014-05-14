@@ -29,3 +29,9 @@ newEnv <- function (...,class.as.character)
     class(obj) <- class
     obj
 }
+
+# just to extend unif to extend discrete support
+runif <- function(n,min=0,max=1,support.discrete) {
+    if(!missing(support.discrete)) sample(support.discrete,n,repl=TRUE)
+    else stats:::runif(n,min,max)
+} 

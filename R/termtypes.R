@@ -194,12 +194,18 @@ parseMarksFormula <- function(interMngr) {
       tmp[[2]] <- lapply(paste("r",tmp[[2]],sep=""),function(e) parse(text=e)[[1]])
       markfun <- lapply(tmp[[2]],function(e) {
         tmp2 <- function(n) {}
-        body(tmp2) <- as.call(c(e[[1]],as.name("n"),sapply(2:length(e),function(i) e[[i]])))
+        b<-sapply(2:length(e),function(i) e[[i]])
+        names(b) <- names(e)[-1]
+        body(tmp2) <- as.call(c(e[[1]],as.name("n"),b))
         tmp2
       })
       names(markfun) <- tmp[[1]]
 
-      markexpr <- as.call(c(as.name("list"),lapply(tmp[[2]],function(e) as.call(c(e[[1]],1,sapply(2:length(e),function(i) e[[i]]))))))
+      markexpr <- as.call(c(as.name("list"),lapply(tmp[[2]],function(e) {
+        b<-sapply(2:length(e),function(i) e[[i]])
+        names(b) <- names(e)[-1]
+        as.call(c(e[[1]],1,b))
+      })))
       names(markexpr) <- c("",tmp[[1]])
 
       list(mark.name=tmp[[1]],mark.fun=markfun,mark.expr=markexpr)

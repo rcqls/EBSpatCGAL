@@ -93,7 +93,7 @@ print.Delaunay <- function(obj) {
 
 ## extract
 
-vertices.Delaunay <- function(obj,mode=c("default","incident","dual","all","save"),pt=NULL) {
+vertices.Delaunay <- function(obj,mode=c("default","incident","dual","all","save","info"),pt=NULL) {
 	switch(match.arg(mode),
 		incident=if(!is.null(pt)) obj$rcpp()$incident_vertices(pt) else NULL,
 		dual=obj$rcpp()$dual_vertices(),
@@ -110,6 +110,16 @@ vertices.Delaunay <- function(obj,mode=c("default","incident","dual","all","save
 				names(tmp3) <- c(c("x","y","z")[1:ncol(tmp)],names(tmp2[[1]]))
 			}
 			tmp3
+		},
+		info={
+			obj$rcpp()$vertices_infos() -> tmp2
+			if(length(names(tmp2[[1]]))>0) {
+				if(length(tmp2[[1]])==1) {#specific treatment for length 1
+					tmp22 <- data.frame(unlist(tmp2))
+					names(tmp22) <- names(tmp2[[1]])
+				} else tmp22 <- as.data.frame(t(sapply(tmp2,function(e) e[names(tmp2[[1]])])))
+			} else tmp22 <- NULL
+			tmp22
 		},
 		save={
 			data.frame(tmp<-obj$rcpp()$vertices()) -> tmp3

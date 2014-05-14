@@ -12,9 +12,9 @@ gd <- SimGibbs(del2 ~ 2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4)))
 run(gd)
 
 # init scene => TODO: atomatically created later
-(sc <- Scene()) %<<% window2d(c(-350,350),c(-350,350),xlab="",ylab="",main="what a beautiful plot!") 
-sc %<<% points(del2,col="blue")  %<<% lines(del2,type="vor") 
-sc %<<% (lines(del2) %with% (length < 100)) %<<% (lines(del2,col="green") %with% ( 100 <= length))
+(sc <- Scene(del=del2)) %<<% window2d(c(-350,350),c(-350,350),xlab="",ylab="",main="what a beautiful plot!") 
+sc %<<% points(del,col="blue")  %<<% lines(del,type="vor") 
+sc %<<% (lines(del) %with% (length < 100)) %<<% (lines(del,col="green") %with% ( 100 <= length))
 
 plot(sc)
 
