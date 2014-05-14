@@ -2,6 +2,7 @@
 #define RCPP_TERM_DELAUNAY_H
 #include "rcpp_spatstat_triangulation.h"
 #include "rcpp_term_expr.h"
+#include "cgal_delaunay_order.h"
 
 typedef TermType<DEL1,Delaunay2> Del1TermType2D;
 typedef TermType<DEL1,Delaunay3> Del1TermType3D;

@@ -18,7 +18,7 @@ double CGAL_Delaunay2_cell_area(Delaunay2* obj, Del2D_Vertex_handle v) {
      return -1;
 }
 
-//2D Delaunay vertices components: all needed for edges when inserting a point
+//2D Delaunay vertices components: all needed for vertices when inserting a point
  
 std::vector<Delaunay2::Vertex_handle> CGAL_Delaunay2_incident_vertices(Delaunay2* obj, Delaunay2::Vertex_handle v) {
 	std::vector<Delaunay2::Vertex_handle> incidentVertices;

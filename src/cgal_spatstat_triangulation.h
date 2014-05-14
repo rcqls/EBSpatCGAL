@@ -95,4 +95,5 @@ Delaunay2_VertexSet_Set CGAL_Delaunay2_conflicted_faces(Delaunay2* obj, Point_2 
 
 Delaunay2_VertexSet_Set Delaunay2_All2_edges_at_range(Delaunay2* obj, Delaunay2::Vertex_handle v, double range);
 Delaunay3_VertexSet_Set Delaunay3_All2_edges_at_range(Delaunay3* obj, Delaunay3::Vertex_handle v, double range);
+
 #endif //CGAL_SPATSTAT_TRIANGULATION_H

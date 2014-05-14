@@ -81,9 +81,9 @@ InteractionMngr <- function(form,mode="default",check.params=TRUE) {
     try.response <- try(eval.parent(self$response)) 
     if(!inherits(try.response,"try-error") && !is.null(try.response$dim)) self$dim <- try.response$dim
   }
+
   # to temporarily communicate with TermType about marks
   # Rmk: not a perfect solution but speed is not required!
-
   assign(".tmp.interactionMngr",self,envir=globalenv())
   self$terms <- sapply(self$termtypes,eval)
   remove(".tmp.interactionMngr",envir=globalenv())
@@ -274,6 +274,7 @@ TermType <- function(id,...) {
     rcpp <- new(eval(parse(text=paste(.TermTypes$type[[self$id]],"TermType",self$dim,"D",sep=""))))
     # initialization of rcpp from self$mngr 
     rcpp$infos <- self$mngr$infos
+    rcpp$args <- self$mngr$args
     rcpp$params <- as.list(self$mngr$vars)
     ## self$mngr$local (TODO: maybe no need of difference between local and global expressions)
     rcpp$exprs <- self$mngr$local$exprs$term

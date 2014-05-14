@@ -500,8 +500,8 @@ private:
 //     Just try to adapt the same idea if desired!
 
 //STRUCT: class of the structure (ex: Delaunay2) , ELEMENT: current element (ex: Point_2), HANDLE: (ex: Vertex_handle)
-//ID: type of interaction, DIM: dimension, ORDER: structure order if needed (ex: ORDER=2 for Delaunay)  
-template <InterTypeID ID, typename STRUCT, typename ELEMENT = typename STRUCT::Point, typename HANDLE = typename STRUCT::Vertex_handle, int ORDER=1 >
+//ID: type of interaction, DIM: dimension //UNUSED!!! =>  ORDER: structure order if needed (ex: ORDER=2 for Delaunay)  
+template <InterTypeID ID, typename STRUCT, typename ELEMENT = typename STRUCT::Point, typename HANDLE = typename STRUCT::Vertex_handle> //, int ORDER=1 >
 class TermType : public TermBase { 
 
 public:
@@ -527,6 +527,9 @@ public:
 
     void set_infos(std::vector< std::string > infos_) { infos=infos_; }
     std::vector< std::string > get_infos() { return infos; }
+
+    void set_args(List args_) { args=args_; }
+    List get_args() { return args; }
 
     void set_params(List params_) {
     	params=params_;
@@ -922,6 +925,8 @@ private:
 	std::vector< std::string > infos;
 	//params
 	List params;
+    // args
+    List args;
 	//Environment
 	Environment envir;
 

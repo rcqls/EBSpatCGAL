@@ -1,3 +1,5 @@
+#ifndef RCPP_DELAUNAY_MODULE_H
+#define RCPP_DELAUNAY_MODULE_H
 #include "rcpp_term_delaunay.h"
 #include "rcpp_dom.h"
 #include "rcpp_sim.h"
@@ -14,4 +16,4 @@ RCPP_EXPOSED_WRAP(Interaction);
 
 
 
-//inside number to determine here
+#endif //RCPP_DELAUNAY_MODULE_H

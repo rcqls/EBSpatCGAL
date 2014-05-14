@@ -1,32 +1,35 @@
-points.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
+points.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,when,...) {
 	type <- match.arg(type)
 	if(obj$dim==2) res <- newEnv(Vertex2d,type=type) 
 	else if(obj$dim==3) res <- newEnv(Vertex3d,type=type)
  	res$parent <- obj
  	res$pt <- pt
 	res$attr <- list(...)
+	if(!missing(when)) res$expr <- substitute(when)
 	## default color
 	if(is.null(res$attr$col)) res$attr$col <- switch(res$type,delaunay="blue",voronoi="red")
 	res
 }
 
-lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,...) {
+lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,when,...) {
 	type <- match.arg(type)
 	if(obj$dim==2) res <- newEnv(Segment2d,type=type) 
 	else if(obj$dim==3) res <- newEnv(Segment3d,type=type)
 	res$parent <- obj
 	res$pt <- pt
 	res$attr <- list(...)
+	if(!missing(when)) res$expr <- substitute(when)
 	## default color
 	if(is.null(res$attr$col)) res$attr$col <- switch(type,delaunay="blue",voronoi="red")
 	res
 }
 
-facets.Delaunay <- function(obj,...) {
+facets.Delaunay <- function(obj,when,...) {
 	if(obj$dim==3) res <- newEnv(Facet3d)
 	else return(NULL)
 	res$parent <- obj
 	res$attr <- list(...)
+	if(!missing(when)) res$expr <- substitute(when)
 	## default color
 	if(is.null(res$attr$col)) res$attr$col <- "blue"
 	if(is.null(res$attr$alpha)) res$attr$alpha <- 0.1

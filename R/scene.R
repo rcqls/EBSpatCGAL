@@ -1,19 +1,38 @@
-Scene <- function() {
+Scene <- function(...) {
 	obj <- newEnv(Scene)
+	obj$actors <- new.env()
+	actors <- list(...)
+	for(nm in names(actors)) assign(nm,actors[[nm]],envir=obj$actors)
 	obj$list <- list()
 	obj
 }
 
 length.Scene <- function(obj) length(obj$list)
 
-plot.Scene <- function(obj,subset) {
+plot.Scene <- function(obj,subset,...) {
+	list(...) -> actors
+	if(length(actors)>0) {
+		list2env(actors) -> actors
+		parent.env(actors) <- obj$actors
+	} else actors <- obj$actors
+	# to extend the range of obj$actors to recognize object 
+	parent.env(obj$actors) <- parent.env(environment())
+
 	l <- if(missing(subset)) obj$list else obj$list[subset]
-	for(comp in l) if(!is.null(comp)) plot(comp)
-	
+	for(comp in l) if(!is.null(comp)) {
+		plot(eval(comp,envir=actors))
+		#plot(comp)
+	}
 	Chainable.Scene()
 }
 
-"[[.Scene" <- function(obj,ref) obj$list[[ref]] #ref is integer or string
+"[[.Scene" <- function(obj,ref,eval=FALSE) {
+	if(eval) {
+		# to extend the range of obj$actors to recognize object 
+		parent.env(obj$actors) <- parent.env(environment())
+		eval(obj$list[[ref]],envir=obj$actors)
+	} else obj$list[[ref]] #ref is integer or string
+}
 
 "[[<-.Scene" <- function(obj,ref,comp) {
  	obj$list[[ref]] <- comp #ref is integer or string
@@ -43,13 +62,16 @@ plot.Scene <- function(obj,subset) {
 }
 
 "%<<%.Scene" <- function(obj,comp) {
-	#if(!missing(after))
-	#if(!missing(before))
-	obj$list[[length(obj$list)+1]] <- comp
+	comp <- substitute(comp)
+	obj$list[[length(obj$list)+1]] <- comp 
 	return(invisible(obj))
 }
 
-elements.Scene <- function(obj,i) elements(obj[[i]])
+print.Scene <- function(obj,...) {
+	print(list(actors=obj$actors,components=obj$list))
+}
+
+elements.Scene <- function(obj,i) elements(obj[[i,TRUE]])
 
 
 #update.Scene <- function(obj,formula) {#formula allow to change the order of the element
@@ -81,7 +103,7 @@ plot.Window3d <- function(obj) {
 	Chainable.Scene()
 }
 
-# just an object to offer chainable plot
+# just an object to offer chainable scene
 Chainable.Scene <- function() {
 	chain <- list()
 	class(chain)<-"Chainable.Scene"

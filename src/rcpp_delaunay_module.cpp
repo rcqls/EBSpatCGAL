@@ -17,6 +17,8 @@ RCPP_MODULE(delaunay_module) {
     "common exprs list" )
     .property( "infos", &Del1TermType2D::get_infos, &Del1TermType2D::set_infos,
     "infos list" )
+    .property("args",&Del1TermType2D::get_args, &Del1TermType2D::set_args,
+    "args setting")
     .property( "params", &Del1TermType2D::get_params, &Del1TermType2D::set_params,
     "params list" )
     .method("get_envir",&Del1TermType2D::get_envir,"get envir")
@@ -43,6 +45,8 @@ RCPP_MODULE(delaunay_module) {
     "common exprs list" )
     .property( "infos", &Del2TermType2D::get_infos, &Del2TermType2D::set_infos,
     "infos list" )
+    .property("args",&Del2TermType2D::get_args, &Del2TermType2D::set_args,
+    "args setting")
     .property( "params", &Del2TermType2D::get_params, &Del2TermType2D::set_params,
     "params list" )
     .method("get_envir",&Del2TermType2D::get_envir,"get envir")
@@ -70,6 +74,8 @@ RCPP_MODULE(delaunay_module) {
     "common exprs list" )
     .property( "infos", &Del2TermType3D::get_infos, &Del2TermType3D::set_infos,
     "infos list" )
+    .property("args",&Del2TermType3D::get_args, &Del2TermType3D::set_args,
+    "args setting")
     .property( "params", &Del2TermType3D::get_params, &Del2TermType3D::set_params,
     "params list" )
     .method("set_struct",&Del2TermType3D::set_struct,"set struct")

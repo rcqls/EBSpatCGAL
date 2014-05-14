@@ -25,7 +25,7 @@ Delaunay <- function(dim=2) {
 		save = { # this optional method has to be called whenever you need to update data used in the renew process
 			self$.last.points=vertices(self,"save") #self$rcpp()$vertices()
 			self$uid <- runif(1) #random number to identify an update of self (likewise uuid)
-			cat("Delaunay object Rcpp-saved!\n")
+			#cat("Delaunay object Rcpp-saved!\n")
 		}
 	)
 
@@ -80,7 +80,7 @@ delete.Delaunay <- function(obj,pts,inside) {
 	if(!missing(inside)) {
 		obj$rcpp()$remove_inside(inside)
 	} else {
-		if(missing(pts)) pts <- seq(obj)
+		if(missing(pts)) pts <- rev(seq(obj))
 		for(i in pts) obj$rcpp()$remove_at_pos(i)
 	}
 	obj$save()
