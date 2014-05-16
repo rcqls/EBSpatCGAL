@@ -1,4 +1,4 @@
-Resid <- function(model,...,runs=10000,domain=c(-350,-350,350,350),forms) {
+Resid <- function(model,...,runs=10000,domain=Domain(c(-350,-350),c(350,350)),forms) {
 	# almost everything is made in GNZCache
 	self <-  GNZCache(model,...,runs=runs,domain=domain,forms=forms)
 	class(self) <- c("Resid",class(self))

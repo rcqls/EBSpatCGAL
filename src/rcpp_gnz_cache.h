@@ -12,19 +12,27 @@ enum CacheMode {Systematic=0,Random};
 class GNZCache {
 public: 
     GNZCache() {set_mode(1);nb_runs=1000;}; //needed by rcpp_delaunay_module.cpp
-    GNZCache(Interaction* inter_,Domain* domain_) {
-        domain=domain_;
-        inter=inter_;
-        set_mode(1);
-        nb_runs=1000; //MC approach
-    };
+    
+    // GNZCache(Interaction* inter_,Domain* domain_) {
+    //     domain=domain_;
+    //     inter=inter_;
+    //     set_mode(1);
+    //     nb_runs=1000; //MC approach
+    // };
 
-    GNZCache(List inter_,std::vector<double> left_,std::vector<double> right_) {
+    GNZCache(List inter_,Domain* domain_) {
         set_interaction(inter_);
-        set_domain_double(left_,right_);
+        domain=domain_;
         set_mode(1);
         nb_runs=1000; //MC approach
     }
+
+    // GNZCache(List inter_,std::vector<double> left_,std::vector<double> right_) {
+    //     set_interaction(inter_);
+    //     set_domain_double(left_,right_);
+    //     set_mode(1);
+    //     nb_runs=1000; //MC approach
+    // }
 
     void set_interaction(List inter_) {
         inter=new Interaction(inter_);
@@ -46,9 +54,9 @@ public:
         domain=domain_;
     }
 
-    void set_domain_double(std::vector<double> left_,std::vector<double> right_) {
-        domain=new Domain(left_,right_);
-    }
+    // void set_domain_double(std::vector<double> left_,std::vector<double> right_) {
+    //     domain=new Domain(left_,right_);
+    // }
 
     Domain* get_domain() {return domain;}
 
@@ -93,7 +101,7 @@ public:
             ++it,i++
         ) {//TODO: inside_list_index
 			//std::cout << "i=" << i  << " & it=" << *it << std::endl;
-			inter->set_current(*it);//TODO
+			inter->set_current(NumericVector::create(*it)); //TODO
 			//inter->make_local_lists();	
 			second_list[i]=inter->get_cexprs();
 		};

@@ -31,11 +31,13 @@ public:
         return NumericVector(newPt.begin(),newPt.end());
     };
 
-    // bool contains(std::vector<double> coords) {
-    //     for(int i=0;i<dim;i++) if (left[i] > coords[i]) || (coords[i] > right[i])) return false;
-    //     return true;
-    // }
+    //for rcpp
+    bool contains_(std::vector<double> coords) {
+        for(int i=0;i<dim;i++) if ((left[i] > coords[i]) || (coords[i] > right[i])) return false;
+        return true;
+    }
 
+    //for use in inside_number and inside_indexes (see rcpp_term_expr.h) 
     bool contains(double x,double y) {
         return (left[0] <= x) &&  (x <= right[0]) && (left[1] <= y) &&  (y <= right[1]);
     }
@@ -44,6 +46,8 @@ public:
         return (left[0] <= x) &&  (x <= right[0]) && (left[1] <= y) &&  (y <= right[1]) && (left[2] <= z) &&  (z <= right[2]);
     }
 
+    
+
 
     double get_size() {return size;} //area or volume
 
@@ -51,7 +55,7 @@ public:
 
 
     std::vector<double> left,right; //in some axe
-    std::vector<double> in_left,in_right; //in some axe
+    //std::vector<double> in_left,in_right; //in some axe
 
 protected:
 

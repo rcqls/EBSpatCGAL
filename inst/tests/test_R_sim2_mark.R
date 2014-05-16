@@ -3,11 +3,11 @@ require(EBSpatCGAL)
 # init del2
 del2m <- Delaunay()
 
-insert(del2m,x=runif(100,-350,350),y=runif(100,-350,350),m=runif(100,supp=1:2))
+insert(del2m,x=runif(100,-350,350),y=runif(100,-350,350),m=runifDisc(100,1,2))
 
 
 # init gibbs 
-gdm <- SimGibbs(del2m ~ 2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80)+(l>80)*0,th=c(2,4))|m ~ unif(supp=c(1,2))) 
+gdm <- SimGibbs(del2m ~ 2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80)+(l>80)*0,th=c(2,4))|m ~ unifDisc(1,2)) 
 
 run(gdm)
 

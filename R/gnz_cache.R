@@ -6,7 +6,7 @@
 
 ## ... or forms
 
-GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350),forms) {
+GNZCache <-function(model,...,runs=1000,domain=Domain(c(-350,-350),c(350,350)),forms) {
 	formMngr <- ComponentFunctionalFormulaManager()
 	formula(formMngr,model,local=TRUE)
 	if(missing(forms)) forms <- as.list(substitute(c(...)))[-1]
@@ -21,11 +21,13 @@ GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350),forms) {
 			warning("No proper response in GNZCache!")
 			self$struct <- NULL
 		} else update(self,current)
-	} else self$dim <- 2 # default value if no answer updatable if struct changed
+	} else self$dim <- length(self$domain) # default value if no answer updatable if struct changed
 
-	self$domain.volume <- if(self$dim==2) (self$domain[3]-self$domain[1])*(self$domain[4]-self$domain[2])
-							else (self$domain[4]-self$domain[1])*(self$domain[5]-self$domain[2])*(self$domain[6]-self$domain[3])
+	self$domain.volume <- length(self$domain) #if(self$dim==2) (self$domain[3]-self$domain[1])*(self$domain[4]-self$domain[2])
+							#else (self$domain[4]-self$domain[1])*(self$domain[5]-self$domain[2])*(self$domain[6]-self$domain[3])
 			
+
+	
 
 	RcppPersistentObject(self,
 		new = { 
@@ -33,7 +35,7 @@ GNZCache <-function(model,...,runs=1000,domain=c(-350,-350,350,350),forms) {
 				## TODO: initialilize GNZCache without del2
 				## Maybe create one! 
 			} else {	
-				rcpp <- new(GNZCacheCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
+				rcpp <- new(GNZCacheCpp,terms(self$interMngr),self$domain$rcpp())
 				rcpp$single <- self$interMngr$single
 				rcpp$nb_runs <- self$runs
 				rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(self$struct))))
@@ -81,16 +83,17 @@ update.GNZCache <- function(self,current) {
 ## RMK: If you have a single configuration of points you need to complete 
 ## this data with an implicit Simulable object! => TODO!!!
 run.GNZCache <- function(self,current,...,runs,mode,domain,form) {
+	#if(attr(self,"statex")) stop("run.GNZCache not callable for exponential case!")
 	params(self,...)
 
 	rcpp <- self$rcpp()
 
 	if(!missing(domain) && !identical(domain,self$domain)) {
 		self$domain <- domain
-		self$domain.volume <- if(self$dim==2) (self$domain[3]-self$domain[1])*(self$domain[4]-self$domain[2])
-							else (self$domain[4]-self$domain[1])*(self$domain[5]-self$domain[2])*(self$domain[6]-self$domain[3])
+		self$domain.volume <- length(self$domain) #if(self$dim==2) (self$domain[3]-self$domain[1])*(self$domain[4]-self$domain[2])
+							#else (self$domain[4]-self$domain[1])*(self$domain[5]-self$domain[2])*(self$domain[6]-self$domain[3])
 	
-		rcpp$set_domain(domain)
+		rcpp$set_domain(self$domain$rcpp())
 		self$to_make_lists <- TRUE
 	}
 	

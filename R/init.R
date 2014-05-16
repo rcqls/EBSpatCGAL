@@ -1,7 +1,7 @@
 insert <- function(obj,...) UseMethod("insert")
 delete <- function(obj,...) UseMethod("delete")
 "%<<%" <- function(obj,...) UseMethod("%<<%")
-"%with%" <- function(obj,...) UseMethod("%with%")
+"%when%" <- function(obj,...) UseMethod("%when%")
 elements <- function(obj,...) UseMethod("elements")
 
 vertices <- function(obj,...) UseMethod("vertices")
@@ -15,6 +15,7 @@ run <- function(obj,...) UseMethod("run")
 Single <-function(obj,...) UseMethod("Single")
 "Single<-" <-function(obj,...) UseMethod("Single<-")
 
+"%contains%" <- function(obj,...) UseMethod("%contains%")
 
 newEnv <- function (...,class.as.character) 
 {
@@ -30,8 +31,14 @@ newEnv <- function (...,class.as.character)
     obj
 }
 
-# just to extend unif to extend discrete support
-runif <- function(n,min=0,max=1,support.discrete) {
-    if(!missing(support.discrete)) sample(support.discrete,n,repl=TRUE)
+# just to extend unif to extend discrete support too
+rUnif <- function(n,min=0,max=1,support.discrete) {
+    if(!missing(support.discrete)) runifDisc(n,support.discrete=support.discrete)
     else stats:::runif(n,min,max)
-} 
+}
+
+# unif for discrete support
+runifDisc <- function(n,...,support.discrete) {
+    if(missing(support.discrete)) support.discrete <- c(...)
+    sample(support.discrete,n,repl=TRUE)
+}

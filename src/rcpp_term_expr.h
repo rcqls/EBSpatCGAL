@@ -555,6 +555,7 @@ public:
         case DELETION: 
             set_current_<DELETION>(p);
         }
+        //std::cout << "(x,y)=(" << current.x() << "," << current.y() << ")" << std::endl;
     }
 
     NumericVector get_current();

@@ -1,6 +1,6 @@
 # Model exponential family required here!
 # WARNING: no redefinition of formula and params inherited from GNZCache required!
-TKInverse <- function(model,runs=1000,domain=c(-350,-350,350,350)) {
+TKInverse <- function(model,runs=1000,domain=Domain(c(-350,-350),c(350,350))) {
 	# almost everything is made in GNZCache
 	self <-  GNZCache(model,runs=runs,domain=domain)
 	class(self) <- c("TKInverse","Contrast",class(self))

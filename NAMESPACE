@@ -8,7 +8,9 @@ export(
   "[<-","[<-.Scene",
   "[.TermType",
 
-  "%with%","%with%.Vertex2d","%with%.Vertex3d","%with%.Segment2d","%with%.Segment3d","%with%.Facet3d",
+  "%contains%","%contains%.Domain",
+
+  "%when%","%when%.Vertex2d","%when%.Vertex3d","%when%.Segment2d","%when%.Segment3d","%when%.Facet3d",
 
   .TermTypesInit,
   InteractionMngr,

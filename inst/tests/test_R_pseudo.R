@@ -14,10 +14,10 @@ require(EBSpatCGAL)
 
 pseudo <- Pseudo(del2~Del2(Th[1]*(l<=20)+Th[2]*(20<l & l<=80)), 
 	runs=10000L,
-	domain=c(-300,-300,300,300),
+	domain=Domain(c(-250,-250),c(250,250)),
 	expo=TRUE
 )
 
-run(pseudo,Th=c(2,4),Single=2)
+run(pseudo,Single=2,Th=c(2,4))
 
 #run(pseudo,Th=c(0,0),single=-log(1/3600))

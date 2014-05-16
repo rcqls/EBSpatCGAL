@@ -1,5 +1,5 @@
 # WARNING: no redefinition of formula and params inherited from GNZCache required!
-Pseudo <- function(model,runs=1000,domain=c(-350,-350,350,350),exponential=FALSE) {
+Pseudo <- function(model,runs=1000,domain=Domain(c(-350,-350),c(350,350)),exponential=FALSE) {
 	# almost everything is made in GNZCache
 	self <-  GNZCache(model,runs=runs,domain=domain)
 	attr(self,"statex") <- exponential
@@ -31,6 +31,7 @@ Pseudo <- function(model,runs=1000,domain=c(-350,-350,350,350),exponential=FALSE
 				}
 				dimnames(res[[type]]) <- list(1:nrow(res[[type]]),paste("s",1:ncol(res[[type]]),sep=""))
 			}
+			self$optim.statex.second <- res$second
 			res$second <- apply(res$second,2,sum)/self$domain.volume
 			self$optim.statex <- res
 		}

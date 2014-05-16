@@ -95,15 +95,19 @@ RCPP_MODULE(delaunay_module) {
     .method("local_energy",&Interaction::local_energy,"local energy")
     ;
 
-    class_<Domain>("Domain")
+    class_<Domain>("DomainCpp")
     .constructor<std::vector<double>,std::vector<double> >()
     .method("pick",&Domain::pick,"pick a point")
+    .method("contains",&Domain::contains_,"contains")
+    .method("get_dim",&Domain::get_dim,"get dim")
+    .method("get_size",&Domain::get_size,"get size")
     ;
 
     class_<GNZCache>("GNZCacheCpp")
     .constructor()
-    .constructor<Interaction*,Domain*>()
-    .constructor< List,std::vector<double>,std::vector<double> >()
+    //.constructor<Interaction*,Domain*>()
+    .constructor< List,Domain* >()
+    //.constructor< List,std::vector<double>,std::vector<double> >()
     .property("single",&GNZCache::get_single,&GNZCache::set_single,"single")
     .field( "nb_runs", &GNZCache::nb_runs, "nb_runs" )
     .method("get_envir",&GNZCache::get_envir,"get envir")
@@ -117,7 +121,7 @@ RCPP_MODULE(delaunay_module) {
     //.method("set_single",&GNZCache::set_single,"set single")
     .method("set_exprs_for_interaction",&GNZCache::set_exprs_for_interaction,"set caches exprs for interaction")
     .method("set_sizes_for_interaction",&GNZCache::set_sizes_for_interaction,"set caches sizes for interaction")
-    .method("set_domain",&GNZCache::set_domain_double,"set domain")
+    .method("set_domain",&GNZCache::set_domain,"set domain")
     .method("get_domain",&GNZCache::get_domain,"get domain")
     .method("get_cexprs_lists",&GNZCache::get_cexprs_lists,"get cexprs lists cache")
     .method("get_exprs_lists",&GNZCache::get_exprs_lists,"get exprs lists")
@@ -128,14 +132,15 @@ RCPP_MODULE(delaunay_module) {
 
     class_<SimGibbs>( "SimGibbsCpp" )
     .constructor()
-    .constructor< List,std::vector<double>,std::vector<double> >()
+    //.constructor< List,std::vector<double>,std::vector<double> >()
+    .constructor< List,Domain* >()
     .field( "nb_runs", &SimGibbs::nb_runs, "nb_runs" )
     .property("single",&SimGibbs::get_single,&SimGibbs::set_single,"single")
     .method("mark_expr",&SimGibbs::set_mark_expr,"set mark expr")
     .method("marked",&SimGibbs::set_marked,"set marked")
     .method("new_mark",&SimGibbs::new_mark,"new mark")
     .method("run",&SimGibbs::run,"run")
-    .method("set_domain",&SimGibbs::set_domain_double,"set domain")
+    .method("set_domain",&SimGibbs::set_domain,"set domain")
     .method("get_domain",&SimGibbs::get_domain,"get domain")
     ;
 

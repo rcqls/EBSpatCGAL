@@ -14,7 +14,7 @@ require(EBSpatCGAL)
 if(FALSE) {
 	pseudo <- Pseudo(del2~Del2(Th[1]*(l<=20)+Th[2]*(20<l & l<=80)), 
 		runs=10000L,
-		domain=c(-300,-300,300,300),
+		domain=Domain(c(-300,-300),c(300,300)),
 		expo=TRUE
 	)
 
@@ -22,7 +22,7 @@ if(FALSE) {
 } else { # with Horizon fixed to 0
 	pseudo2 <- Pseudo(del2~Del2(Th[1]*(l<=20)+Th[2]*(20<l & l<=80)+Th[3]*(80<l)), 
 		runs=10000L,
-		domain=c(-300,-300,300,300),
+		domain=Domain(c(-300,-300),c(300,300)),
 		expo=TRUE
 	)
 

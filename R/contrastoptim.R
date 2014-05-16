@@ -1,11 +1,35 @@
 # optim.options=list(method=,verbose=,...) (see run.ContrastOptim below)
-run.Contrast <- function(self,...,fixed,optim.options=list()) {
+run.Contrast <- function(self,...,fixed,optim.options=list(),value=FALSE) {
+
+  if(!is.null(attr(self,"statex")) && attr(self,"statex")) {
+    # test if uid of struct changed
+    if(is.null(self$struct.uid) || self$struct$uid != self$struct.uid) {
+      self$struct.uid <- self$struct$uid
+      self$to_make_lists <- TRUE
+    }
+    
+    # test if cacheLists need to be updated and do it if so
+    if(self$to_make_lists) {
+      cat("Please be patient: update of caches -> ")
+      rcpp <- self$rcpp()
+      rcpp$make_lists()
+      rcpp$set_sizes_for_interaction(c(as.integer(self$runs),rcpp$get_inside_number()))
+      self$optim.statex_update() #update self$optim.statex
+
+      self$to_make_lists <- FALSE
+      cat("done! \n")
+    }
+  }
 
   # structure of the converter parameter for the ContrastOptim  
   if(is.null(self$param.vect2list)) {
     if(length(list(...))==0) stop("Need to initialize parameters values first!")
     params(self,...)
     self$param.vect2list<- Vector2ListConverter(sapply(params(self),function(e) sapply(e,length)))
+  }
+
+  if(value) {
+    return(self$optim.function(unlist(params(self,...))))
   }
 
   # par0 update
@@ -19,24 +43,6 @@ run.Contrast <- function(self,...,fixed,optim.options=list()) {
     unlist(params(self))
   }
   
-  if(!is.null(attr(self,"statex")) && attr(self,"statex")) {
-    # test if uid of struct changed
-    if(is.null(self$struct.uid) || self$struct$uid != self$struct.uid) {
-      self$struct.uid <- self$struct$uid
-      self$to_make_lists <- TRUE
-    }
-    
-    # test if cacheLists need to be updated and do it if so
-    if(self$to_make_lists) {
-      cat("Please be patient: update of caches -> ")
-      self$rcpp()$make_lists()
-      
-      self$optim.statex_update() #update self$optim.statex
-
-      self$to_make_lists <- FALSE
-      cat("done! \n")
-    }
-  }
   
   # delegate the run method to self$contrast 
   if(missing(fixed)) do.call("run",c(list(self$contrast,par0),optim.options))

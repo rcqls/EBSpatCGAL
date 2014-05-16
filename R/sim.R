@@ -20,7 +20,7 @@
 
 ## TODO: domain would be included later in Domain object embedding Struct 
 ## playing the role of response in formula
-SimGibbs <-function(model,runs=10000,domain=c(-350,-350,350,350)) {
+SimGibbs <-function(model,runs=10000,domain=Domain(c(-350,-350),c(350,350))) {
 	self <- newEnv(SimGibbs,ParameterMngr,interMngr=InteractionMngr(model),runs=runs,domain=domain)
 	self$response <- self$interMngr$response
 	if(!is.null(self$response)) {
@@ -29,16 +29,16 @@ SimGibbs <-function(model,runs=10000,domain=c(-350,-350,350,350)) {
 			warning("No proper response in SimGibbs!")
 			self$struct <- NULL
 		} else update(self,current)
-	} else self$dim <- 2 # default value if no answer updatable if struct changed
+	} else self$dim <- length(self$domain) # default value if no answer updatable if struct changed
 
 	RcppPersistentObject(self,new = { 
 		if(is.null(self$struct)) {
-			## TODO: initialilize SimGibbsDel(2|3)D without del2
+			## TODO: initialize SimGibbsDel(2|3)D without del2
 			## Maybe create one! 
 		} else {	
 			## No more SimGibbsDel(2|3)D even if TermType depends on dimension
 			##rcpp <- new(eval(parse(text=paste("SimGibbsDel",self$dim,"D",sep=""))),terms(self$interMngr),self$struct$rcpp(),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
-			rcpp <- new(SimGibbsCpp,terms(self$interMngr),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
+			rcpp <- new(SimGibbsCpp,terms(self$interMngr),self$domain$rcpp())
 			rcpp$single <- self$interMngr$single
 			rcpp$nb_runs <- self$runs
 			if(!is.null(self$interMngr$mark.name)) {
@@ -84,7 +84,7 @@ run.SimGibbs <- function(self,current,...,runs,domain) {
 
 	if(!missing(domain) && !identical(domain,self$domain)) {
 		self$domain <- domain
-		self$rcpp()$set_domain(domain)
+		self$rcpp()$set_domain(self$domain$rcpp())
 		
 	}
 

@@ -37,9 +37,9 @@ facets.Delaunay <- function(obj,when,...) {
 	res
 }
 
-"%with%.Vertex2d" <- "%with%.Vertex3d" <-
-"%with%.Segment2d" <- "%with%.Segment3d" <- 
-"%with%.Facet3d" <-function(obj,expr) {
+"%when%.Vertex2d" <- "%when%.Vertex3d" <-
+"%when%.Segment2d" <- "%when%.Segment3d" <- 
+"%when%.Facet3d" <-function(obj,expr) {
 	expr <- substitute(expr)
 	obj$expr <- expr
 	obj
