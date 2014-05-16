@@ -13,7 +13,7 @@ run.Contrast <- function(self,...,fixed,optim.options=list(),value=FALSE) {
       cat("Please be patient: update of caches -> ")
       rcpp <- self$rcpp()
       rcpp$make_lists()
-      rcpp$set_sizes_for_interaction(c(as.integer(self$runs),rcpp$get_inside_number()))
+      #rcpp$set_sizes_for_interaction(c(as.integer(self$runs),rcpp$get_inside_number()))
       self$optim.statex_update() #update self$optim.statex
 
       self$to_make_lists <- FALSE

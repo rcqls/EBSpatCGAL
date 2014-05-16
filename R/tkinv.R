@@ -1,8 +1,8 @@
 # Model exponential family required here!
 # WARNING: no redefinition of formula and params inherited from GNZCache required!
-TKInverse <- function(model,runs=1000,domain=Domain(c(-350,-350),c(350,350))) {
+TKInverse <- function(model,domain=Domain(c(-350,-350),c(350,350)),runs=NULL,grid=NULL) {
 	# almost everything is made in GNZCache
-	self <-  GNZCache(model,runs=runs,domain=domain)
+	self <-  GNZCache(model,domain=domain,runs=runs,grid=grid)
 	class(self) <- c("TKInverse","Contrast",class(self))
 	attr(self,"statex") <- TRUE
 	self$contrast <- ContrastOptim(self)

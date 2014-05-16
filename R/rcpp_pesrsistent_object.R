@@ -1,3 +1,8 @@
+rcpp <- function(self) {
+	self$rcpp()
+}
+
+
 RcppPersistentObject <- function(self,new_body,renew_body={},save_body={}) {
 	if(is.environment(self)) { 
 

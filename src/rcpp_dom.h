@@ -21,6 +21,7 @@ public:
     Domain(std::vector<double> left_,std::vector<double> right_) {//Rectangle first
         left=left_;right=right_;
         dim=left.size();
+        grid_delta.reserve(3);
         //DEBUG: std::cout << "dim="<< dim << std::endl;
         set_size();
     };
@@ -46,16 +47,35 @@ public:
         return (left[0] <= x) &&  (x <= right[0]) && (left[1] <= y) &&  (y <= right[1]) && (left[2] <= z) &&  (z <= right[2]);
     }
 
-    
-
 
     double get_size() {return size;} //area or volume
 
     int get_dim() {return dim;}
 
+    //used in gnz_cache
+    void set_grid(std::vector<int> grid_size_) {
+        grid_size=grid_size_;
+        grid_length=1;
+        for(int i=0;i<dim;i++) {
+            grid_length *= grid_size[i];
+            grid_delta[i] = (right[i]-left[i])/grid_size[i];
+            //std::cout << "grid_delta[" << i <<"]" << grid_delta[i] << std::endl;
+        }
+        if(dim==2) grid_delta[2]= 1.0;
+    }
+
+    //used in gnz_cache for the grid points
+    double get_left(int i) {return ( i>=0 && i<dim ? left[i] : 0);}
+
+    double get_right(int i) {return ( i>=0 && i<dim ? right[i] : 0.5);}
 
     std::vector<double> left,right; //in some axe
     //std::vector<double> in_left,in_right; //in some axe
+
+    std::vector<double> grid_delta;
+    std::vector<int> grid_size;
+    int grid_length;
+
 
 protected:
 

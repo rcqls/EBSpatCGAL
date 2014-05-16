@@ -75,24 +75,55 @@ public:
     int get_mode() {return static_cast<int>(mode);};
 
     void make_lists() {
+        init_inside_number();
         //First list
     	switch(mode) {
-    	case Systematic:
-    		first_list=List::create(1);
-    		first_list[0]=NumericVector::create(3);
-    		break; 
-    	case Random:
-            first_list=List(nb_runs);
-            for(int i=0;i<nb_runs;i++) {
-                pick_new();
-                //inter->make_local_lists();  
-                first_list[i]=inter->get_cexprs();
+        	case Systematic: {
+                set_sizes_for_interaction(IntegerVector::create(domain->grid_length,inside_number));
+
+        		first_list=List(domain->grid_length);
+                int i=0;
+                //std::cout << "grid_delta[0]" << domain->grid_delta[0] << std::endl;
+                //std::cout << "grid_delta[1]" << domain->grid_delta[1] << std::endl;
+                //std::cout << "grid_delta[2]" << domain->grid_delta[2] << std::endl;
+                for(
+                    double x=domain->get_left(0)+domain->grid_delta[0]/2.0;
+                    x <= domain->get_right(0);
+                    x += domain->grid_delta[0]
+                ) for(
+                    double y=domain->get_left(1)+domain->grid_delta[1]/2.0;
+                    y <= domain->get_right(1);
+                    y += domain->grid_delta[1]
+                ) for(
+                    double z= domain->get_left(2)+domain->grid_delta[2]/2.0;
+                    z <= domain->get_right(2);
+                    z += domain->grid_delta[2]
+                ) {
+                    NumericVector ptGrid;
+                    //std::cout << "i,x,y,z=" << i << "," << x << "," << y << ","<< z << std::endl;
+                    ptGrid = domain->get_dim()==2 ? NumericVector::create(x,y) : NumericVector::create(x,y,z);
+
+                    inter -> set_current(ptGrid);
+                    if(marked) inter->set_current_mark();
+                    first_list[i++]=inter->get_cexprs();
+                }
+
+        		break; 
+            }
+        	case Random: {
+                set_sizes_for_interaction(IntegerVector::create(nb_runs,inside_number));
+
+                first_list=List(nb_runs);
+                for(int i=0;i<nb_runs;i++) {
+                    pick_new();
+                    //inter->make_local_lists();  
+                    first_list[i]=inter->get_cexprs();
+                }
             }
     	};
 
         // Second list
     	//No stress there is no optimization consideration!
-        init_inside_number();
 		second_list=List(inside_number);
         int i=0;
 		for(
@@ -206,8 +237,6 @@ protected:
         inter -> set_current(domain->pick());
         if(marked) inter->set_current_mark();
     }
-
-    
 
 
 };

@@ -6,13 +6,13 @@
 
 ## ... or forms
 
-GNZCache <-function(model,...,runs=1000,domain=Domain(c(-350,-350),c(350,350)),forms) {
+GNZCache <-function(model,...,domain=Domain(c(-350,-350),c(350,350)),runs=NULL,grid=NULL,forms) {
 	formMngr <- ComponentFunctionalFormulaManager()
 	formula(formMngr,model,local=TRUE)
 	if(missing(forms)) forms <- as.list(substitute(c(...)))[-1]
 	for(f in forms) formula(formMngr,f,local=TRUE) # First consider only the main case 
 	#print(formula(formMngr))
-	self <- newEnv(GNZCache,ParameterMngr,forms=forms,formMngr=formMngr,interMngr=InteractionMngr(formMngr$func,check.params=FALSE),runs=runs,domain=domain,mode=1) #mode=0 or 1
+	self <- newEnv(GNZCache,ParameterMngr,forms=forms,formMngr=formMngr,interMngr=InteractionMngr(formMngr$func,check.params=FALSE),domain=domain)
 	# the first formula is supposed to model formula with response in the left part of the formula
 	self$response <- if(formMngr$formulas[[1]][[1]]==as.name("~") && length(formMngr$formulas[[1]])==3) formMngr$formulas[[1]][[2]] else NULL
 	if(!is.null(self$response)) {
@@ -23,11 +23,20 @@ GNZCache <-function(model,...,runs=1000,domain=Domain(c(-350,-350),c(350,350)),f
 		} else update(self,current)
 	} else self$dim <- length(self$domain) # default value if no answer updatable if struct changed
 
+	if(is.null(runs) && is.null(grid)) grid <- 10000
+
+	if(!is.null(grid)) {
+		self$mode <- 0
+		if(length(grid)==1) grid <- rep(as.integer(grid^(1/self$dim)),self$dim)
+		self$grid <- grid
+	} else if(!is.null(runs)) {
+		self$mode <- 1
+		self$runs <- runs
+	}
+
 	self$domain.volume <- length(self$domain) #if(self$dim==2) (self$domain[3]-self$domain[1])*(self$domain[4]-self$domain[2])
 							#else (self$domain[4]-self$domain[1])*(self$domain[5]-self$domain[2])*(self$domain[6]-self$domain[3])
 			
-
-	
 
 	RcppPersistentObject(self,
 		new = { 
@@ -37,8 +46,10 @@ GNZCache <-function(model,...,runs=1000,domain=Domain(c(-350,-350),c(350,350)),f
 			} else {	
 				rcpp <- new(GNZCacheCpp,terms(self$interMngr),self$domain$rcpp())
 				rcpp$single <- self$interMngr$single
-				rcpp$nb_runs <- self$runs
-				rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(self$struct))))
+				rcpp$set_mode(self$mode)
+				if(self$mode==0) self$domain$rcpp()$set_grid(self$grid) else rcpp$nb_runs <- self$runs
+
+				#rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(self$struct))))
 				
 				if(!is.null(self$interMngr$mark.name)) {
 					rcpp$marked(TRUE)
@@ -67,22 +78,39 @@ GNZCache <-function(model,...,runs=1000,domain=Domain(c(-350,-350),c(350,350)),f
 # This method is in charge to communicate the struct to all the terms of 
 # the interaction manager.
 ##########################################################################
-update.GNZCache <- function(self,current) {
-	self$struct <- current
-	# force renew of TermType taking into account of the new dimension of struct if necessary
-	update(self$interMngr,self$struct)
-	# change of dim with renew if necessary
-	if(is.null(self$dim) || self$dim != self$struct$dim) {
-		force <- !is.null(self$dim)
-		self$dim <- self$struct$dim
-		if(force) self$rcpp(TRUE) #force renew since change of dimension
+update.GNZCache <- function(self,current,runs,grid) {
+	if(!missing(current)) {
+		self$struct <- current
+		# force renew of TermType taking into account of the new dimension of struct if necessary
+		update(self$interMngr,self$struct)
+		# change of dim with renew if necessary
+		if(is.null(self$dim) || self$dim != self$struct$dim) {
+			force <- !is.null(self$dim)
+			self$dim <- self$struct$dim
+			if(force) self$rcpp(TRUE) #force renew since change of dimension
+		}
+	} 
+	if(!missing(runs) && (self$mode != 0 || !identical(self$runs,runs) )) {
+		self$runs <- runs
+		rcpp <- self$rcpp()
+		rcpp$nb_runs <- self$runs
+		rcpp$set_mode(self$mode <- 1)
+		self$to_make_lists <- TRUE
 	}
+
+	if(!missing(grid) && (self$mode != 1 || !identical(self$grid,grid) ) ) {
+		self$grid <- grid
+		self$domain$rcpp()$set_grid(self$grid)
+		self$rcpp()$set_mode(self$mode <- 0)
+		self$to_make_lists <- TRUE
+	}
+
 }
 
 
 ## RMK: If you have a single configuration of points you need to complete 
 ## this data with an implicit Simulable object! => TODO!!!
-run.GNZCache <- function(self,current,...,runs,mode,domain,form) {
+run.GNZCache <- function(self,current,...,runs,grid,domain,form) {
 	#if(attr(self,"statex")) stop("run.GNZCache not callable for exponential case!")
 	params(self,...)
 
@@ -97,24 +125,21 @@ run.GNZCache <- function(self,current,...,runs,mode,domain,form) {
 		self$to_make_lists <- TRUE
 	}
 	
-	if(!missing(runs) && self$runs != runs) {
-		self$runs <- runs
-		rcpp$nb_runs <- self$runs
-		rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(seq(self$struct)))))
-		# make_lists needed if change of runs
-		self$to_make_lists <- TRUE
-	}
+	if(!missing(runs))  update(self,runs=runs)
 
-	if(!missing(mode) && self$mode != mode) {
-		self$mode <- mode
-		rcpp$set_mode(mode)
-		# make_lists needed if change of mode
-		self$to_make_lists <- TRUE
-	}
+	# && self$runs != runs) {
+	# 	self$runs <- runs
+	# 	rcpp$nb_runs <- self$runs
+	# 	rcpp$set_sizes_for_interaction(c(as.integer(self$runs),as.integer(length(seq(self$struct)))))
+	# 	# make_lists needed if change of runs
+	# 	self$to_make_lists <- TRUE
+	# }
+
+	if(!missing(grid)) update(self,grid=grid)
 	
 	if(!missing(current) && (is.null(self$struct) || identical(self$struct,current))) {
 		if(inherits(current,"Simulable")) {
-			update(self,current)
+			update(self,current=current)
 			self$to_make_lists <- TRUE
 		} else cat("WARNING: object not of class Simulable!\n")
 	}
@@ -128,7 +153,7 @@ run.GNZCache <- function(self,current,...,runs,mode,domain,form) {
 	if(self$to_make_lists) {
 		cat("Please be patient: update of caches -> ")
 		self$rcpp()$make_lists()
-		rcpp$set_sizes_for_interaction(c(as.integer(self$runs),rcpp$get_inside_number()))
+		#rcpp$set_sizes_for_interaction(c(as.integer(self$runs),rcpp$get_inside_number()))
 		self$to_make_lists <- FALSE
 		cat("done! \n")
 	}

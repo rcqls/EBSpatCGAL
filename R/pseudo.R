@@ -1,7 +1,7 @@
 # WARNING: no redefinition of formula and params inherited from GNZCache required!
-Pseudo <- function(model,runs=1000,domain=Domain(c(-350,-350),c(350,350)),exponential=FALSE) {
+Pseudo <- function(model,domain=Domain(c(-350,-350),c(350,350)),runs=NULL,grid=NULL,exponential=FALSE) {
 	# almost everything is made in GNZCache
-	self <-  GNZCache(model,runs=runs,domain=domain)
+	self <-  GNZCache(model,domain=domain,runs=runs,grid=grid)
 	attr(self,"statex") <- exponential
 	class(self) <- c("Pseudo","Contrast",class(self))
 	if(!exponential) formula(self,expression(first=exp(-(.V)),second=-(.V)))

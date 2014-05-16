@@ -97,10 +97,16 @@ RCPP_MODULE(delaunay_module) {
 
     class_<Domain>("DomainCpp")
     .constructor<std::vector<double>,std::vector<double> >()
+    .field( "left", &Domain::left, "left" )
+    .field( "right", &Domain::right, "right" )
+    .field( "grid_length", &Domain::grid_length, "grid length" )
+    .field( "grid_delta", &Domain::grid_delta, "grid delta" )
+    .field( "grid_size", &Domain::grid_size, "grid size" )
     .method("pick",&Domain::pick,"pick a point")
     .method("contains",&Domain::contains_,"contains")
     .method("get_dim",&Domain::get_dim,"get dim")
     .method("get_size",&Domain::get_size,"get size")
+    .method("set_grid",&Domain::set_grid,"set grid")
     ;
 
     class_<GNZCache>("GNZCacheCpp")
@@ -113,6 +119,7 @@ RCPP_MODULE(delaunay_module) {
     .method("get_envir",&GNZCache::get_envir,"get envir")
     .method("get_inside_indexes",&GNZCache::get_inside_indexes,"get indexes inside domain")
     .method("get_inside_number",&GNZCache::get_inside_number,"get number of indexes inside domain")
+    .method("get_mode",&GNZCache::get_mode,"get mode")
     .method("set_mode",&GNZCache::set_mode,"set mode")
     .method("mark_expr",&GNZCache::set_mark_expr,"set mark expr")
     .method("marked",&GNZCache::set_marked,"set marked")

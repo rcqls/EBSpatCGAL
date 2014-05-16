@@ -81,7 +81,7 @@ elements.Scene <- function(obj,i) elements(obj[[i,TRUE]])
 #}
 
 window.Domain <- function(obj) {
-	
+
 }
 
 window2d <- function(xrange=c(0,1),yrange=c(0,1),...) {
@@ -98,7 +98,7 @@ plot.Window2d <- function(obj) {
 
 window3d <- function(xrange=c(0,1),yrange=c(0,1),zrange=c(0,1),...) {
 	res <- newEnv(Window3d)
-	res$obj <- list(xrange,yrange,zrange=c(0,1))
+	res$obj <- list(xrange,yrange,zrange)
 	res$attr <- list(...)
 	res
 }
