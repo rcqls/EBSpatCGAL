@@ -1,6 +1,6 @@
 require(EBSpatCGAL)
 
-
+# Wouah
 del3 <- Delaunay(3)
 
 insert(del3,matrix(runif(300,-350,350),ncol=3))
