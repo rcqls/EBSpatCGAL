@@ -58,34 +58,35 @@ RCPP_MODULE(delaunay_module) {
     .method("eval_exprs",&Del2TermType2D::eval_exprs,"eval exprs")
 	.method("get_cexprs_caches",&Del2TermType2D::get_cexprs_caches,"get cexprs caches") //for debugging
     ;
-	
-	class_<Del2TermType3D>( "Del2TermType3D" )
-	.constructor()
-    .field( "locBefore", &Del2TermType3D::locBefore, "documentation for locBefore" )
-    .field( "locAfter", &Del2TermType3D::locAfter, "documentation for locAfter" )
-    .field( "exprs.size", &Del2TermType3D::exprs_size, "exprs size" )
-    .field( "cexprs.size", &Del2TermType3D::cexprs_size, "cexprs size" )
-    //.property( "graph", &Del2TermType3D::get_struct, &Del2TermType3D::set_struct,"graph structure" )
-    .property( "mode", &Del2TermType3D::get_mode, &Del2TermType3D::set_mode,
+
+    class_<Del3TermType2D>( "Del3TermType2D" )
+    .constructor()
+    .field( "locBefore", &Del3TermType2D::locBefore, "local list before" )
+    .field( "locAfter", &Del3TermType2D::locAfter, "local list after" )
+    .field( "exprs.size", &Del3TermType2D::exprs_size, "exprs size" )
+    .field( "cexprs.size", &Del3TermType2D::cexprs_size, "cexprs size" )
+    //.property( "graph", &Del3TermType2D::get_struct, &Del3TermType2D::set_struct,"graph structure" )
+    .property( "mode", &Del3TermType2D::get_mode, &Del3TermType2D::set_mode,
     "mode " )
-	.property( "exprs", &Del2TermType3D::get_exprs, &Del2TermType3D::set_exprs,
+    .property( "exprs", &Del3TermType2D::get_exprs, &Del3TermType2D::set_exprs,
     "exprs list" )
-    .property( "cexprs", &Del2TermType3D::get_cexprs, &Del2TermType3D::set_cexprs,
+    .property( "cexprs", &Del3TermType2D::get_cexprs, &Del3TermType2D::set_cexprs,
     "common exprs list" )
-    .property( "infos", &Del2TermType3D::get_infos, &Del2TermType3D::set_infos,
+    .property( "infos", &Del3TermType2D::get_infos, &Del3TermType2D::set_infos,
     "infos list" )
-    .property("args",&Del2TermType3D::get_args, &Del2TermType3D::set_args,
+    .property("args",&Del3TermType2D::get_args, &Del3TermType2D::set_args,
     "args setting")
-    .property( "params", &Del2TermType3D::get_params, &Del2TermType3D::set_params,
+    .property( "params", &Del3TermType2D::get_params, &Del3TermType2D::set_params,
     "params list" )
-    .method("set_struct",&Del2TermType3D::set_struct,"set struct")
-    .method("get_struct",&Del2TermType3D::get_struct,"get struct")
-    .method("set_current",&Del2TermType3D::set_current,"set point by coordinates (insertion) or index (suppression)")
-    .method("get_current",&Del2TermType3D::get_current,"get point")
-    .method("set_index",&Del2TermType3D::set_current_<DELETION>,"set (index) point to delete")
-    .method("eval_first_expr",&Del2TermType3D::eval_first_expr,"eval first expr")
-    .method("eval_exprs",&Del2TermType3D::eval_exprs,"eval exprs")
-	;
+    .method("get_envir",&Del3TermType2D::get_envir,"get envir")
+    .method("set_struct",&Del3TermType2D::set_struct,"set struct")
+    .method("get_struct",&Del3TermType2D::get_struct,"get struct")
+    .method("set_current",&Del3TermType2D::set_current,"set point by coordinates (insertion) or index (suppression)")
+    .method("get_current",&Del3TermType2D::get_current,"get point")
+    .method("eval_first_expr",&Del3TermType2D::eval_first_expr,"eval first expr")
+    .method("eval_exprs",&Del3TermType2D::eval_exprs,"eval exprs")
+    .method("get_cexprs_caches",&Del3TermType2D::get_cexprs_caches,"get cexprs caches") //for debugging
+    ;
 
     class_<All2TermType2D>( "All2TermType2D" )
     .constructor()
@@ -115,6 +116,36 @@ RCPP_MODULE(delaunay_module) {
     .method("eval_exprs",&All2TermType2D::eval_exprs,"eval exprs")
     .method("get_cexprs_caches",&All2TermType2D::get_cexprs_caches,"get cexprs caches") //for debugging
     ;
+	
+	class_<Del2TermType3D>( "Del2TermType3D" )
+	.constructor()
+    .field( "locBefore", &Del2TermType3D::locBefore, "documentation for locBefore" )
+    .field( "locAfter", &Del2TermType3D::locAfter, "documentation for locAfter" )
+    .field( "exprs.size", &Del2TermType3D::exprs_size, "exprs size" )
+    .field( "cexprs.size", &Del2TermType3D::cexprs_size, "cexprs size" )
+    //.property( "graph", &Del2TermType3D::get_struct, &Del2TermType3D::set_struct,"graph structure" )
+    .property( "mode", &Del2TermType3D::get_mode, &Del2TermType3D::set_mode,
+    "mode " )
+	.property( "exprs", &Del2TermType3D::get_exprs, &Del2TermType3D::set_exprs,
+    "exprs list" )
+    .property( "cexprs", &Del2TermType3D::get_cexprs, &Del2TermType3D::set_cexprs,
+    "common exprs list" )
+    .property( "infos", &Del2TermType3D::get_infos, &Del2TermType3D::set_infos,
+    "infos list" )
+    .property("args",&Del2TermType3D::get_args, &Del2TermType3D::set_args,
+    "args setting")
+    .property( "params", &Del2TermType3D::get_params, &Del2TermType3D::set_params,
+    "params list" )
+    .method("set_struct",&Del2TermType3D::set_struct,"set struct")
+    .method("get_struct",&Del2TermType3D::get_struct,"get struct")
+    .method("set_current",&Del2TermType3D::set_current,"set point by coordinates (insertion) or index (suppression)")
+    .method("get_current",&Del2TermType3D::get_current,"get point")
+    .method("set_index",&Del2TermType3D::set_current_<DELETION>,"set (index) point to delete")
+    .method("eval_first_expr",&Del2TermType3D::eval_first_expr,"eval first expr")
+    .method("eval_exprs",&Del2TermType3D::eval_exprs,"eval exprs")
+	;
+
+
 
     class_<Interaction>("Interaction")
     .constructor<List>()

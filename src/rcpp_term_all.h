@@ -63,6 +63,13 @@ List All2TermType2D::update_infos(HandleSet_Set set) {
           //std::cout << "l=" << sqrt(CGAL::squared_distance(p0,p1)) << std::endl;
       }  else if( info == "v") {
         res["v"]=List::create(v0->info(),v1->info());
+      } else if( info == "a") {
+        NumericVector a(2);
+        double area=CGAL_Delaunay2_cell_area(structure,v0);
+        a[0]=(area>0 ?  area : NA_REAL);
+        area=CGAL_Delaunay2_cell_area(structure,v1);
+        a[1]=(area>0 ? area : NA_REAL);
+        res["a"]=a;
       }
       ret[i]=res;
     }

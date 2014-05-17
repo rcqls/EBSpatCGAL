@@ -9,6 +9,7 @@ resid <- Resid(
 				1,del2(l<=20), del2(20<l & l<=80),
 				all2(range=100|l<=20),
 				all2(range=100|20<l & l<80),
+				del3(ta),
 			runs=10000L,
 			domain=Domain(c(-250,-250),c(250,250))
 		)
