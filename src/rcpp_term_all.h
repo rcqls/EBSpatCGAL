@@ -22,6 +22,7 @@ List All2TermType2D::update_infos(HandleSet_Set set) {
     eit != set.end();
     ++eit,++i
   ) {
+    //std::cout << "all2 update i=" << i << "/" << set.size() << std::endl;
     Handle v0=*((*eit).begin()),v1=*((*eit).rbegin());
     Point_2 p0=v0->point(),p1=v1->point();
     List res;
@@ -54,13 +55,12 @@ List All2TermType2D::update_infos(HandleSet_Set set) {
           res["l2"]=NA_REAL; 
         else
           res["l2"]=CGAL::squared_distance(p0,p1);
-
       } else if (info=="l") {
         if(structure->is_infinite(v0) || structure->is_infinite(v1))
           res["l"]=NA_REAL; 
         else
           res["l"]=sqrt(CGAL::squared_distance(p0,p1));
-
+          //std::cout << "l=" << sqrt(CGAL::squared_distance(p0,p1)) << std::endl;
       }  else if( info == "v") {
         res["v"]=List::create(v0->info(),v1->info());
       }
@@ -68,6 +68,7 @@ List All2TermType2D::update_infos(HandleSet_Set set) {
     }
 
   }
+  //std::cout << "all2 update return" << std::endl;
   return ret;
 }
 
@@ -79,17 +80,17 @@ List All2TermType2D::update_infos(std::pair< HandleSet_Set,HandleSet_Set > sets)
 
 template <>
 List All2TermType2D::make_before_list() {
-  std::pair< HandleSet_Set,HandleSet_Set > conflictedEdges;
-    conflictedEdges=CGAL_Delaunay2_conflicted_and_boundary_edges(structure,current);
-    //prepare the negative list
-    //DEBUG: std::cout << "conflictedEdges=" << conflictedEdges.first.size() << std::endl;
-    return (locBefore = update_infos(conflictedEdges));
+   Delaunay2_VertexSet_Set emptyEdges;
+    return (locBefore = update_infos(emptyEdges));
 } 
 
 template <>
 List All2TermType2D::make_after_list() {
-  HandleSet_Set incidentEdges;
-    incidentEdges=Delaunay2_All2_edges_at_range(structure,current_handle,envir.get("Range"));
+    HandleSet_Set incidentEdges;
+
+    double r=as<double>(envir.get("range"));
+  //std::cout << "range=" << r << std::endl;
+    incidentEdges=Delaunay2_All2_edges_at_range(structure,current_handle,r);
     //prepare the positive list
     //DEBUG: std::cout << "incidentEdges=" << incidentEdges.size() << std::endl;
     return (locAfter = update_infos(incidentEdges));
@@ -230,16 +231,15 @@ List All2TermType3D::update_infos(std::pair< HandleSet_Set, HandleSet_Set> sets)
 
 template <>
 List All2TermType3D::make_before_list() {
-  std::pair<HandleSet_Set,HandleSet_Set> conflictedEdges;
-    conflictedEdges=CGAL_Delaunay3_conflicted_and_boundary_edges(structure,current);
-    //prepare the negative list
-    return (locBefore=update_infos(conflictedEdges));
+   Delaunay3_VertexSet_Set emptyEdges;
+    return (locBefore = update_infos(emptyEdges));
 } 
 
 template <>
 List All2TermType3D::make_after_list() {
-  HandleSet_Set incidentEdges;
-    incidentEdges=CGAL_Delaunay3_incident_edges(structure,current_handle);
+    HandleSet_Set incidentEdges;
+    double r=as<double>(envir.get("range"));
+    incidentEdges=Delaunay3_All2_edges_at_range(structure,current_handle,r);
     //prepare the positive list
     return (locAfter=update_infos(incidentEdges));
 }

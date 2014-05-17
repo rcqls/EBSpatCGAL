@@ -87,6 +87,35 @@ RCPP_MODULE(delaunay_module) {
     .method("eval_exprs",&Del2TermType3D::eval_exprs,"eval exprs")
 	;
 
+    class_<All2TermType2D>( "All2TermType2D" )
+    .constructor()
+    .field( "locBefore", &All2TermType2D::locBefore, "local list before" )
+    .field( "locAfter", &All2TermType2D::locAfter, "local list after" )
+    .field( "exprs.size", &All2TermType2D::exprs_size, "exprs size" )
+    .field( "cexprs.size", &All2TermType2D::cexprs_size, "cexprs size" )
+    //.property( "graph", &All2TermType2D::get_struct, &All2TermType2D::set_struct,"graph structure" )
+    .property( "mode", &All2TermType2D::get_mode, &All2TermType2D::set_mode,
+    "mode " )
+    .property( "exprs", &All2TermType2D::get_exprs, &All2TermType2D::set_exprs,
+    "exprs list" )
+    .property( "cexprs", &All2TermType2D::get_cexprs, &All2TermType2D::set_cexprs,
+    "common exprs list" )
+    .property( "infos", &All2TermType2D::get_infos, &All2TermType2D::set_infos,
+    "infos list" )
+    .property("args",&All2TermType2D::get_args, &All2TermType2D::set_args,
+    "args setting")
+    .property( "params", &All2TermType2D::get_params, &All2TermType2D::set_params,
+    "params list" )
+    .method("get_envir",&All2TermType2D::get_envir,"get envir")
+    .method("set_struct",&All2TermType2D::set_struct,"set struct")
+    .method("get_struct",&All2TermType2D::get_struct,"get struct")
+    .method("set_current",&All2TermType2D::set_current,"set point by coordinates (insertion) or index (suppression)")
+    .method("get_current",&All2TermType2D::get_current,"get point")
+    .method("eval_first_expr",&All2TermType2D::eval_first_expr,"eval first expr")
+    .method("eval_exprs",&All2TermType2D::eval_exprs,"eval exprs")
+    .method("get_cexprs_caches",&All2TermType2D::get_cexprs_caches,"get cexprs caches") //for debugging
+    ;
+
     class_<Interaction>("Interaction")
     .constructor<List>()
     .field( "single", &Interaction::single, "single parameter" )
@@ -99,9 +128,9 @@ RCPP_MODULE(delaunay_module) {
     .constructor<std::vector<double>,std::vector<double> >()
     .field( "left", &Domain::left, "left" )
     .field( "right", &Domain::right, "right" )
-    .field( "grid_length", &Domain::grid_length, "grid length" )
-    .field( "grid_delta", &Domain::grid_delta, "grid delta" )
-    .field( "grid_size", &Domain::grid_size, "grid size" )
+    .field( "length_grid", &Domain::grid_length, "grid length" )
+    .field( "delta_grid", &Domain::grid_delta, "grid delta" )
+    .field( "size_grid", &Domain::grid_size, "grid size" )
     .method("pick",&Domain::pick,"pick a point")
     .method("contains",&Domain::contains_,"contains")
     .method("get_dim",&Domain::get_dim,"get dim")

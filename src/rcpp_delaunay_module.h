@@ -1,6 +1,7 @@
 #ifndef RCPP_DELAUNAY_MODULE_H
 #define RCPP_DELAUNAY_MODULE_H
 #include "rcpp_term_delaunay.h"
+#include "rcpp_term_all.h"
 #include "rcpp_dom.h"
 #include "rcpp_sim.h"
 #include "rcpp_gnz_cache.h"

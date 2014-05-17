@@ -85,9 +85,10 @@ InteractionMngr <- function(form,mode="default",check.params=TRUE) {
   # to temporarily communicate with TermType about marks
   # Rmk: not a perfect solution but speed is not required!
   assign(".tmp.interactionMngr",self,envir=globalenv())
+  #print(self$termtypes)
   self$terms <- sapply(self$termtypes,eval)
   remove(".tmp.interactionMngr",envir=globalenv())
-
+ 
   if(any(single_terms <- sapply(self$terms,is.numeric) )) {
     self$single <- sum(unlist(self$terms[single_terms]))
     self$terms <- self$terms[!single_terms] 
@@ -280,6 +281,7 @@ TermType <- function(id,...) {
     rcpp <- new(eval(parse(text=paste(.TermTypes$type[[self$id]],"TermType",self$dim,"D",sep=""))))
     # initialization of rcpp from self$mngr 
     rcpp$infos <- self$mngr$infos
+    #print(self$mngr$args)
     rcpp$args <- self$mngr$args
     rcpp$params <- as.list(self$mngr$vars)
     ## self$mngr$local (TODO: maybe no need of difference between local and global expressions)
@@ -540,7 +542,7 @@ parse.TermTypeMngr<-function(termMngr,skip=2) {
   }
 
   ## remove varname starting with "." 
-  varsList <- varsList[sapply(varsList,function(e) length(grep("^\\.",e))==0)]
+  if(length(varsList)>0) varsList <- varsList[sapply(varsList,function(e) length(grep("^\\.",e))==0)]
   
   termMngr$form<-paste(deparse(form),collapse="") #the first string without name is the formula
   termMngr$vars<-varsEnv #envir (for dynamic trick) containing variables which are numeric named parameters (see param.EBGibbs and run.EBGibbs for the use),

@@ -304,7 +304,7 @@ Delaunay2_VertexSet_Set Delaunay2_All2_edges_at_range(Delaunay2* obj, Delaunay2:
 		++vit
 	) {
 		Delaunay2::Vertex_handle vc=vit;
-		if(!obj->is_infinite(vc) && CGAL::squared_distance(v->point(),vc->point()) < r2) {
+		if(vc!=v && !obj->is_infinite(vc) && CGAL::squared_distance(v->point(),vc->point()) < r2) {
 			Delaunay2_VertexSet e;
 			e.insert(v);e.insert(vc);
 			incidentEdges.insert(e);
@@ -323,7 +323,7 @@ Delaunay3_VertexSet_Set Delaunay3_All2_edges_at_range(Delaunay3* obj, Delaunay3:
 		++vit
 	) {
 		Delaunay3::Vertex_handle vc=vit;
-		if(!obj->is_infinite(vc) && CGAL::squared_distance(v->point(),vc->point()) < r2) {
+		if(vc!=v && !obj->is_infinite(vc) && CGAL::squared_distance(v->point(),vc->point()) < r2) {
 			Delaunay3_VertexSet e;
 			e.insert(v);e.insert(vc);
 			incidentEdges.insert(e);

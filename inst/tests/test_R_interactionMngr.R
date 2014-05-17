@@ -12,3 +12,5 @@ print(interMngr3$mark.fun)
 print(interMngr3$mark.expr)
 
 print(interMngr3$mark.name)
+
+#interMngr4 <- InteractionMngr(del2 ~ -2+Del2(Th*(l<30),Th=2) + All2(Th2*(l<40),Th2=3,range=100))

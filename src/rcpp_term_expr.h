@@ -528,7 +528,7 @@ public:
     void set_infos(std::vector< std::string > infos_) { infos=infos_; }
     std::vector< std::string > get_infos() { return infos; }
 
-    void set_args(List args_) { args=args_; }
+    void set_args(List args_) { args=args_; import_vars(args);}
     List get_args() { return args; }
 
     void set_params(List params_) {
@@ -933,9 +933,10 @@ private:
 
     //To import variables (inside List) to the environment
     void import_vars(List vars_) {
-        CharacterVector names=vars_.names();
         int l=vars_.size();
-
+        if(l==0) return;
+        CharacterVector names=vars_.names();
+        
         for(int i = 0; i < l ; i++) {
             SEXP name = Rf_install(Rf_translateChar(STRING_ELT(names, i)));
             Rf_defineVar(name, VECTOR_ELT(vars_, i), envir);

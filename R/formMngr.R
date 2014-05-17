@@ -92,6 +92,7 @@ formula.ComponentFunctionalFormulaManager <- function(formMngr,form=NULL,struct=
         names(e2)[2] <- opt #name of opt
         e[[2]] <- e[[2]][[3]]      
       }
+
       key2 <- if(nchar(optVal)) paste(key,".",optVal,sep="") else key 
       ## expression
       compFuncForm <- autoCaracFormula(e[[2]],key,local,get.caracEnv(key2),TRUE)
