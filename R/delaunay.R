@@ -1,7 +1,19 @@
 ## Notice: self is required inside constructor providing to avoid first argument in method!
 ## in the "ruby" way! (as in rcpp_persistent_object.R).
 
+.compatibility.with.spatstat <- function() {
+	tmp <- which(search() %in% paste("package",c("spatstat","EBSpatCGAL"),sep=":"))
+	if(length(tmp)==2 && tmp[1] < tmp[2]) {
+		detach("package:EBSpatCGAL")
+		require(EBSpatCGAL) #before spatstat
+	}
+}
+
 Delaunay <- function(dim=2) {
+
+	# 0) use of vertices method may be wrong because of spatstat
+	.compatibility.with.spatstat() #where is the best place????
+
 	## 1) create an environment (required use of self)
 	self <- newEnv(Delaunay,Simulable,dim=dim) # self can now be used inside method defined inside this constructor!
 	
@@ -147,3 +159,4 @@ edges.Delaunay <- function(obj,mode=c("default","incident","conflicted","dual"),
 seq.Delaunay <- function(obj) 1:NROW(vertices(obj))
 
 length.Delaunay <- function(obj) NROW(vertices(obj))
+

@@ -270,6 +270,37 @@ formula.GNZCache <- function(self,form=NULL,add=FALSE) {
 	self$exprs
 }
 
+terms.GNZCache <- function(self,mode=c("statex","raw")) {
+	if(!self$to_make_lists) {
+		self$rcpp()$get_cexprs_lists() -> cexprs
+		mode <- match.arg(mode)
+		if(mode=="raw") return(cexprs)
+		# first
+		res <- list(first=NULL,second=NULL)
+		for(type in names(res)) {#over the types
+			for(pt in seq(cexprs[[type]])) {#over the points
+				terms<-cexprs[[type]][[pt]]
+				tmp <- 1
+				for(iterm in 1:length(terms)) {#over the terms
+					term <- terms[[iterm]]
+					tmp2 <- 0
+					for(i in seq(term$after)) {
+						tmp2 <- tmp2 + unlist(term$after[[i]])
+					}
+					for(i in seq(term$before)) {
+						tmp2 <- tmp2 - unlist(term$before[[i]])
+					}
+					tmp <- c(tmp,tmp2)
+				}
+				res[[type]]<- rbind(res[[type]],tmp)
+			}
+			dimnames(res[[type]]) <- list(1:nrow(res[[type]]),paste("s",1:ncol(res[[type]]),sep=""))
+		}
+		 
+		res
+		} else warning("cache lists not already done!")
+}
+
 ### NOT VERY USEFUL NOW since everything is done in C++
 ### Maybe, can help for debugging
 # get.GNZCache <- function(self,mode=1,runs,transform="nothing") {

@@ -8,33 +8,10 @@ TKInverse <- function(model,domain=Domain(c(-350,-350),c(350,350)),runs=NULL,gri
 	self$contrast <- ContrastOptim(self)
 
 	 
-	self$optim.statex_update <- function(check=FALSE) {
-		self$rcpp()$get_cexprs_lists() -> cexprs
-		# first
-		res <- list(first=NULL,second=NULL)
-		for(type in names(res)) {#over the types
-			for(pt in seq(cexprs[[type]])) {#over the points
-				terms<-cexprs[[type]][[pt]]
-				tmp <- 1
-				for(iterm in 1:length(terms)) {#over the terms
-					term <- terms[[iterm]]
-					tmp2 <- 0
-					for(i in seq(term$after)) {
-						tmp2 <- tmp2 + unlist(term$after[[i]])
-					}
-					for(i in seq(term$before)) {
-						tmp2 <- tmp2 - unlist(term$before[[i]])
-					}
-					tmp <- c(tmp,tmp2)
-				}
-				res[[type]]<- rbind(res[[type]],tmp)
-			}
-			dimnames(res[[type]]) <- list(1:nrow(res[[type]]),paste("s",1:ncol(res[[type]]),sep=""))
-		}
-		if(check) res2 <- res
+	self$optim.statex_update <- function() {
+		res <- terms(self)
 		res$first <- apply(res$first,2,mean)
 		self$optim.statex <- res
-		if(check) return(res2)
 	}
 
 	# define the optim.function method

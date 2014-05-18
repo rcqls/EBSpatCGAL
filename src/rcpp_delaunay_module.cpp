@@ -112,6 +112,8 @@ RCPP_MODULE(delaunay_module) {
     .method("get_struct",&All2TermType2D::get_struct,"get struct")
     .method("set_current",&All2TermType2D::set_current,"set point by coordinates (insertion) or index (suppression)")
     .method("get_current",&All2TermType2D::get_current,"get point")
+    .method("make_before",&All2TermType2D::make_before_list,"make before list")
+    .method("make_after",&All2TermType2D::make_after_list,"make after list")
     .method("eval_first_expr",&All2TermType2D::eval_first_expr,"eval first expr")
     .method("eval_exprs",&All2TermType2D::eval_exprs,"eval exprs")
     .method("get_cexprs_caches",&All2TermType2D::get_cexprs_caches,"get cexprs caches") //for debugging

@@ -1,4 +1,5 @@
 Domain <-function(left=c(-350,-350),right=c(350,350)) {
+	
 	self <- newEnv(Domain,left=left,right=right)
 
 	RcppPersistentObject(self,new = { 

@@ -9,28 +9,7 @@ Pseudo <- function(model,domain=Domain(c(-350,-350),c(350,350)),runs=NULL,grid=N
 
 	if(exponential) {
 		self$optim.statex_update <- function() {
-			self$rcpp()$get_cexprs_lists() -> cexprs
-			# first
-			res <- list(first=NULL,second=NULL)
-			for(type in names(res)) {#over the types
-				for(pt in seq(cexprs[[type]])) {#over the points
-					terms<-cexprs[[type]][[pt]]
-					tmp <- 1
-					for(iterm in 1:length(terms)) {#over the terms
-						term <- terms[[iterm]]
-						tmp2 <- 0
-						for(i in seq(term$after)) {
-							tmp2 <- tmp2 + unlist(term$after[[i]])
-						}
-						for(i in seq(term$before)) {
-							tmp2 <- tmp2 - unlist(term$before[[i]])
-						}
-						tmp <- c(tmp,tmp2)
-					}
-					res[[type]]<- rbind(res[[type]],tmp)
-				}
-				dimnames(res[[type]]) <- list(1:nrow(res[[type]]),paste("s",1:ncol(res[[type]]),sep=""))
-			}
+			res <- terms(self)
 			self$optim.statex.second <- res$second
 			res$second <- apply(res$second,2,sum)/self$domain.volume
 			self$optim.statex <- res

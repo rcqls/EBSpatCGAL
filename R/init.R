@@ -5,6 +5,8 @@ delete <- function(obj,...) UseMethod("delete")
 elements <- function(obj,...) UseMethod("elements")
 
 vertices <- function(obj,...) UseMethod("vertices")
+vertices.owin <- spatstat:::vertices #compatibility with spatstat
+
 edges <- function(obj,...) UseMethod("edges")
 facets <- function(obj,...) UseMethod("facets")
 cells <- function(obj,...) UseMethod("cells")
@@ -31,7 +33,7 @@ newEnv <- function (...,class.as.character)
     obj
 }
 
-# just to extend unif to extend discrete support too
+# just to extend unif to discrete support too
 rUnif <- function(n,min=0,max=1,support.discrete) {
     if(!missing(support.discrete)) runifDisc(n,support.discrete=support.discrete)
     else stats:::runif(n,min,max)

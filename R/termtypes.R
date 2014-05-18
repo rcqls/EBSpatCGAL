@@ -331,7 +331,10 @@ update.TermType <- function(term,struct) {
     # previous code replaced with the next one
 
     rcpp <- update(term,struct)
+    if(length(current)==1) current <- current - 1
     rcpp$set_current(current) #maybe test if numeric
+    rcpp$make_before()
+    rcpp$make_after()
     rcpp$eval_exprs()
   }
 }

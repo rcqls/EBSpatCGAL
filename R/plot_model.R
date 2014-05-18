@@ -1,8 +1,52 @@
+# default plot for Delaunay 
+
+plot.Delaunay <- function(obj,scene,...) {
+	if(missing(scene)) {
+		scene <- "delaunay"
+	}
+	# predefined scene
+	if(is.character(scene)) {
+		defined.scenes <- c("delaunay","voronoi")
+		if(exists(".user.defined.scenes")) defined.scenes <- c(defined.scenes,.user.defined.scenes)
+		sceneType <- match.arg(scene,defined.scenes)
+		scene <- Scene()
+		if(obj$dim==2) {
+			scene$actors$main <- scene$actors$xlab <- scene$actors$ylab <- ""
+			scene %<<% window(.del,main=main,xlab=xlab,ylab=ylab)
+		} else {
+			scene %<<% window(.del)
+		}
+		switch(sceneType,
+			delaunay={
+				if(obj$dim==2) {
+					scene %<<% points(.del) %<<% lines(.del)
+				} else {
+					scene$actors$radius <- 3 #to improve as a factor of diameter domain
+					scene %<<% points(.del,radius=radius) %<<% lines(.del)
+				} 
+			},
+			voronoi={
+				if(obj$dim==2) {
+					scene %<<% points(.del) %<<% lines(.del,type="vor")
+				} else {
+					# TODO!!!!
+					scene$actors$radius <- 3 #to improve as a factor of diameter domain
+					scene %<<% points(.del,radius=radius) %<<% lines(.del,type="vor")
+				} 
+			}
+		)
+	}
+	plot(scene,.del=obj,...)
+}
+
+### elements
+
 points.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,when,...) {
 	type <- match.arg(type)
 	if(obj$dim==2) res <- newEnv(Vertex2d,type=type) 
 	else if(obj$dim==3) res <- newEnv(Vertex3d,type=type)
  	res$parent <- obj
+ 	res$parent.env <- parent.frame() #called in particular inside plot.Scene
  	res$pt <- pt
 	res$attr <- substitute(list(...))
 	if(!missing(when)) res$expr <- substitute(when)
@@ -17,6 +61,7 @@ lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,when,...) {
 	if(obj$dim==2) res <- newEnv(Segment2d,type=type) 
 	else if(obj$dim==3) res <- newEnv(Segment3d,type=type)
 	res$parent <- obj
+	res$parent.env <- parent.frame() #called in particular inside plot.Scene
 	res$pt <- pt
 	res$attr <- list(...) #substitute(list(...))
 	if(!missing(when)) res$expr <- substitute(when)
@@ -29,6 +74,7 @@ facets.Delaunay <- function(obj,when,...) {
 	if(obj$dim==3) res <- newEnv(Facet3d)
 	else return(NULL)
 	res$parent <- obj
+	res$parent.env <- parent.frame() #called in particular inside plot.Scene
 	res$attr <- list(...) #substitute(list(...))
 	if(!missing(when)) res$expr <- substitute(when)
 	## default color
@@ -69,7 +115,7 @@ print.Vertex2d <- plot.Vertex2d <- function(obj) {
 	
 	vertices(obj$parent,"info") -> infos
 	attrEnv <- if(obj$type=="delaunay" && !is.null(infos)) list2env(infos) else new.env()
-	parent.env(attrEnv) <- parent.env(environment())
+	parent.env(attrEnv) <- obj$parent.env
 	attrs<-eval(obj$attr,attrEnv)
 
 	do.call("points",c(list(pts),attrs))
@@ -98,7 +144,12 @@ elements.Segment2d <- function(obj) {
 print.Segment2d <- plot.Segment2d <- function(obj) {
 	edges <- elements(obj)
 	#print(pts);print(c(list(pts),obj$attr))
-	do.call("segments",c(list(edges[,1],edges[,2],edges[,3],edges[,4]),obj$attr))
+
+	attrEnv <- new.env()
+	parent.env(attrEnv) <- obj$parent.env
+	attrs<-eval(obj$attr,attrEnv)
+
+	do.call("segments",c(list(edges[,1],edges[,2],edges[,3],edges[,4]), attrs))
 	Chainable.Scene()
 }
 
@@ -110,7 +161,7 @@ print.Vertex3d <- plot.Vertex3d <- function(obj) {
 	#print(pts);print(c(list(pts),obj$attr))
 	vertices(obj$parent,"info") -> infos
 	attrEnv <- if(obj$type=="delaunay" && !is.null(infos)) list2env(infos) else new.env()
-	parent.env(attrEnv) <- parent.env(environment())
+	parent.env(attrEnv) <- obj$parent.env
 	attrs<-eval(obj$attr,attrEnv)
 
 	cmd <- if(!is.null(attrs$radius)) "spheres3d" else "points3d"  
@@ -133,7 +184,12 @@ elements.Segment3d <- function(obj) {
 print.Segment3d <- plot.Segment3d <- function(obj) {
 	edges <- t(matrix(t(elements(obj)),nr=3)) #treatment specific to rgl
 	#print(pts);print(c(list(pts),obj$attr))
-	do.call("segments3d",c(list(edges),obj$attr))
+
+	attrEnv <- new.env()
+	parent.env(attrEnv) <- obj$parent.env
+	attrs<-eval(obj$attr,attrEnv)
+
+	do.call("segments3d",c(list(edges),attrs))
 	Chainable.Scene()
 }
 

@@ -20,6 +20,7 @@ plot.Scene <- function(obj,subset,...) {
 
 	l <- if(missing(subset)) obj$script else obj$script[subset]
 	for(comp in l) if(!is.null(comp)) {
+		#print(comp);print(actors);print(ls(actors));print(ls(obj$actors))
 		plot(eval(comp,envir=actors))
 		#plot(comp)
 	}
@@ -80,8 +81,17 @@ elements.Scene <- function(obj,i) elements(obj[[i,TRUE]])
 #
 #}
 
-window.Domain <- function(obj) {
+window.Delaunay <- function(obj,...) {
+	bb <- apply(apply(vertices(obj),2,range),2,function(e) c(floor(e[1]),ceiling(e[2])))
+	dim <- ncol(bb)
+	if(dim==2) window2d(bb[,1],bb[,2],...)
+	else if(dim==3) window3d(bb[,1],bb[,2],bb[,3],...)
+}
 
+window.Domain <- function(obj,...) {
+	dim <- length(obj$left)
+	if(dim==2) window2d(c(obj$left[1],obj$right[1]),c(obj$left[2],obj$right[2]),...)
+	else if(dim==3) window3d(c(obj$left[1],obj$right[1]),c(obj$left[2],obj$right[2]),c(obj$left[3],obj$right[3]),...)
 }
 
 window2d <- function(xrange=c(0,1),yrange=c(0,1),...) {

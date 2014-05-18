@@ -712,7 +712,11 @@ public:
                 ++rit,++i
             ) {
                 std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
-                for(ii=0;ii<exprs_size[i];ii++) (*rit)[ii] += tmp[ii];
+                for(ii=0;ii<exprs_size[i];ii++) {
+                    //DEBUG: 
+                    std::cout << "before[" << i << "]=" << tmp[ii] << std::endl;
+                    (*rit)[ii] += tmp[ii];
+                }
             }
 
         }
