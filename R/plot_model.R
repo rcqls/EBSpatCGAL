@@ -1,6 +1,6 @@
 # default plot for Delaunay 
 
-plot.Delaunay <- function(obj,scene,...) {
+plot.Delaunay <- function(obj,scene,...,plot=TRUE) {
 	if(missing(scene)) {
 		scene <- "delaunay"
 	}
@@ -18,25 +18,31 @@ plot.Delaunay <- function(obj,scene,...) {
 		}
 		switch(sceneType,
 			delaunay={
-				if(obj$dim==2) {
-					scene %<<% points(.del) %<<% lines(.del)
+				scene$actors$col <- "black"
+				if(obj$dim==2) { 
+					scene %<<% points(.del,col=col) %<<% lines(.del)
 				} else {
 					scene$actors$radius <- 3 #to improve as a factor of diameter domain
-					scene %<<% points(.del,radius=radius) %<<% lines(.del)
+					scene %<<% points(.del,col=col,radius=radius) %<<% lines(.del)
 				} 
 			},
 			voronoi={
 				if(obj$dim==2) {
-					scene %<<% points(.del) %<<% lines(.del,type="vor")
+					scene %<<% points(.del,col=col) %<<% lines(.del,type="vor")
 				} else {
 					# TODO!!!!
 					scene$actors$radius <- 3 #to improve as a factor of diameter domain
-					scene %<<% points(.del,radius=radius) %<<% lines(.del,type="vor")
+					scene %<<% points(.del,col=col,radius=radius) %<<% lines(.del,type="vor")
 				} 
 			}
 		)
 	}
-	plot(scene,.del=obj,...)
+
+	## deal with marks! TODO: not the same mechanism as col (for example) argument for regular scene 
+	actors <- if(!is.null(vertices(obj,"info")->info)) eval(substitute(list(...)),info)
+	 			else list(...) 
+
+	do.call("plot",c(list(scene,.del=obj),actors))
 }
 
 ### elements
@@ -159,6 +165,7 @@ print.Vertex3d <- plot.Vertex3d <- function(obj) {
 	else return()
 
 	#print(pts);print(c(list(pts),obj$attr))
+
 	vertices(obj$parent,"info") -> infos
 	attrEnv <- if(obj$type=="delaunay" && !is.null(infos)) list2env(infos) else new.env()
 	parent.env(attrEnv) <- obj$parent.env

@@ -67,7 +67,7 @@ insert.Delaunay <- function(obj,pts,...) {
 	# mark is considered here as unidimensional and all vertices have values for each mark
 	if(is.data.frame(pts)) {
 		if(all((coord <- c("x","y","z")) %in% names(pts))) {
-			if(obj$dim == 3) coord <- c("x","y") # "z" is then a mark!
+			if(obj$dim == 2) coord <- c("x","y") # "z" is then a mark!
 		} else if(all((coord <- c("x","y")) %in% names(pts))) {
 			if(obj$dim == 3) stop("z coordinate is missing!")
 		} else stop("No coordinates provided!")
