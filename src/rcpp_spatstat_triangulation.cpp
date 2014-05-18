@@ -11,6 +11,16 @@ void Delaunay2_insert_one_with_info( Delaunay2* obj, NumericVector xy, List info
   vh->info() = info;
 }
 
+void Regular2_insert_one( Regular2* obj, NumericVector xy) {
+  Weighted_point_2 point(Point_2(xy[0],xy[1]),xy[2]);
+  obj->insert(point);
+}
+
+void Regular3_insert_one( Regular3* obj, NumericVector xy) {
+  Weighted_point_3 point(Point_3(xy[0],xy[1],xy[2]),xy[4]);
+  obj->insert(point);
+}
+
 template <typename TRIANGULATION>
 void Triangulation_update_infinte_vertex_info(TRIANGULATION* obj, List info ) {
   typename TRIANGULATION::Vertex_handle vh=obj->infinite_vertex();
@@ -168,6 +178,21 @@ NumericMatrix Triangulation2_vertices(TRIANGULATION2* obj) {
     return dv;
 }
 
+NumericMatrix Regular2_vertices(Regular2* obj) {
+
+  NumericMatrix dv(obj->number_of_vertices(),3);
+  int i=0;
+  for(Regular2::Finite_vertices_iterator 
+          vit = obj->finite_vertices_begin(),
+          end = obj->finite_vertices_end();
+        vit!= end; ++vit,++i)
+    {
+       dv(i,0)=vit->point().x();dv(i,1)=vit->point().y();
+       dv(i,2)=vit->point().weight();
+    }
+    return dv;
+}
+
 template <typename TRIANGULATION>
 List Triangulation_vertices_infos(TRIANGULATION* obj) {
 
@@ -194,6 +219,22 @@ NumericMatrix Triangulation3_vertices(TRIANGULATION3* obj) {
         vit!= end; ++vit,++i)
     {
        dv(i,0)=vit->point().x();dv(i,1)=vit->point().y();dv(i,2)=vit->point().z();
+    }
+    return dv;
+}
+
+
+NumericMatrix Regular3_vertices(Regular3* obj) {
+
+  NumericMatrix dv(obj->number_of_vertices(),4);
+  int i=0;
+  for(Regular3::Finite_vertices_iterator 
+          vit = obj->finite_vertices_begin(),
+          end = obj->finite_vertices_end();
+        vit!= end; ++vit,++i)
+    {
+       dv(i,0)=vit->point().x();dv(i,1)=vit->point().y();dv(i,2)=vit->point().z();
+      dv(i,3)=vit->point().weight();
     }
     return dv;
 }
@@ -1083,9 +1124,11 @@ RCPP_MODULE(cgal_module) {
 	class_<Regular2>( "Regular2" )
 	.constructor()
 	.method("insert",&Regular2_insert,"insert points")
+  .method("insert_one",&Regular2_insert_one,"insert one point")
 	.method("remove_at_pos",&Triangulation_remove_at_pos<Regular2>,"remove point at position")
 	//.method("remove_neighbour_of",&Regular_remove_neighbour_of<Regular>,"remove point neighbour of point")
 	.method("vertices",&Triangulation2_vertices<Regular2>,"vertices coordinates")
+  .method("weighted_vertices",&Regular2_vertices,"weighted vertices coordinates")
 	.method("edges",&Triangulation2_edges<Regular2>,"edges coordinates")
 	.method("dual_edges",&Triangulation2_dual_edges<Regular2>,"dual edges coordinates")
 	;
@@ -1112,9 +1155,11 @@ RCPP_MODULE(cgal_module) {
 	class_<Regular3>( "Regular3" )
 	.constructor()
 	.method("insert",&Regular3_insert,"insert points")
+  .method("insert_one",&Regular3_insert_one,"insert one point")
 	.method("remove_at_pos",&Triangulation_remove_at_pos<Regular3>,"remove point at position")
 	//.method("remove_neighbour_of",&Delaunay3_remove_neighbour_of,"remove point neighbour of point")
 	.method("vertices",&Triangulation3_vertices<Regular3>,"vertices coordinates")
+  .method("weighted_vertices",&Regular3_vertices,"weighted vertices coordinates")
 	.method("edges",&Triangulation3_edges<Regular3>,"edges coordinates")
 	.method("facets",&Triangulation3_facets<Regular3>,"facets coordinates")
 	.method("dual_edges",&Triangulation3_dual_edges<Regular3>,"dual edges coordinates")

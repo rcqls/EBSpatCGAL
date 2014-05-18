@@ -15,7 +15,7 @@ Delaunay <- function(dim=2) {
 	.compatibility.with.spatstat() #where is the best place????
 
 	## 1) create an environment (required use of self)
-	self <- newEnv(Delaunay,Simulable,dim=dim) # self can now be used inside method defined inside this constructor!
+	self <- newEnv(Delaunay,GraphWithDual,Simulable,dim=dim) # self can now be used inside method defined inside this constructor!
 	
 	## 3) Managing persistency
 	## Rmk: no function but bloc with 
@@ -50,7 +50,7 @@ Delaunay_3d <- function(...) Delaunay(dim=3,...)
 
 ## in the R way, I prefer to use obj instead of self
 
-insert.Delaunay <- function(obj,pts,...) {
+insert.Delaunay <- insert.GraphWithDual <- function(obj,pts,...) {
 	# if missing pts, pts is completed with ...
 	if(missing(pts)) pts <- data.frame(...)
 
@@ -88,7 +88,7 @@ insert.Delaunay <- function(obj,pts,...) {
 	return(invisible())
 }
 
-delete.Delaunay <- function(obj,pts,inside) {
+delete.Delaunay <- delete.GraphWithDual <- function(obj,pts,inside) {
 	if(!missing(inside)) {
 		obj$rcpp()$remove_inside(inside)
 	} else {
@@ -98,14 +98,14 @@ delete.Delaunay <- function(obj,pts,inside) {
 	obj$save()
 }
 
-print.Delaunay <- function(obj) {
+print.Delaunay <- print.GraphWithDual <- function(obj) {
 	print.default(obj$rcpp())
 	print.default(obj)
 }
 
 ## extract
 
-vertices.Delaunay <- function(obj,mode=c("default","incident","dual","all","save","info"),pt=NULL) {
+vertices.Delaunay <- vertices.GraphWithDual <- function(obj,mode=c("default","incident","dual","all","save","info"),pt=NULL) {
 	switch(match.arg(mode),
 		incident=if(!is.null(pt)) obj$rcpp()$incident_vertices(pt) else NULL,
 		dual=obj$rcpp()$dual_vertices(),
@@ -144,7 +144,7 @@ vertices.Delaunay <- function(obj,mode=c("default","incident","dual","all","save
 }
 
 
-edges.Delaunay <- function(obj,mode=c("default","incident","conflicted","dual"),pt=NULL) {
+edges.Delaunay <- edges.GraphWithDual <- function(obj,mode=c("default","incident","conflicted","dual"),pt=NULL) {
 	switch(match.arg(mode),
 	  	"incident"= if(length(pt)==1) obj$rcpp()$incident_edges(as.integer(pt)),
 		"conflicted"= if(length(pt)==2) {
@@ -156,7 +156,7 @@ edges.Delaunay <- function(obj,mode=c("default","incident","conflicted","dual"),
 	)
 }
 
-seq.Delaunay <- function(obj) 1:NROW(vertices(obj))
+seq.Delaunay <- seq.GraphWithDual <- function(obj) 1:NROW(vertices(obj))
 
-length.Delaunay <- function(obj) NROW(vertices(obj))
+length.Delaunay <- length.GraphWithDual <- function(obj) NROW(vertices(obj))
 

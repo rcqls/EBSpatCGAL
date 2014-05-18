@@ -1,6 +1,6 @@
 # default plot for Delaunay 
 
-plot.Delaunay <- function(obj,scene,...,plot=TRUE) {
+plot.Delaunay <- plot.GraphWithDual <- function(obj,scene,...,plot=TRUE) {
 	if(missing(scene)) {
 		scene <- "delaunay"
 	}
@@ -14,16 +14,17 @@ plot.Delaunay <- function(obj,scene,...,plot=TRUE) {
 			scene$actors$main <- scene$actors$xlab <- scene$actors$ylab <- ""
 			scene %<<% window(.del,main=main,xlab=xlab,ylab=ylab)
 		} else {
-			scene %<<% window(.del)
+			scene$actors$windowRect <- c(0,0,800,800)
+			scene %<<% window(.del,windowRect=windowRect)
 		}
 		switch(sceneType,
 			delaunay={
 				scene$actors$col <- "black"
 				if(obj$dim==2) { 
-					scene %<<% points(.del,col=col) %<<% lines(.del)
+					scene %<<% lines(.del) %<<% points(.del,col=col)
 				} else {
 					scene$actors$radius <- 3 #to improve as a factor of diameter domain
-					scene %<<% points(.del,col=col,radius=radius) %<<% lines(.del)
+					scene %<<% lines(.del) %<<% points(.del,col=col,radius=radius) 
 				} 
 			},
 			voronoi={
@@ -47,7 +48,7 @@ plot.Delaunay <- function(obj,scene,...,plot=TRUE) {
 
 ### elements
 
-points.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,when,...) {
+points.Delaunay <- points.GraphWithDual <- function(obj,type=c("delaunay","voronoi"),pt=NULL,when,...) {
 	type <- match.arg(type)
 	if(obj$dim==2) res <- newEnv(Vertex2d,type=type) 
 	else if(obj$dim==3) res <- newEnv(Vertex3d,type=type)
@@ -62,7 +63,7 @@ points.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,when,...) {
 	res
 }
 
-lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,when,...) {
+lines.Delaunay <- lines.GraphWithDual <- function(obj,type=c("delaunay","voronoi"),pt=NULL,when,...) {
 	type <- match.arg(type)
 	if(obj$dim==2) res <- newEnv(Segment2d,type=type) 
 	else if(obj$dim==3) res <- newEnv(Segment3d,type=type)
@@ -76,7 +77,7 @@ lines.Delaunay <- function(obj,type=c("delaunay","voronoi"),pt=NULL,when,...) {
 	res
 }
 
-facets.Delaunay <- function(obj,when,...) {
+facets.Delaunay <- facets.GraphWithDual <- function(obj,when,...) {
 	if(obj$dim==3) res <- newEnv(Facet3d)
 	else return(NULL)
 	res$parent <- obj
