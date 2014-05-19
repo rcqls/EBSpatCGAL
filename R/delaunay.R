@@ -88,9 +88,21 @@ insert.Delaunay <- insert.GraphWithDual <- function(obj,pts,...) {
 	return(invisible())
 }
 
-delete.Delaunay <- delete.GraphWithDual <- function(obj,pts,inside) {
+delete.Delaunay <- delete.GraphWithDual <- function(obj,pts,inside,outside) {
+	if(!missing(outside)) {
+		if(!inherits(outside,"Domain")) stop("outside needs to be a Domain object!")
+		inside<-outside
+		outside <- TRUE
+	} else outside <- FALSE
 	if(!missing(inside)) {
-		obj$rcpp()$remove_inside(inside)
+		if(inherits(inside,"Domain")) {
+			pts <- vertices(obj)
+			for(i in rev(seq(obj))) {
+				cond <- inside %contains% pts[i,]
+				if(outside) cond <- !cond
+				if(cond) obj$rcpp()$remove_at_pos(i)
+			}
+		} else if(is.vector(inside)) obj$rcpp()$remove_inside(inside)
 	} else {
 		if(missing(pts)) pts <- rev(seq(obj))
 		for(i in pts) obj$rcpp()$remove_at_pos(i)

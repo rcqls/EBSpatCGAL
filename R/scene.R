@@ -94,10 +94,10 @@ window.Domain <- function(obj,...) {
 	else if(dim==3) window3d(c(obj$left[1],obj$right[1]),c(obj$left[2],obj$right[2]),c(obj$left[3],obj$right[3]),...)
 }
 
-window2d <- function(xrange=c(0,1),yrange=c(0,1),...) {
+window2d <- function(xrange=c(0,1),yrange=c(0,1),main="",xlab="",ylab="",...) {
 	res <- newEnv(Window2d)
 	res$obj <- list(xrange,yrange)
-	res$attr <- list(...)
+	res$attr <- list(main="",xlab=xlab,ylab=ylab,...)
 	res
 }
 

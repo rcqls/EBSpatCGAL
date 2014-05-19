@@ -35,6 +35,8 @@ public:
 
     virtual int inside_number(Domain* domain) = 0;
 
+    virtual int pick_inside_index(Domain* domain) = 0;
+
     virtual IntegerVector inside_indexes(Domain* domain,int number) = 0;
 
     virtual void apply_INSERTION() =0;
@@ -82,6 +84,10 @@ public:
 
     int inside_number(Domain* domain) {
         return first_term->inside_number(domain);
+    }
+
+    int pick_inside_index(Domain* domain) {
+        return first_term->pick_inside_index(domain);
     }
 
     IntegerVector inside_indexes(Domain* domain,int number) {
@@ -580,6 +586,20 @@ public:
             if( (p.dimension()==2 && domain->contains(p[0],p[1])) || (p.dimension()==3 && domain->contains(p[0],p[1],p[2]))) cpt++;
         }
         return cpt;
+    };
+
+    //TODO: think about what is the fastest!
+    int pick_inside_index(Domain* domain) {
+        int i,n=structure->number_of_vertices();
+        double cpt;
+
+        for(;;) {
+            cpt=as<double>(runif(1,0,static_cast<double>(n)))-1;
+            typename STRUCT::Finite_vertices_iterator vit=structure->finite_vertices_begin();
+            for(i=0;i<cpt;i++) ++vit;
+            ELEMENT p=vit->point();
+            if( (p.dimension()==2 && domain->contains(p[0],p[1])) || (p.dimension()==3 && domain->contains(p[0],p[1],p[2]))) return i;  
+        }
     };
 
     //number 

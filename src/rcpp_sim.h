@@ -105,7 +105,9 @@ private:
     NumericVector pick_INSERTION() {return domain->pick();}
 
     NumericVector pick_DELETION() {
-        return NumericVector::create(as<double>(runif(1,0,inside_number))); 
+        double pt=inter->pick_inside_index(domain);
+        //std::cout << "pick_DELETION=" << pt << std::endl;
+        return NumericVector::create(pt); 
     };
 
     void propose_INSERTION() {
