@@ -7,7 +7,7 @@ Regular <- function(dim=2) {
 	self <- newEnv(Regular,GraphWithDual,Simulable,dim=dim) # self can now be used inside method defined inside this constructor!
 	
 	## 3) Managing persistency
-	## Rmk: no function but bloc with 
+	## Rmk: no function but block with 
 	RcppPersistentObject(self, new = { # this is required
 			switch(paste("dim",self$dim,sep=""),
 			dim2={

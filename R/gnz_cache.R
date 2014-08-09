@@ -298,7 +298,7 @@ terms.GNZCache <- function(self,mode=c("statex","raw")) {
 		}
 		 
 		res
-		} else warning("cache lists not already done!")
+	} else warning("cache lists not already done!")
 }
 
 ### NOT VERY USEFUL NOW since everything is done in C++

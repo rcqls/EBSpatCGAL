@@ -41,7 +41,8 @@
 
   ## to determine the size of carac and compFunc!
   TermTypes$infosTest<- function(type,struct=NULL) {
-    interMngr <- .tmp.interactionMngr
+    interMngr <- if(exists(".tmp.interactionMngr",envir=globalenv())) .tmp.interactionMngr
+                  else NULL
     termEnv <- .TermTypes$envir
     #ok <- (!is.null(interMngr$struct) && inherits(interMngr$struct,"Simulable") && !is.null(interMngr$mark.name))
     ok <- FALSE
