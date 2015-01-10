@@ -2,15 +2,17 @@
 
 Development tools around nearest-neigbours type Gibbs point processes based on [CGAL](https://www.cgal.org).
 
-## requirement
+## Requirement
 
 EBSpatCGAL is an adaptation of [EBSpat](https://github.com/rcqls/EBSpat) (no more developped) using [CGAL](https://www.cgal.org). 
 
-For MacOSX user install [brew](http://brew.sh) and then 
+For MacOSX user: install [brew](http://brew.sh) and then 
 
 	brew install cgal
 
-## Since this package is in development, it is not yet on CRAN but thanks to devtools R package, you can install it in a R session:
+## Install
+
+Since this package is in development, it is not yet on CRAN but thanks to devtools R package, you can install it in a R session:
 
 ```{.R execute="false"}
 devtools::install_github("rcqls/EBSpatCGAL")
