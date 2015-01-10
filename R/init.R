@@ -8,6 +8,11 @@ vertices <- function(obj,...) UseMethod("vertices")
 vertices.owin <- spatstat:::vertices #compatibility with spatstat
 
 edges <- function(obj,...) UseMethod("edges")
+edges.default <- function(x,...) spatstat:::edges #compatibility with spatstat
+
+area <- function (x,...) UseMethod("area")
+volume <- function (x,...) UseMethod("volume")
+
 facets <- function(obj,...) UseMethod("facets")
 cells <- function(obj,...) UseMethod("cells")
 

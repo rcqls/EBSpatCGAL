@@ -4,18 +4,49 @@
 double CGAL_Delaunay2_cell_area(Delaunay2* obj, Del2D_Vertex_handle v) {
 	Delaunay2::Edge_circulator ec=obj->incident_edges(v),done(ec);
       if (ec != 0) {
-        double area=0;
+        double area=0,tmp=0;
         Point_2 p=v->point();
         Segment_2 segment;
         do {   
           CGAL::Object o = obj->dual(ec);
-          if(CGAL::assign(segment,o)) 
-            area += sqrt(CGAL::area(p,segment.source(),segment.target()));
-          else return -1;
+          if(CGAL::assign(segment,o)) {
+          	tmp = (CGAL::area(p,segment.source(),segment.target()));
+          	//printf("area tmp=%lf\n",tmp);
+            area += tmp;
+          } //else return -1;
         } while(++ec != done);
         return area;
       }
      return -1;
+}
+// 3D voronoi cell volume
+double CGAL_Delaunay3_cell_volume(Delaunay3* obj, Del3D_Vertex_handle v) {
+//2D approach is not proper for 3D!!!
+	std::vector<Delaunay3::Cell_handle> cells;
+
+	// Take all incident cells (tetrahedrons containing v corresponding to voronoi vertex)
+	obj->finite_incident_cells(v,std::back_inserter(cells));
+
+	//temporary new Delaunay3 graph of the voronoi
+	Delaunay3 del3; 
+	for(std::vector<Delaunay3::Cell_handle>::iterator cit = cells.begin();
+    	cit != cells.end();
+    	++cit) {
+			del3.insert(obj->dual(*cit));
+	}
+
+	//run over all volumes of cells (tetrahedrons)
+	double volume=0;
+	Tetrahedron_3 tetra;
+
+	for(Delaunay3::Finite_cells_iterator cit = del3.finite_cells_begin();
+        cit != del3.finite_cells_end();
+        ++cit){
+    			tetra=del3.tetrahedron(cit);
+    		//printf("vol=%lf\n",)
+      			volume += (CGAL::volume(tetra.vertex(0),tetra.vertex(1),tetra.vertex(2),tetra.vertex(3)));
+    }
+	return volume;
 }
 
 //2D Delaunay vertices components: all needed for vertices when inserting a point

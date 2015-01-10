@@ -918,7 +918,8 @@ NumericVector Triangulation2_cell_area(TRIANGULATION2* obj, IntegerVector rank) 
     typename TRIANGULATION2::Finite_vertices_iterator vit=obj->finite_vertices_begin();
     for(int i=0;i<n;++i) ++vit;
     double area=CGAL_Delaunay2_cell_area(obj,vit);
-    if(area>0) return NumericVector::create(area);
+    //printf("cell area[%d]=%lf\n",n,area);
+    if(area>=0) return NumericVector::create(area);
   }
   return NumericVector::create(NA_REAL);
 
@@ -1096,6 +1097,23 @@ NumericMatrix Delaunay3_incident_edges(Delaunay3* obj, IntegerVector rank) {
 	return ie;
 }
 
+template <typename TRIANGULATION3>
+NumericVector Triangulation3_cell_volume(TRIANGULATION3* obj, IntegerVector rank) {
+  int n=rank[0]-1;
+
+  //std::cout << "pos of point to remove: " << n << std::endl;
+
+  typedef typename TRIANGULATION3::Vertex_handle Vertex_handle;
+  if(n >=0 && n < obj->number_of_vertices()) {
+    typename TRIANGULATION3::Finite_vertices_iterator vit=obj->finite_vertices_begin();
+    for(int i=0;i<n;++i) ++vit;
+    double volume=CGAL_Delaunay3_cell_volume(obj,vit);
+    if(volume>0) return NumericVector::create(volume);
+  }
+  return NumericVector::create(NA_REAL);
+
+}
+
 
 RCPP_MODULE(cgal_module) {
 	class_<Delaunay2>( "Delaunay2" )
@@ -1150,6 +1168,7 @@ RCPP_MODULE(cgal_module) {
   /*OBSOLETE SOON*/.method("conflicted_cells_and_boundary_facets",&Delaunay3_conflicted_cells_and_boundary_facets,"conflicted cells and boundary facets")
 	.method("conflicted_and_boundary_edges",&Delaunay3_conflicted_and_boundary_edges,"conflicted and boundary edges")
 	.method("incident_edges",&Delaunay3_incident_edges,"incident edges")
+  .method("cell_volume",&Triangulation3_cell_volume<Delaunay3>,"cell volume")
 	//.method("show_vertices",&Delaunay_show_vertices,"vertices coordinates")
 	;
 	class_<Regular3>( "Regular3" )

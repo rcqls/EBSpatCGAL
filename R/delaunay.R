@@ -172,3 +172,14 @@ seq.Delaunay <- seq.GraphWithDual <- function(obj) 1:NROW(vertices(obj))
 
 length.Delaunay <- length.GraphWithDual <- function(obj) NROW(vertices(obj))
 
+
+area.Delaunay_2d <- volume.Delaunay_2d <- function(obj,indPt=NULL) {
+	if (is.null(indPt)) sapply(seq(obj),obj$rcpp()$cell_area)
+	else obj$rcpp()$cell_area(indPt)
+}
+
+volume.Delaunay_3d <- function(obj,indPt=NULL) {
+	if (is.null(indPt)) sapply(seq(obj),obj$rcpp()$cell_volume)
+	else obj$rcpp()$cell_volume(indPt)
+} 
+

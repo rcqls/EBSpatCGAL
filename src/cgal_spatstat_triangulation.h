@@ -81,6 +81,7 @@ typedef std::set<Delaunay3_VertexSet> Delaunay3_VertexSet_Set;
 typedef Delaunay3::Vertex_handle Del3D_Vertex_handle;
 
 double CGAL_Delaunay2_cell_area(Delaunay2* obj, Del2D_Vertex_handle v);
+double CGAL_Delaunay3_cell_volume(Delaunay3* obj, Del3D_Vertex_handle v);
 
 std::vector<Delaunay2::Vertex_handle> CGAL_Delaunay2_conflicted_vertices(Delaunay2* obj, Point_2 p);
 std::vector<Delaunay2::Vertex_handle> CGAL_Delaunay2_incident_vertices(Delaunay2* obj, Delaunay2::Vertex_handle v);
