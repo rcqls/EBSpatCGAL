@@ -10,6 +10,8 @@ For MacOSX user: install [brew](http://brew.sh) and then
 
 	brew install cgal
 
+For Windows user: see install steps described in the last section.
+
 ## Install
 
 Since this package is in development, it is not yet on CRAN but thanks to devtools R package (to install first if necessary), you can install it in a R session:
@@ -37,3 +39,20 @@ plot(del3)
 volume(del3)
 volume(del3,3) #area of the third point
 ```
+
+## Windows install
+
+# Install [Msys2](https://msys2.github.io) 32bits system is preferred since it is compatible with 64bits system.
+# Then install gcc for MinGW64 and cgal:
+
+```{bash}
+	pacman -S mingw-w64-i686-gcc mingw-w64-i686-cgal
+```
+# You also need to recompile Rcpp from source, install devtools and then install EBSpat:
+
+```{.R execute="false"}
+install.packages("Rcpp",type="source")
+install.packages(‘devtools’)
+devtools::install_github('rcqls/EBSpatCGAL’)
+```
+
