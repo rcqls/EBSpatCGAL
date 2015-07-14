@@ -43,6 +43,7 @@ volume(del3,3) #area of the third point
 ## Windows install
 
 1) Install [Msys2](https://msys2.github.io) 32bits system is preferred since it is compatible with 64bits system.
+
 2) Then install gcc for MinGW64 and cgal:
 
 ```{bash}
