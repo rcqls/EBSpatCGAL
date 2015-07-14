@@ -42,13 +42,13 @@ volume(del3,3) #area of the third point
 
 ## Windows install
 
-# Install [Msys2](https://msys2.github.io) 32bits system is preferred since it is compatible with 64bits system.
-# Then install gcc for MinGW64 and cgal:
+1) Install [Msys2](https://msys2.github.io) 32bits system is preferred since it is compatible with 64bits system.
+2) Then install gcc for MinGW64 and cgal:
 
 ```{bash}
 	pacman -S mingw-w64-i686-gcc mingw-w64-i686-cgal
 ```
-# You also need to recompile Rcpp from source, install devtools and then install EBSpat:
+3) You also need to recompile Rcpp from source, install devtools and then install EBSpat:
 
 ```{.R execute="false"}
 install.packages("Rcpp",type="source")
