@@ -47,7 +47,7 @@ volume(del3,3) #area of the third point
 2) Then install gcc for MinGW64 and cgal:
 
 ```{bash}
-	pacman -S mingw-w64-i686-gcc mingw-w64-i686-cgal
+pacman -S mingw-w64-i686-gcc mingw-w64-i686-cgal
 ```
 3) You also need to recompile Rcpp from source, install devtools and then install EBSpat:
 
