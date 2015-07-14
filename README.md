@@ -49,7 +49,7 @@ volume(del3,3) #area of the third point
 ```{bash}
 pacman -S mingw-w64-i686-gcc mingw-w64-i686-cgal
 ```
-3) You also need to recompile Rcpp from source, install devtools and then install EBSpat (after openning R in the console):
+3) You also need to recompile Rcpp from source, install devtools and then install EBSpat after opening R in the console:
 
 ```{.R execute="false"}
 install.packages("Rcpp",type="source")
