@@ -49,11 +49,13 @@ volume(del3,3) #area of the third point
 ```{bash}
 pacman -S mingw-w64-i686-gcc mingw-w64-i686-cgal
 ```
-3) You also need to recompile Rcpp from source, install devtools and then install EBSpat after opening R in the console:
+Also, add /mingw32/bin in your .bash_profile.
+
+3) You also need to recompile Rcpp from source, install devtools and then install EBSpat after opening R (added to PATH) in the console:
 
 ```{.R execute="false"}
 install.packages("Rcpp",type="source")
 install.packages(‘devtools’)
 devtools::install_github('rcqls/EBSpatCGAL’)
 ```
-
+4) If you want to use the package inside the Rgui.exe or Rstudio, add C:\msys2\mingw32\bin in the Windows PATH (where C:\msys2 is supposed here to be where Msys2 is installed).
