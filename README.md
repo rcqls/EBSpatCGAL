@@ -51,7 +51,9 @@ pacman -S mingw-w64-i686-gcc mingw-w64-i686-cgal
 ```
 Also, add the following code in your .bash_profile
 ```{bash}
-export PATH=/mingw32/bin:$PATH
+if [[ $MSYSTEM =~ ^MINGW ]]; then
+  export PATH=/mingw32/bin:$PATH
+fi
 ```
 
 3) You also need to recompile Rcpp from source, install devtools and then install EBSpat after opening R (added to PATH) in the console:
