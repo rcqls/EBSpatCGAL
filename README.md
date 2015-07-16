@@ -59,8 +59,10 @@ fi
 3) You also need to recompile Rcpp from source, install devtools and then install EBSpat after opening R (added to PATH) in the console:
 
 ```{.R execute="false"}
+#  add INSTALL_opts="--no-multiarch" as argument of install.packages if it makes sense
 install.packages("Rcpp",type="source")
 install.packages(‘devtools’)
+# add args="--no-multiarch" as argument of install_github if it makes sense
 devtools::install_github('rcqls/EBSpatCGAL’)
 ```
 4) If you want to use the package inside the Rgui.exe or Rstudio, add C:\msys2\mingw32\bin in the Windows PATH (where C:\msys2 is supposed here to be where Msys2 is installed).
