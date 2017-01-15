@@ -52,12 +52,12 @@ List All2TermType2D::update_infos(HandleSet_Set set) {
           res["x"]=List::create(x0,x1);
       } else if (info=="l2") {
         if(structure->is_infinite(v0) || structure->is_infinite(v1))
-          res["l2"]=NA_REAL; 
+          res["l2"]=NA_REAL;
         else
           res["l2"]=CGAL::squared_distance(p0,p1);
       } else if (info=="l") {
         if(structure->is_infinite(v0) || structure->is_infinite(v1))
-          res["l"]=NA_REAL; 
+          res["l"]=NA_REAL;
         else
           res["l"]=sqrt(CGAL::squared_distance(p0,p1));
           //std::cout << "l=" << sqrt(CGAL::squared_distance(p0,p1)) << std::endl;
@@ -89,14 +89,14 @@ template <>
 List All2TermType2D::make_before_list() {
    Delaunay2_VertexSet_Set emptyEdges;
     return (locBefore = update_infos(emptyEdges));
-} 
+}
 
 template <>
 List All2TermType2D::make_after_list() {
     HandleSet_Set incidentEdges;
 
-    double r=as<double>(envir.get("range"));
-  //std::cout << "range=" << r << std::endl;
+    double r=(envir.exists("range") ? as<double>(envir.get("range")) : 1000000.0);
+  //DEBUG: std::cout << "range=" << r << std::endl;
     incidentEdges=Delaunay2_All2_edges_at_range(structure,current_handle,r);
     //prepare the positive list
     //DEBUG: std::cout << "incidentEdges=" << incidentEdges.size() << std::endl;
@@ -110,7 +110,7 @@ void All2TermType2D::make_local_lists<INSERTION>() {
 
     //INSERTION
     apply_INSERTION();
-    
+
     //after INSERTION
     All2TermType2D::make_after_list();
     //as before
@@ -120,16 +120,16 @@ void All2TermType2D::make_local_lists<INSERTION>() {
 template <> template <>
 void All2TermType2D::make_local_lists<DELETION>() {
   //before DELETION
-     
+
     All2TermType2D::make_after_list();
   //   //DELETION
   //   apply_DELETION();
   // //after DELETION
-   
+
   //   All2TermType2D::make_before_list();
   //   //As before!
   //   apply_INSERTION();
-    
+
 }
 
 template <> template<>
@@ -153,14 +153,14 @@ void All2TermType2D::set_current_<DELETION>(NumericVector p) {
   }
   //DEBUG: std::cout << "current_index=" << current_index <<std::endl;
   current_handle=Triangulation_vertex_at_pos<Delaunay2>(structure,current_index);
-  
+
   current=current_handle->point();
   current_info=current_handle->info();
   //create the lists of edges
   if(auto_make_list) make_local_lists<DELETION>();
 }
 
-template <> 
+template <>
 NumericVector All2TermType2D::get_current() {
   return NumericVector::create(current.x(),current.y());
 }
@@ -210,13 +210,13 @@ List All2TermType3D::update_infos(HandleSet_Set set) {
           res["x"]=List::create(x0,x1);
       } else if (info=="l2") {
         //if(structure->is_infinite(v0) || structure->is_infinite(v1))
-        //  res["l2"]=NA_REAL; 
+        //  res["l2"]=NA_REAL;
         //else
           res["l2"]=pow(p0.x()-p1.x(),2) + pow(p0.y()-p1.y(),2) + pow(p0.z()-p1.z(),2);
 
       } else if (info=="l") {
         // if(structure->is_infinite(v0) || structure->is_infinite(v1))
-        //  res["l"]=NA_REAL; 
+        //  res["l"]=NA_REAL;
         // else
           res["l"]=sqrt(pow(p0.x()-p1.x(),2) + pow(p0.y()-p1.y(),2) + pow(p0.z()-p1.z(),2));
 
@@ -240,12 +240,12 @@ template <>
 List All2TermType3D::make_before_list() {
    Delaunay3_VertexSet_Set emptyEdges;
     return (locBefore = update_infos(emptyEdges));
-} 
+}
 
 template <>
 List All2TermType3D::make_after_list() {
     HandleSet_Set incidentEdges;
-    double r=as<double>(envir.get("range"));
+    double r=(envir.exists("range") ? as<double>(envir.get("range")) : 1000000.0);
     incidentEdges=Delaunay3_All2_edges_at_range(structure,current_handle,r);
     //prepare the positive list
     return (locAfter=update_infos(incidentEdges));
@@ -258,7 +258,7 @@ void All2TermType3D::make_local_lists<INSERTION>() {
 
     //INSERTION
     apply_INSERTION();
-    
+
     //after INSERTION
     All2TermType3D::make_after_list();
     //as before
@@ -268,16 +268,16 @@ void All2TermType3D::make_local_lists<INSERTION>() {
 template <> template <>
 void All2TermType3D::make_local_lists<DELETION>() {
   //before DELETION
-     
+
     All2TermType3D::make_after_list();
     //DELETION
     apply_DELETION();
   //after DELETION
-   
+
     All2TermType3D::make_before_list();
     //As before!
     apply_INSERTION();
-    
+
 }
 
 template <> template<>
@@ -303,7 +303,7 @@ void All2TermType3D::set_current_<DELETION>(NumericVector p) {
   if(auto_make_list) make_local_lists<DELETION>();
 }
 
-template <> 
+template <>
 NumericVector All2TermType3D::get_current() {
   return NumericVector::create(current.x(),current.y(),current.z());
 }

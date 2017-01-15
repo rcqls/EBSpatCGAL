@@ -22,7 +22,7 @@ public:
     }
 
     virtual ~TermBase() {};
- 
+
     virtual double eval_first_expr(void) = 0;
 
     virtual void set_current(NumericVector p) = 0;
@@ -65,7 +65,7 @@ RCPP_EXPOSED_AS(TermBase);
 RCPP_EXPOSED_WRAP(TermBase);
 
 
-class TermList {//List of TermBase (heterogeneous terms) 
+class TermList {//List of TermBase (heterogeneous terms)
 public:
     TermList(List term_list_) {
         make_local_lists_last_apply=true;
@@ -123,7 +123,7 @@ public:
 
             //DEBUG: std::cout << "apply_INSERTION" << std::endl;
             apply_INSERTION();
-            
+
             for(
                 std::list<TermBase*>::iterator tit=term_list.begin();
                 tit != term_list.end();
@@ -145,7 +145,7 @@ public:
             }
 
             apply_DELETION();
-            
+
             for(
                 std::list<TermBase*>::iterator tit=term_list.begin();
                 tit != term_list.end();
@@ -164,7 +164,7 @@ public:
             tit != term_list.end();
             ++tit
         ) {
-            (*tit)->auto_make_list=false; //no more lists made in set_current 
+            (*tit)->auto_make_list=false; //no more lists made in set_current
             (*tit)->set_current(p);
         }
     }
@@ -198,7 +198,7 @@ public:
     void sim_mode(bool mode) {
         make_local_lists_last_apply = !mode;
     }
-    
+
     double local_energy() {
         double res=single;
 
@@ -226,7 +226,7 @@ public:
 
         make_local_lists_last_apply = true;
 
-        List res(term_list.size()); 
+        List res(term_list.size());
 
         // prepare local lists before evaluating first expr
         make_local_lists();
@@ -254,7 +254,7 @@ public:
 
         make_local_lists_last_apply = true;
 
-        List res(term_list.size()); 
+        List res(term_list.size());
 
         // prepare local lists before evaluating first expr
         make_local_lists();
@@ -265,7 +265,7 @@ public:
             lit != term_list.end();
             ++lit,++i
         ) {
-            //DEBUG: 
+            //DEBUG:
             //std::cout << "ici" << std::endl;
             //DEBUG: double res2=(*lit)->eval_first_expr();
             //DEBUG: std::cout << "res2["<< i << "]=" << res2 << std::endl;
@@ -289,11 +289,11 @@ public:
         ) {
             List first=cexprs_cache["first"],second=cexprs_cache["second"];
             (*lit)->set_cexprs_caches(List::create(_["first"]=first[i],_["second"]=second[i]));
-        }        
+        }
 
     }
 
-    
+
     //exprs for caches
     List first_cache_exprs,second_cache_exprs;
     //and sizes of caches
@@ -378,8 +378,8 @@ public:
         }
 
         return List::create(_["first"]=resFirst,_["second"]=resSecond);
-        
-    } 
+
+    }
 
     //eval first exprs for indexes
 
@@ -396,7 +396,7 @@ public:
         NumericVector firstResult(resFirst.begin(),resFirst.end());
 
         return firstResult;
-        
+
     }
 
     //eval second exprs for indexes
@@ -439,7 +439,7 @@ public:
         NumericVector firstResult(resFirst.begin(),resFirst.end()),secondResult(resSecond.begin(),resSecond.end());
         return List::create(_["first"]=firstResult,_["second"]=secondResult);
     }
-    
+
 /*************************************************************/
 /* I made a mistake! This is not what I want mathematically! */
 /*************************************************************
@@ -453,7 +453,7 @@ public:
         ) {
             List first=cexprs_cache["first"],second=cexprs_cache["second"];
             (*lit)->set_cexprs_caches(List::create(_["first"]=first[i],_["second"]=second[i]));
-        }        
+        }
 
     }
 
@@ -477,15 +477,15 @@ public:
                 vit != varnames.end();
                 ++vit
             ) {
-                //std::cout << "var: " << *vit << std::endl; 
+                //std::cout << "var: " << *vit << std::endl;
                 resFirst[*vit]=resFirstCache[*vit];
                 resSecond[*vit]=resSecondCache[*vit];
             }
-        }        
+        }
 
         return List::create(_["first"]=resFirst,_["second"]=resSecond);
 
-    } 
+    }
     *********************************************************/
 
     //Weird: but I guess it is because does not know how to manage inheritance yet!
@@ -506,9 +506,9 @@ private:
 //     Just try to adapt the same idea if desired!
 
 //STRUCT: class of the structure (ex: Delaunay2) , ELEMENT: current element (ex: Point_2), HANDLE: (ex: Vertex_handle)
-//ID: type of interaction, DIM: dimension //UNUSED!!! =>  ORDER: structure order if needed (ex: ORDER=2 for Delaunay)  
+//ID: type of interaction, DIM: dimension //UNUSED!!! =>  ORDER: structure order if needed (ex: ORDER=2 for Delaunay)
 template <InterTypeID ID, typename STRUCT, typename ELEMENT = typename STRUCT::Point, typename HANDLE = typename STRUCT::Vertex_handle> //, int ORDER=1 >
-class TermType : public TermBase { 
+class TermType : public TermBase {
 
 public:
     typedef HANDLE Handle;
@@ -522,7 +522,7 @@ public:
     Environment get_envir() {return envir;}
 
     void set_struct(STRUCT* struct_) {structure=struct_;}
-    
+
     STRUCT* get_struct() {return structure;}
 
     void set_exprs(List exprs_) { exprs=exprs_; }
@@ -555,10 +555,10 @@ public:
     void set_current(NumericVector p) {
         mode= p.size()==1 ? DELETION : INSERTION;
         switch(mode) {
-        case INSERTION: 
+        case INSERTION:
             set_current_<INSERTION>(p);
             break;
-        case DELETION: 
+        case DELETION:
             set_current_<DELETION>(p);
         }
         //std::cout << "(x,y)=(" << current.x() << "," << current.y() << ")" << std::endl;
@@ -598,11 +598,11 @@ public:
             typename STRUCT::Finite_vertices_iterator vit=structure->finite_vertices_begin();
             for(i=0;i<cpt;i++) ++vit;
             ELEMENT p=vit->point();
-            if( (p.dimension()==2 && domain->contains(p[0],p[1])) || (p.dimension()==3 && domain->contains(p[0],p[1],p[2]))) return i;  
+            if( (p.dimension()==2 && domain->contains(p[0],p[1])) || (p.dimension()==3 && domain->contains(p[0],p[1],p[2]))) return i;
         }
     };
 
-    //number 
+    //number
     IntegerVector inside_indexes(Domain* domain,int number) {
         IntegerVector indexes(number);
         int i=1,cpt=0;
@@ -612,7 +612,7 @@ public:
             ++vit,i++
         ) {
             ELEMENT p=vit->point();
-            if( (p.dimension()==2 && domain->contains(p[0],p[1])) || (p.dimension()==3 && domain->contains(p[0],p[1],p[2]))) 
+            if( (p.dimension()==2 && domain->contains(p[0],p[1])) || (p.dimension()==3 && domain->contains(p[0],p[1],p[2])))
                 indexes[cpt++] = i;
         }
         return indexes;
@@ -620,7 +620,7 @@ public:
 
     //Maybe to secialize if needed (when trying to embed Kiên stuff)!
     //An alternative is to adapt this part!
-    
+
 
     //HERE I need to comment because insert actually returns vertex_handle and graph remains unchanged
     // when the point already exists.
@@ -693,7 +693,7 @@ public:
         }
     }
 
-    void eval_before_exprs_results() { 
+    void eval_before_exprs_results() {
         int i,ii;
         for(
             List::iterator lit=locBefore.begin();
@@ -733,14 +733,14 @@ public:
             ) {
                 std::vector<double> tmp=as< std::vector<double> >(Rf_eval( exprs[i],envir));
                 for(ii=0;ii<exprs_size[i];ii++) {
-                    //DEBUG: 
+                    //DEBUG:
                     std::cout << "before[" << i << "]=" << tmp[ii] << std::endl;
                     (*rit)[ii] += tmp[ii];
                 }
             }
 
         }
-        
+
     };
 
     List exprs_results_as_List() {
@@ -777,7 +777,7 @@ public:
     List get_after_list() {return locAfter;};
     List get_before_list() {return locBefore;};
 
-    // compute List of values from a list of cexprs and vars List 
+    // compute List of values from a list of cexprs and vars List
     List eval_cexprs(List infos_list) {
         List ret(infos_list.size());
         int i=0;
@@ -801,7 +801,7 @@ public:
 
             ret[i]=res;
         }
-        
+
         return ret;
 
     }
@@ -900,7 +900,7 @@ public:
             }
 
         }
-        
+
     };
 
     /******************************************* The same mistake!
@@ -923,7 +923,7 @@ public:
         eval_after_exprs_results_from_cexprs_caches();
         List secondResult=exprs_results_as_List();
         return List::create(_["first"]=firstResult,_["second"]=secondResult);
-    } 
+    }
     ***************************************************/
 
     List locBefore,locAfter,glob;
@@ -932,7 +932,7 @@ public:
 private:
     //
     STRUCT* structure;
-    //Term mode (ex: INSERTION for insertion) 
+    //Term mode (ex: INSERTION for insertion)
     TermMode mode;
     //Current element
     ELEMENT current;
@@ -960,7 +960,7 @@ private:
         int l=vars_.size();
         if(l==0) return;
         CharacterVector names=vars_.names();
-        
+
         for(int i = 0; i < l ; i++) {
             SEXP name = Rf_install(Rf_translateChar(STRING_ELT(names, i)));
             Rf_defineVar(name, VECTOR_ELT(vars_, i), envir);

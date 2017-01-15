@@ -5,7 +5,7 @@
 
 using namespace Rcpp ;
 
-class SimGibbs { 
+class SimGibbs {
 
 public:
     SimGibbs() {
@@ -74,7 +74,7 @@ public:
     int nb_pts;
 
     double action_split;
-    
+
     //maintain number of inside domain point
     int inside_number;
 private:
@@ -107,11 +107,11 @@ private:
     NumericVector pick_DELETION() {
         double pt=inter->pick_inside_index(domain);
         //std::cout << "pick_DELETION=" << pt << std::endl;
-        return NumericVector::create(pt); 
+        return NumericVector::create(pt);
     };
 
     void propose_INSERTION() {
-        //std::cout << (marked ? "marked" : "not marked") << std::endl; 
+        //std::cout << (marked ? "marked" : "not marked") << std::endl;
         inter -> set_current(pick_INSERTION());
         pick_mark_for_current();
     }
@@ -124,12 +124,12 @@ private:
     double value_INSERTION() {
         //self->area/(DOUBLE)nb_dv_total*EXP(-(self->local_energy)(func,poly))
         return (domain->get_size())/(inside_number)*exp(-(inter->local_energy()));
-    } 
+    }
 
     double value_DELETION() {
         //Rmk: inter->local_energy returns insertion local energy only
         return (inside_number)/(domain->get_size())*exp((inter->local_energy()));
-    } 
+    }
 
     void run_once() {
 
@@ -140,7 +140,7 @@ private:
                 inter->apply_INSERTION();
                 (inside_number)++;
             }
-        } else if(propose_action() == INSERTION) {  
+        } else if(propose_action() == INSERTION) {
             propose_INSERTION();
             val=value_INSERTION();
             //DEBUG: std::cout << "nb=" << inside_number << " g=" << g << " value_INSERTION=" << val << std::endl;

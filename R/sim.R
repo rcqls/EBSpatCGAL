@@ -5,20 +5,20 @@
 #
 # Option II:
 # gd <- SimGibbs(~ 2 + Del2(th[1]*(l<=20)+th[2]*(20<l & l<=80),th=c(2,4)))
-# => struct to be specified later! 
+# => struct to be specified later!
 # gd$nb_runs <- 1000 # optional since default value is 10000
 # As an example, you want to change "th" parameter too
 # run(gd,del2,th=c(3,4)) 	# then run(gd) as many times as desired
 # or
 # params(gd,th=c(3,4))
 # run(gd,del2) 				# then run(gd) as many times as desired
-# or 
+# or
 # params(gd,th=c(3,4))
-# gd$dom <- del2 
+# gd$dom <- del2
 # run(gd) 					# as many times as desired
 
 
-## TODO: domain would be included later in Domain object embedding Struct 
+## TODO: domain would be included later in Domain object embedding Struct
 ## playing the role of response in formula
 SimGibbs <-function(model,runs=10000,domain=Domain(c(-350,-350),c(350,350))) {
 	self <- newEnv(SimGibbs,ParameterMngr,interMngr=InteractionMngr(model),runs=runs,domain=domain)
@@ -31,11 +31,11 @@ SimGibbs <-function(model,runs=10000,domain=Domain(c(-350,-350),c(350,350))) {
 		} else update(self,current)
 	} else self$dim <- length(self$domain) # default value if no answer updatable if struct changed
 
-	RcppPersistentObject(self,new = { 
+	RcppPersistentObject(self,new = {
 		if(is.null(self$struct)) {
 			## TODO: initialize SimGibbsDel(2|3)D without del2
-			## Maybe create one! 
-		} else {	
+			## Maybe create one!
+		} else {
 			## No more SimGibbsDel(2|3)D even if TermType depends on dimension
 			##rcpp <- new(eval(parse(text=paste("SimGibbsDel",self$dim,"D",sep=""))),terms(self$interMngr),self$struct$rcpp(),self$domain[1:self$dim],self$domain[self$dim+(1:self$dim)])
 			rcpp <- new(SimGibbsCpp,terms(self$interMngr),self$domain$rcpp())
@@ -51,16 +51,16 @@ SimGibbs <-function(model,runs=10000,domain=Domain(c(-350,-350),c(350,350))) {
 			# important for renew process!
 			if(!is.null(self$struct)) update(self$interMngr,self$struct)
 			rcpp
-		} 
+		}
 	})
 	self
 }
 
 ##########################################################################
-# RMK: VERY IMPORTANT TRICK! 
-# Interaction C++ object knows about STRUCT class via its first term 
+# RMK: VERY IMPORTANT TRICK!
+# Interaction C++ object knows about STRUCT class via its first term
 # so no need to communicate the graph structure to SimGibbs.
-# This method is in charge to communicate the struct to all the terms of 
+# This method is in charge to communicate the struct to all the terms of
 # the interaction manager.
 ##########################################################################
 update.SimGibbs <- function(self,current) {
@@ -78,14 +78,14 @@ update.SimGibbs <- function(self,current) {
 run.SimGibbs <- function(self,current,...,runs,domain) {
 	params(self,...)
 	if(!missing(current)) {
-		if(inherits(current,"Simulable")) update(self,current) 
+		if(inherits(current,"Simulable")) update(self,current)
 		else cat("WARNING: object not of class Simulable!\n")
 	}
 
 	if(!missing(domain) && !identical(domain,self$domain)) {
 		self$domain <- domain
 		self$rcpp()$set_domain(self$domain$rcpp())
-		
+
 	}
 
 	if(!missing(runs) && self$runs != runs) {
