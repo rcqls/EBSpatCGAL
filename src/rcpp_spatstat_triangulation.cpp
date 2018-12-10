@@ -64,7 +64,7 @@ IntegerVector  Delaunay3_insert( Delaunay3* obj, NumericVector ptsX, NumericVect
 }
 
 IntegerVector Regular2_insert( Regular2* obj, NumericVector ptsX, NumericVector ptsY,  NumericVector ptsW) {
-	std::vector<Point_2> points;
+	std::vector<Weighted_point_2> points;
 	int nbPts=ptsX.size();
 
 	std::cout << "Number of vertices to insert is " << nbPts << std::endl;

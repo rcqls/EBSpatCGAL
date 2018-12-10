@@ -42,10 +42,14 @@ typedef CGAL::Delaunay_triangulation_2<K, Tds2>                      Delaunay2;
 typedef CGAL::Delaunay_triangulation_2<K> 							Delaunay2;
 #endif
 
-typedef double 														Weight;
-typedef CGAL::Regular_triangulation_euclidean_traits_2<K,Weight>  	Gt2;
-typedef CGAL::Regular_triangulation_2<Gt2> 							Regular2;
-typedef Gt2::Weighted_point_2 										Weighted_point_2;
+//typedef double 														Weight;
+//typedef CGAL::Regular_triangulation_euclidean_traits_2<K,Weight>  	Gt2;
+//typedef CGAL::Regular_triangulation_2<Gt2> 							Regular2;
+//typedef Gt2::Weighted_point_2 										Weighted_point_2;
+
+typedef CGAL::Regular_triangulation_2<K> 								Regular2;
+typedef K::Weighted_point_2												Weighted_point_2;
+
 #ifdef MARKED_VERTEX_BASE
 typedef CGAL::Triangulation_vertex_base_with_info_3<Rcpp::List, K>    Vb3;
 typedef CGAL::Triangulation_data_structure_3<Vb3>                    Tds3;
