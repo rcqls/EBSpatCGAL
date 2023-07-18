@@ -57,6 +57,9 @@ S3method("window","Domain")
 S3method("formula","Resid") 
 S3method("run","Resid") 
 
+S3method("area","Delaunay_2d") 
+S3method("volume","Delaunay_2d") 
+S3method("volume","Delaunay_3d") 
 
 import( Rcpp )
 
