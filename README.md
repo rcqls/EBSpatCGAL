@@ -17,7 +17,7 @@ For Windows user: see install steps described in the last section.
 Since this package is in development, it is not yet on CRAN but thanks to devtools R package (to install first if necessary), you can install it in a R session:
 
 ```{.R execute="false"}
-devtools::install_github("rcqls/EBSpatCGAL")
+remotes::install_github("rcqls/EBSpatCGAL")
 ```
 
 ## examples
