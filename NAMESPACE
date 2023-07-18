@@ -17,6 +17,8 @@ export(
   ComponentFunctionalFormulaManager
 )
 
+# for( m in sapply(methods(class=Scene), function(e) paste0("S3method(\"",paste(strsplit(e, "\\.")[[1]],collapse="\",\""), "\")"))) cat(m,"\n")
+
 S3method("[","Scene") 
 S3method("[[","Scene") 
 S3method("[[<-","Scene") 
@@ -29,6 +31,7 @@ S3method("print","Scene")
 
 S3method("[",TermType)
 
+# for( m in sapply(methods(class=Delaunay), function(e) paste0("S3method(\"",paste(strsplit(e, "\\.")[[1]],collapse="\",\""), "\")"))) cat(m,"\n")
 S3method("delete","Delaunay") 
 S3method("edges","Delaunay") 
 S3method("facets","Delaunay") 
@@ -42,27 +45,32 @@ S3method("seq","Delaunay")
 S3method("vertices","Delaunay") 
 S3method("window","Delaunay")
 
+# for( m in sapply(methods(class=Regular), function(e) paste0("S3method(\"",paste(strsplit(e, "\\.")[[1]],collapse="\",\""), "\")"))) cat(m,"\n")
 S3method("insert","Regular") 
 S3method("vertices","Regular") 
 
+# for( m in sapply(methods(class=SimGibbs), function(e) paste0("S3method(\"",paste(strsplit(e, "\\.")[[1]],collapse="\",\""), "\")"))) cat(m,"\n")
 S3method("run","SimGibbs") 
 S3method("update","SimGibbs") 
 
+# for( m in sapply(methods(class=Domain), function(e) paste0("S3method(\"",paste(strsplit(e, "\\.")[[1]],collapse="\",\""), "\")"))) cat(m,"\n")
 S3method("%contains%","Domain") 
 S3method("dim","Domain") 
 S3method("length","Domain") 
 S3method("run","Domain") 
 S3method("window","Domain") 
 
+# for( m in sapply(methods(class=Resid), function(e) paste0("S3method(\"",paste(strsplit(e, "\\.")[[1]],collapse="\",\""), "\")"))) cat(m,"\n")
 S3method("formula","Resid") 
 S3method("run","Resid") 
 
+# for( m in sapply(methods(class=Delaunay_2d), function(e) paste0("S3method(\"",paste(strsplit(e, "\\.")[[1]],collapse="\",\""), "\")"))) cat(m,"\n")
 S3method("area","Delaunay_2d") 
-S3method("volume","Delaunay_2d") 
+S3method("volume","Delaunay_2d")
+
+# for( m in sapply(methods(class=Delaunay_3d), function(e) paste0("S3method(\"",paste(strsplit(e, "\\.")[[1]],collapse="\",\""), "\")"))) cat(m,"\n")
 S3method("volume","Delaunay_3d") 
 
 import( Rcpp )
 
 useDynLib(EBSpatCGAL)
-
-# for( m in sapply(methods(class=Scene), function(e) paste0("S3method(\"",paste(strsplit(e, "\\.")[[1]],collapse="\",\""), "\")"))) cat(m,"\n")
