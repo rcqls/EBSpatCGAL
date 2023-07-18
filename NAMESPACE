@@ -1,4 +1,5 @@
 exportPattern("^[[:alpha:]]+")
+
 export(
   "%<<%","%<<%.Scene","%<<%.Chainable.Scene",
   "[[","[[.Scene",
@@ -15,15 +16,50 @@ export(
   InteractionMngr,
   ComponentFunctionalFormulaManager
 )
-S3method("%<<%",Scene)
-S3method("[[",Scene)
-S3method("[[<-",Scene)
-S3method("[",Scene)
-S3method("[<-",Scene)
-S3method("facets",Delaunay)
+
+S3method("[","Scene") 
+S3method("[[","Scene") 
+S3method("[[<-","Scene") 
+S3method("[<-","Scene") 
+S3method("%<<%","Scene") 
+S3method("elements","Scene") 
+S3method("length","Scene") 
+S3method("plot","Scene") 
+S3method("print","Scene") 
 
 S3method("[",TermType)
+
+S3method("delete","Delaunay") 
+S3method("edges","Delaunay") 
+S3method("facets","Delaunay") 
+S3method("insert","Delaunay") 
+S3method("length","Delaunay") 
+S3method("lines","Delaunay") 
+S3method("plot","Delaunay") 
+S3method("points","Delaunay") 
+S3method("print","Delaunay") 
+S3method("seq","Delaunay") 
+S3method("vertices","Delaunay") 
+S3method("window","Delaunay")
+
+S3method("insert","Regular") 
+S3method("vertices","Regular") 
+
+S3method("run","SimGibbs") 
+S3method("update","SimGibbs") 
+
+S3method("%contains%","Domain") 
+S3method("dim","Domain") 
+S3method("length","Domain") 
+S3method("run","Domain") 
+S3method("window","Domain") 
+
+S3method("formula","Resid") 
+S3method("run","Resid") 
+
 
 import( Rcpp )
 
 useDynLib(EBSpatCGAL)
+
+# for( m in sapply(methods(class=Scene), function(e) paste0("S3method(\"",paste(strsplit(e, "\\.")[[1]],collapse="\",\""), "\")"))) cat(m,"\n")
