@@ -1,9 +1,9 @@
 PKG_CXXFLAGS=-DCGAL_CFG_NO_CPP0X_VARIADIC_TEMPLATES
 ## Use the R_HOME indirection to support installations of multiple R version
 ifeq "$(R_PLATFORM)" "x86_64-pc-linux-gnu"
-PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` -lCGAL_Core -lCGAL -lgmpxx -lmpfr -lgmp -lboost_thread
+PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` -lgmpxx -lmpfr -lgmp -lboost_thread
 else
-PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` -lCGAL_Core -lCGAL -lgmpxx -lmpfr -lgmp -lboost_thread-mt
+PKG_LIBS = `$(R_HOME)/bin/Rscript -e "Rcpp:::LdFlags()"` -lgmpxx -lmpfr -lgmp -lboost_thread-mt
 endif
 ## As an alternative, one can also add this code in a file 'configure'
 ##

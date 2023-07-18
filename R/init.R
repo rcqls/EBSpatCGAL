@@ -5,7 +5,7 @@ delete <- function(obj,...) UseMethod("delete")
 elements <- function(obj,...) UseMethod("elements")
 
 vertices <- function(obj,...) UseMethod("vertices")
-vertices.owin <- spatstat:::vertices #compatibility with spatstat
+# vertices.owin <- spatstat:::vertices #compatibility with spatstat
 
 edges <- function(obj,...) UseMethod("edges")
 edges.default <- function(x,...) spatstat:::edges #compatibility with spatstat

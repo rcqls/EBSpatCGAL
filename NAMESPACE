@@ -1,4 +1,3 @@
-useDynLib(EBSpatCGAL)
 exportPattern("^[[:alpha:]]+")
 export(
   "%<<%","%<<%.Scene","%<<%.Chainable.Scene",
@@ -26,3 +25,5 @@ S3method("facets",Delaunay)
 S3method("[",TermType)
 
 import( Rcpp )
+
+useDynLib(EBSpatCGAL)
