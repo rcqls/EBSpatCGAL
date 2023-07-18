@@ -18,20 +18,15 @@
 #include <CGAL/Triangulation_vertex_base_3.h>
 #include <CGAL/point_generators_3.h>
 
+#include <CGAL/Triangulation_cell_base_with_info_3.h>
+#include <CGAL/Delaunay_triangulation_cell_base_with_circumcenter_3.h>
+
+
 // #include <CGAL/Regular_triangulation_euclidean_traits_2.h>
 #include <CGAL/Regular_triangulation_2.h>
 
 #include <CGAL/Regular_triangulation_3.h>
 //// #include <CGAL/Regular_triangulation_euclidean_traits_3.h>
-
-#include <CGAL/Delaunay_triangulation_3.h>
-#include <CGAL/Triangulation_data_structure_3.h>
-#include <CGAL/Delaunay_triangulation_cell_base_3.h>
-#include <CGAL/Triangulation_cell_base_with_info_3.h>
-#include <CGAL/Delaunay_triangulation_cell_base_with_circumcenter_3.h>
-#include <CGAL/Triangulation_vertex_base_with_info_3.h>
-
-
 
 
 #define MARKED_VERTEX_BASE
